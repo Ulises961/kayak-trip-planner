@@ -3,7 +3,7 @@ Relational Schema
 Entities
 User(<u>id</u>, mail, pwd, salt, phone, name)
 Log(<u>id</u>, hours,avg_sea) inclusion : Log[id] ⊆ user_has_log[log]
-Trip(<u>inventory</u>, <u>itinerary</u>)fk:Trip[inventory] ⊆ Inventory[id], fk[itinerary]⊆ Itinerary[id] inclusion : Trip[inventory] ⊆ user_has_trip[inventory], Trip[itinerary] ⊆ user_has_trip[itinerary]
+Trip(<u>inventory</u>, <u>itinerary</u>)fk:Trip[inventory] ⊆ Inventory[id], fk[itinerary]⊆ Itinerary[id] inclusion : Trip[inventory,itinerary] ⊆ user_has_trip[inventory,itinerary]
 Inventory(<u>id</u>)
 Item(<u>id</u>, category, checked, name)
 Itinerary(<u>id</u>, is_public, total_miles, expected_total_miles)inclusion: Itinerary[id] ⊆ Day[itinerary]
