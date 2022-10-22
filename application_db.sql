@@ -1,5 +1,5 @@
 CREATE TABLE
-    User (
+    Users(
         id SERIAL PRIMARY KEY,
         mail VARCHAR(255),
         pwd VARCHAR(255),
@@ -120,7 +120,7 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    user_has_trip (
+    User_has_trip (
         user,
         inventory,
         itinerary,
@@ -128,10 +128,10 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    inventory_has_item (inventory, item, PRIMARY KEY (inventory, item));
+    Inventory_has_item (inventory, item, PRIMARY KEY (inventory, item));
 
 CREATE TABLE
-    user_endorses_log (
+    User_endorses_log (
         log INTEGER,
         endorser INTEGER,
         endorsed INTEGER,
@@ -139,33 +139,55 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    user_has_log (log INTEGER PRIMARY KEY, user INTEGER);
+    User_has_log (log_id INTEGER PRIMARY KEY, user_id INTEGER);
 
 CREATE TABLE
-    user_has_profile_picture (user INTEGER PRIMARY KEY, picture INTEGER);
+    User_has_profile_picture (user_id INTEGER PRIMARY KEY, image_id INTEGER);
 
 CREATE TABLE
-    point_has_image (
+    Point_has_image (
         image_id INTEGER PRIMARY KEY,
         itinerary INTEGER,
         date DATE,
         day_number INTEGER,
         gps NUMERIC
     );
-    -- fk point_has_image[image_id]⊆ image[id], point_has_image[date,day_number,gps,itinerary] ⊆ Point[date,day_number,gps,itinerary]
-    -- fk user_has_picture[user]⊆ User[id], user_has_profile_picture[picture] ⊆ Image[id]
-    -- fk user_has_log[log]⊆ Log[id], user_has_log[user] ⊆ User[id]
-    -- user_endorses_log[endorser] ⊆ User[id], user_endorses_log[endorsed]⊆ User[id]
-    -- fk user_endorses_log[log]⊆ Log[id]
-    -- fk:inventory_has_item[inventory] ⊆ Inventory[id];
-    -- fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
-    -- fk inventory_has_item[item]⊆ Item[id]
-    -- fk:day_has_points[day_number,date,itinerary]  ⊆ Day[day_number,date,itinerary]
-    -- fk: weather_state[day_number,itinerary,date]  ⊆ Sea[day_number,itinerary,date]
-    -- fk:Weather[day_number,date,itinerary] ⊆ Day[day_number,date,itinerary]
-    -- fk: Sea[day_number,date,ininerary] ⊆ Day[day_number,date,itinerary]
-    -- fk: Day[itinerary] ⊆ Itinerary[id]
-    -- inclusion: Itinerary[id] ⊆ Day[itinerary]
-    -- inclusion : Log[id] ⊆ user_has_log[log]
-    -- fk:Trip[inventory] ⊆ Inventory[id], fk[itinerary]⊆ Itinerary[id] inclusion : Trip[inventory,itinerary] ⊆ user_has_trip[inventory,itinerary]
-    -- inclusion: Itinerary[id] ⊆ Day[itinerary]
+
+ALTER TABLE
+    point_has_image ADD CONSTRAINT point_fkeys_in__point_has_image FOREIGN KEY (date, day_number, itinerary) REFERENCES point (day_number, date, gps, itinerary) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT image_fkeys_in__point_has_image FOREIGN KEY (image_id) REFERENCES image (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    user_has_picture ADD CONSTRAINT user_fkeys_in__user_has_picture FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT image_fkeys_in__user_has_picture FOREIGN KEY (image_id) REFERENCES image (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    user_has_log ADD CONSTRAINT log_fkeys_in__user_has_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT users_fkeys_in__user_has_log FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    user_endorses_log ADD CONSTRAINT log_fkeys_in__user_endorses_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorsed) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorser) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+
+-- fk:inventory_has_item[inventory] ⊆ Inventory[id];
+-- fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
+-- fk inventory_has_item[item]⊆ Item[id]
+-- fk:day_has_points[day_number,date,itinerary]  ⊆ Day[day_number,date,itinerary]
+-- fk: weather_state[day_number,itinerary,date]  ⊆ Sea[day_number,itinerary,date]
+-- fk:Weather[day_number,date,itinerary] ⊆ Day[day_number,date,itinerary]
+-- fk: Sea[day_number,date,ininerary] ⊆ Day[day_number,date,itinerary]
+-- fk: Day[itinerary] ⊆ Itinerary[id]
+-- inclusion: Itinerary[id] ⊆ Day[itinerary]
+-- inclusion : Log[id] ⊆ user_has_log[log]
+-- fk:Trip[inventory] ⊆ Inventory[id], fk[itinerary]⊆ Itinerary[id] inclusion : Trip[inventory,itinerary] ⊆ user_has_trip[inventory,itinerary]
+-- inclusion: Itinerary[id] ⊆ Day[itinerary]
+-- point_previous_next(prev_day_number,* prev_itinerary*,prev_gps*,prev_date*, next_day_number*, next_itinerary*,next_gps*,next_date*,<u>curr_day_number</u>, <u>curr_itinerary</u>,<u>curr_gps</u>,<u>curr_date</u>)fk point_previous_next[prev_day_number, prev_itinerary,prev_gps,prev_date, next_day_number, next_itinerary,next_gps,next_date, curr__day_number, curr__itinerary,curr__gps,curr__date] ⊆ Point[day_number, itinerary,gps,date]
+-- point_has_type[<u>type</u>, point_id] fk point_has_type[type] ⊆ Type[id], point_has_type[point_id]⊆ Point[id]
+-- + fk point_has_image[image_id]⊆ image[id], point_has_image[date,day_number,gps,itinerary] ⊆ Point[date,day_number,gps,itinerary]
+-- + fk user_has_picture[user]⊆ User[id], user_has_profile_picture[picture] ⊆ Image[id]
+-- + fk user_has_log[log]⊆ Log[id], user_has_log[user] ⊆ User[id]
+
+-- + user_endorses_log[endorser] ⊆ User[id], user_endorses_log[endorsed]⊆ User[id]
+-- + fk user_endorses_log[log]⊆ Log[id]
