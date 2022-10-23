@@ -161,11 +161,10 @@ ALTER TABLE
     inventory_has_item ADD CONSTRAINT inventory_fkeys_in__inventory_has_item FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT item_fkeys_in__inventory_has_item FOREIGN KEY (item_id) REFERENCES Item (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    User_has_trip ADD CONSTRAINT inventory_fkeys_in__user_has_trip FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    User_has_trip ADD CONSTRAINT trip_fkeys_in__user_has_trip FOREIGN KEY (inventory_id, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
 
--- fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
 
 -- fk:day_has_points[day_number,date,itinerary]  ⊆ Day[day_number,date,itinerary]
 -- fk: weather_state[day_number,itinerary,date]  ⊆ Sea[day_number,itinerary,date]
@@ -187,3 +186,4 @@ ALTER TABLE
 -- + fk user_endorses_log[log]⊆ Log[id]
 -- + fk:inventory_has_item[inventory] ⊆ Inventory[id]
 -- + fk inventory_has_item[item]⊆ Item[id]
+-- + fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
