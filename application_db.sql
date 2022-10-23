@@ -1,5 +1,5 @@
 CREATE TABLE
-    Users(
+    Users (
         id SERIAL PRIMARY KEY,
         mail VARCHAR(255),
         pwd VARCHAR(255),
@@ -99,14 +99,7 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    Point (
-        day_number INTEGER,
-        itinerary INTEGER,
-        gps NUMERIC,
-        date DATE,
-        notes TEXT,
-        PRIMARY KEY (day_number, date, itinerary, gps)
-    );
+    Point (id SERIAL PRIMARY KEY gps NUMERIC, notes TEXT);
 
 CREATE TABLE
     Point_type (id SERIAL PRIMARY KEY, name VARCHAR(255));
@@ -121,10 +114,10 @@ CREATE TABLE
 
 CREATE TABLE
     User_has_trip (
-        user,
-        inventory,
-        itinerary,
-        PRIMARY KEY (user, inventory, itinerary)
+        user_id,
+        inventory_id,
+        itinerary_id,
+        PRIMARY KEY (user_id, inventory_id, itinerary_id)
     );
 
 CREATE TABLE
@@ -145,16 +138,10 @@ CREATE TABLE
     User_has_profile_picture (user_id INTEGER PRIMARY KEY, image_id INTEGER);
 
 CREATE TABLE
-    Point_has_image (
-        image_id INTEGER PRIMARY KEY,
-        itinerary INTEGER,
-        date DATE,
-        day_number INTEGER,
-        gps NUMERIC
-    );
+    Point_has_image (image_id INTEGER PRIMARY KEY, point_id INTEGER);
 
 ALTER TABLE
-    point_has_image ADD CONSTRAINT point_fkeys_in__point_has_image FOREIGN KEY (date, day_number, itinerary) REFERENCES point (day_number, date, gps, itinerary) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    point_has_image ADD CONSTRAINT point_fkeys_in__point_has_image FOREIGN KEY (point_id) REFERENCES point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT image_fkeys_in__point_has_image FOREIGN KEY (image_id) REFERENCES image (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
@@ -167,13 +154,19 @@ ALTER TABLE
 
 ALTER TABLE
     user_endorses_log ADD CONSTRAINT log_fkeys_in__user_endorses_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-    ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorsed) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorser) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorsed) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorser) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    inventory_has_item ADD CONSTRAINT inventory_fkeys_in__inventory_has_item FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT item_fkeys_in__inventory_has_item FOREIGN KEY (item_id) REFERENCES Item (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    User_has_trip ADD CONSTRAINT inventory_fkeys_in__user_has_trip FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
 
--- fk:inventory_has_item[inventory] ⊆ Inventory[id];
 -- fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
--- fk inventory_has_item[item]⊆ Item[id]
+
 -- fk:day_has_points[day_number,date,itinerary]  ⊆ Day[day_number,date,itinerary]
 -- fk: weather_state[day_number,itinerary,date]  ⊆ Sea[day_number,itinerary,date]
 -- fk:Weather[day_number,date,itinerary] ⊆ Day[day_number,date,itinerary]
@@ -185,9 +178,12 @@ ALTER TABLE
 -- inclusion: Itinerary[id] ⊆ Day[itinerary]
 -- point_previous_next(prev_day_number,* prev_itinerary*,prev_gps*,prev_date*, next_day_number*, next_itinerary*,next_gps*,next_date*,<u>curr_day_number</u>, <u>curr_itinerary</u>,<u>curr_gps</u>,<u>curr_date</u>)fk point_previous_next[prev_day_number, prev_itinerary,prev_gps,prev_date, next_day_number, next_itinerary,next_gps,next_date, curr__day_number, curr__itinerary,curr__gps,curr__date] ⊆ Point[day_number, itinerary,gps,date]
 -- point_has_type[<u>type</u>, point_id] fk point_has_type[type] ⊆ Type[id], point_has_type[point_id]⊆ Point[id]
+
+
 -- + fk point_has_image[image_id]⊆ image[id], point_has_image[date,day_number,gps,itinerary] ⊆ Point[date,day_number,gps,itinerary]
 -- + fk user_has_picture[user]⊆ User[id], user_has_profile_picture[picture] ⊆ Image[id]
 -- + fk user_has_log[log]⊆ Log[id], user_has_log[user] ⊆ User[id]
-
 -- + user_endorses_log[endorser] ⊆ User[id], user_endorses_log[endorsed]⊆ User[id]
 -- + fk user_endorses_log[log]⊆ Log[id]
+-- + fk:inventory_has_item[inventory] ⊆ Inventory[id]
+-- + fk inventory_has_item[item]⊆ Item[id]
