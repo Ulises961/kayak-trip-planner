@@ -46,14 +46,14 @@ CREATE TABLE
     Day (
         day_number INTEGER,
         date DATE,
-        itinerary INTEGER,
+        itinerary_id INTEGER,
         PRIMARY KEY (day_number, date, itinerary)
     );
 
 CREATE TABLE
     Sea (
         day_number INTEGER,
-        itinerary INTEGER,
+        itinerary_id INTEGER,
         date DATE,
         moon_phase VARCHAR(255),
         high_tide TIME,
@@ -64,7 +64,7 @@ CREATE TABLE
 CREATE TABLE
     Sea_state (
         day_number INTEGER,
-        itinerary INTEGER,
+        itinerary_id INTEGER,
         date DATE,
         time TIME,
         wave_height NUMERIC,
@@ -77,7 +77,7 @@ CREATE TABLE
 CREATE TABLE
     Weather (
         day_number INTEGER,
-        itinerary INTEGER,
+        itinerary_id INTEGER,
         date DATE,
         time TIME,
         model VARCHAR(255),
@@ -88,7 +88,7 @@ CREATE TABLE
     Weather_state (
         day_number INTEGER,
         date DATE,
-        itinerary INTEGER,
+        itinerary_id INTEGER,
         time TIME,
         temperature NUMERIC,
         cloud VARCHAR(255),
@@ -162,6 +162,10 @@ ALTER TABLE
 
 ALTER TABLE
     User_has_trip ADD CONSTRAINT trip_fkeys_in__user_has_trip FOREIGN KEY (inventory_id, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Day_has_points ADD CONSTRAINT days_fkeys_in__day_has_points FOREIGN KEY (, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
 
 
 
