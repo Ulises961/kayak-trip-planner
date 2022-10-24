@@ -131,6 +131,14 @@ CREATE TABLE
         PRIMARY KEY (log, endorser, endorsed)
     );
 
+CREATE TABLE 
+    point_previous_next(
+        previous_point INTEGER,
+        current_point INTEGER,
+        next_point INTEGER,
+        PRIMARY KEY (current_point)
+    );
+
 CREATE TABLE
     User_has_log (log_id INTEGER PRIMARY KEY, user_id INTEGER);
 
@@ -166,7 +174,8 @@ ALTER TABLE
 ALTER TABLE
     Day_has_points ADD CONSTRAINT days_fkeys_in__day_has_points FOREIGN KEY (, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
-
+ALTER TABLE
+    point_previous_next ADD CONSTRAINT previous_point_must_exist FOREIGN KEY (previous_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT current_point_must_exist FOREIGN KEY (current_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT next_point_must_exist FOREIGN KEY (next_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
 
