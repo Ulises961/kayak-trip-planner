@@ -19,7 +19,7 @@ Image(<u>id</u>, size, name, location)
 Relationships
 
 
-user_has_trip(<u>user</u>, <u>inventory</u>, <u>itinerary</u>)fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
+user_has_trip(<u>user</u>, <u>inventory</u>, <u>itinerary</u>)fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary], fk:user_has_trip[user] ⊆ User[id]
 inventory_has_item(<u>inventory</u>, <u>item</u>)fk:inventory_has_item[inventory] ⊆ Inventory[id], fk inventory_has_item[item]⊆ Item[id]
 user_endorses_log(<u>log</u>, <u>endorser</u>, <u>endorsed</u>)fk user_endorses_log[log]⊆ Log[id], user_endorses_log[user]⊆ User[id]
 user_has_log(<u>log</u>, user)fk user_has_log[log]⊆ Log[id], user_has_log[user] ⊆ User[id]

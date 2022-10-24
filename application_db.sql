@@ -191,3 +191,4 @@ ALTER TABLE
 -- + fk:inventory_has_item[inventory] ⊆ Inventory[id]
 -- + fk inventory_has_item[item]⊆ Item[id]
 -- + fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
+-- + fk:user_has_trip[user] ⊆ User[id]
