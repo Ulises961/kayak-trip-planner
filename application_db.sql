@@ -104,6 +104,13 @@ CREATE TABLE
 CREATE TABLE
     Point_type (id SERIAL PRIMARY KEY, name VARCHAR(255));
 
+CREATE TABLE 
+    Point_has_type (
+        point_id INTEGER,
+        type_id INTEGER,
+        PRIMARY KEY (point_id, type_id)
+    );
+
 CREATE TABLE
     Image (
         id SERIAL PRIMARY KEY,
@@ -177,6 +184,8 @@ ALTER TABLE
 ALTER TABLE
     point_previous_next ADD CONSTRAINT previous_point_must_exist FOREIGN KEY (previous_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT current_point_must_exist FOREIGN KEY (current_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT next_point_must_exist FOREIGN KEY (next_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
+ALTER TABLE
+ Point_has_type ADD CONSTRAINT point_must_exist FOREIGN KEY (point_id) REFERENCES Point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT point_type_must_exist FOREIGN KEY (type_id) REFERENCES Point_type(id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
 -- fk:day_has_points[day_number,date,itinerary]  ⊆ Day[day_number,date,itinerary]
