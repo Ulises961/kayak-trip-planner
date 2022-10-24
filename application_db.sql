@@ -99,7 +99,7 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    Point (id SERIAL PRIMARY KEY gps NUMERIC, notes TEXT);
+    Point (id SERIAL PRIMARY KEY, gps NUMERIC, notes TEXT);
 
 CREATE TABLE
     Point_type (id SERIAL PRIMARY KEY, name VARCHAR(255));
