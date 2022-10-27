@@ -99,17 +99,10 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    Point (id SERIAL PRIMARY KEY, gps NUMERIC, notes TEXT);
+    Point (id SERIAL PRIMARY KEY gps NUMERIC, notes TEXT);
 
 CREATE TABLE
     Point_type (id SERIAL PRIMARY KEY, name VARCHAR(255));
-
-CREATE TABLE 
-    Point_has_type (
-        point_id INTEGER,
-        type_id INTEGER,
-        PRIMARY KEY (point_id, type_id)
-    );
 
 CREATE TABLE
     Image (
@@ -138,14 +131,6 @@ CREATE TABLE
         PRIMARY KEY (log, endorser, endorsed)
     );
 
-CREATE TABLE 
-    point_previous_next(
-        previous_point INTEGER,
-        current_point INTEGER,
-        next_point INTEGER,
-        PRIMARY KEY (current_point)
-    );
-
 CREATE TABLE
     User_has_log (log_id INTEGER PRIMARY KEY, user_id INTEGER);
 
@@ -155,51 +140,86 @@ CREATE TABLE
 CREATE TABLE
     Point_has_image (image_id INTEGER PRIMARY KEY, point_id INTEGER);
 
+CREATE TABLE
+    Point_previous_next (current_point_id INTEGER PRIMARY KEY, previous_point_id INTEGER NULL,  next_point_id INTEGER NULL);
+
+CREATE TABLE
+    Point_is_nearby (reference_point_id INTEGER , nearby_point_id INTEGER,  PRIMARY KEY(reference_point_id,nearby_point_id));
+
+
 ALTER TABLE
-    point_has_image ADD CONSTRAINT point_fkeys_in__point_has_image FOREIGN KEY (point_id) REFERENCES point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    Point_has_image ADD CONSTRAINT point_fkeys_in__point_has_image FOREIGN KEY (point_id) REFERENCES point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT image_fkeys_in__point_has_image FOREIGN KEY (image_id) REFERENCES image (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    user_has_picture ADD CONSTRAINT user_fkeys_in__user_has_picture FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    User_has_picture ADD CONSTRAINT user_fkeys_in__user_has_picture FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT image_fkeys_in__user_has_picture FOREIGN KEY (image_id) REFERENCES image (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    user_has_log ADD CONSTRAINT log_fkeys_in__user_has_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    User_has_log ADD CONSTRAINT log_fkeys_in__user_has_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT users_fkeys_in__user_has_log FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    user_endorses_log ADD CONSTRAINT log_fkeys_in__user_endorses_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    User_endorses_log ADD CONSTRAINT log_fkeys_in__user_endorses_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorsed) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT user_fkeys_in__user_endorses_log FOREIGN KEY (endorser) REFERENCES users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    inventory_has_item ADD CONSTRAINT inventory_fkeys_in__inventory_has_item FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT item_fkeys_in__inventory_has_item FOREIGN KEY (item_id) REFERENCES Item (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    Inventory_has_item ADD CONSTRAINT inventory_fkeys_in__inventory_has_item FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT item_fkeys_in__inventory_has_item FOREIGN KEY (item_id) REFERENCES Item (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    User_has_trip ADD CONSTRAINT trip_fkeys_in__user_has_trip FOREIGN KEY (inventory_id, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    User_has_trip ADD CONSTRAINT trip_fkeys_in__user_has_trip FOREIGN KEY (inventory_id, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    Day_has_points ADD CONSTRAINT days_fkeys_in__day_has_points FOREIGN KEY (, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    Day_has_points ADD CONSTRAINT day_fkeys_in__day_has_points FOREIGN KEY (date, day_number, itinerary_id) REFERENCES Day (date, day_number itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    ADD CONSTRAINT point_fkeys_in__day_has_points FOREIGN KEY (point_id) REFERENCES Point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    point_previous_next ADD CONSTRAINT previous_point_must_exist FOREIGN KEY (previous_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT current_point_must_exist FOREIGN KEY (current_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT next_point_must_exist FOREIGN KEY (next_point) REFERENCES Point (id)  ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    Weather_state ADD CONSTRAINT weather_fkeys_in__weather_state FOREIGN KEY (date, day_number, itinerary_id) REFERENCES Weather (date, day_number, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
- Point_has_type ADD CONSTRAINT point_must_exist FOREIGN KEY (point_id) REFERENCES Point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT point_type_must_exist FOREIGN KEY (type_id) REFERENCES Point_type(id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    Weather ADD CONSTRAINT day_fkeys_in__weather FOREIGN KEY (date, day_number, itinerary_id) REFERENCES Day (date, day_number, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Sea ADD CONSTRAINT day_fkeys_in__sea FOREIGN KEY (date, day_number, itinerary_id) REFERENCES Day (date, day_number, itinerary_id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Day ADD CONSTRAINT itinerary_fkeys_in__day FOREIGN KEY (itinerary_id) REFERENCES Itinerary (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Itinerary ADD CONSTRAINT itinerary_fkeys_in__day FOREIGN KEY (itinerary_id) REFERENCES Itinerary (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Trip ADD CONSTRAINT inventory_fkeys_in__trip FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Point_previous_next ADD CONSTRAINT point_fkeys_in__trip FOREIGN KEY (current_point_id,previous_point_id, next_point_id) REFERENCES Point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Point_is_nearby ADD CONSTRAINT point_fkeys_in__point_is_nearby FOREIGN KEY (reference_point_id, nearby_point_id) REFERENCES Point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Point_has_type ADD CONSTRAINT point_fkeys_in__point_is_nearby FOREIGN KEY (reference_point_id, nearby_point_id) REFERENCES Point (id) ON UPDATE CASACADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
--- fk:day_has_points[day_number,date,itinerary]  ⊆ Day[day_number,date,itinerary]
--- fk: weather_state[day_number,itinerary,date]  ⊆ Sea[day_number,itinerary,date]
--- fk:Weather[day_number,date,itinerary] ⊆ Day[day_number,date,itinerary]
--- fk: Sea[day_number,date,ininerary] ⊆ Day[day_number,date,itinerary]
--- fk: Day[itinerary] ⊆ Itinerary[id]
--- inclusion: Itinerary[id] ⊆ Day[itinerary]
--- inclusion : Log[id] ⊆ user_has_log[log]
--- fk:Trip[inventory] ⊆ Inventory[id], fk[itinerary]⊆ Itinerary[id] inclusion : Trip[inventory,itinerary] ⊆ user_has_trip[inventory,itinerary]
--- inclusion: Itinerary[id] ⊆ Day[itinerary]
--- point_previous_next(prev_day_number,* prev_itinerary*,prev_gps*,prev_date*, next_day_number*, next_itinerary*,next_gps*,next_date*,<u>curr_day_number</u>, <u>curr_itinerary</u>,<u>curr_gps</u>,<u>curr_date</u>)fk point_previous_next[prev_day_number, prev_itinerary,prev_gps,prev_date, next_day_number, next_itinerary,next_gps,next_date, curr__day_number, curr__itinerary,curr__gps,curr__date] ⊆ Point[day_number, itinerary,gps,date]
+CREATE OR REPLACE FUNCTION includeItineraryInDay() RETURNS TRIGGER AS $include_function$
+   BEGIN
+      INSERT INTO Day(itinerary_id, date, day_number) VALUES (new.ID, CURRENT_DATE, 1);
+      RETURN NEW;
+   END;
+$include_function$ LANGUAGE plpgsql;
+
+-- CREATE OR REPLACE FUNCTION insertTripinUserHasTrip($user_id) RETURNS TRIGGER AS $include_function$
+--    BEGIN
+--       INSERT INTO user_has_trip(user_id, inventory_id, day_number) VALUES (new.ID, CURRENT_DATE, 1);
+--       RETURN NEW;
+--    END;
+-- $include_function$ LANGUAGE plpgsql;
+
 -- point_has_type[<u>type</u>, point_id] fk point_has_type[type] ⊆ Type[id], point_has_type[point_id]⊆ Point[id]
-
+-- inclusion: Itinerary[id] ⊆ Day[itinerary] TRIGGER
 
 -- + fk point_has_image[image_id]⊆ image[id], point_has_image[date,day_number,gps,itinerary] ⊆ Point[date,day_number,gps,itinerary]
 -- + fk user_has_picture[user]⊆ User[id], user_has_profile_picture[picture] ⊆ Image[id]
@@ -209,4 +229,12 @@ ALTER TABLE
 -- + fk:inventory_has_item[inventory] ⊆ Inventory[id]
 -- + fk inventory_has_item[item]⊆ Item[id]
 -- + fk:user_has_trip[inventory,itinerary] ⊆ Trip[inventory,itinerary]
--- + fk:user_has_trip[user] ⊆ User[id]
+-- + fk:day_has_points[day_number,date,itinerary]  ⊆ Day[day_number,date,itinerary]
+-- + fk:day_has_points[point_id]  ⊆ Point[id]
+-- + fk: weather_state[day_number,itinerary,date]  ⊆ Sea[day_number,itinerary,date]
+-- + fk:Weather[day_number,date,itinerary] ⊆ Day[day_number,date,itinerary]
+-- + fk: Sea[day_number,date,ininerary] ⊆ Day[day_number,date,itinerary]
+-- + fk: Day[itinerary] ⊆ Itinerary[id]
+-- + fk:Trip[inventory] ⊆ Inventory[id], fk[itinerary]⊆ Itinerary[id] inclusion : Trip[inventory,itinerary] ⊆ user_has_trip[inventory,itinerary]
+-- + fk: Point_previous_next[previous_point_id*,next_point_id*,current_point_id] ⊆ Point[id]
+-- + fk: point_is_nearby[reference_point, nearby_point]⊆ Point[id] 
