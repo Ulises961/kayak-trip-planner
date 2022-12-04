@@ -147,6 +147,12 @@ CREATE TABLE
 CREATE TABLE
     Point_is_nearby (reference_point_id INTEGER , nearby_point_id INTEGER,  PRIMARY KEY(reference_point_id,nearby_point_id));
 
+CREATE TABLE 
+    Point_has_type (
+        point_id INTEGER,
+        type_id INTEGER,
+        PRIMARY KEY (point_id, type_id)
+    );
 
 ALTER TABLE Point_has_image
     ADD CONSTRAINT point_fkeys_in__point_has_image FOREIGN KEY (point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
@@ -175,9 +181,10 @@ ALTER TABLE
     User_has_trip ADD CONSTRAINT trip_fkeys_in__user_has_trip FOREIGN KEY (inventory_id, itinerary_id) REFERENCES Trip (inventory_id, itinerary_id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT user_fkeys_in__user_has_trip FOREIGN KEY (user_id) REFERENCES Users (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
-ALTER TABLE
-    Day_has_points ADD CONSTRAINT day_fkeys_in__day_has_points FOREIGN KEY (date, day_number, itinerary_id) REFERENCES Day (date, day_number, itinerary_id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-    ADD CONSTRAINT point_fkeys_in__day_has_points FOREIGN KEY (point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+-- AT THE MOMENT THIS RELATIONSHIP DOES NOT EXIST
+-- ALTER TABLE
+--     Day_has_points ADD CONSTRAINT day_fkeys_in__day_has_points FOREIGN KEY (date, day_number, itinerary_id) REFERENCES Day (date, day_number, itinerary_id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+--     ADD CONSTRAINT point_fkeys_in__day_has_points FOREIGN KEY (point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
     Weather_state ADD CONSTRAINT weather_fkeys_in__weather_state FOREIGN KEY (date, day_number, itinerary_id) REFERENCES Weather (date, day_number, itinerary_id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
@@ -204,8 +211,7 @@ ALTER TABLE
     Point_is_nearby ADD CONSTRAINT point_fkeys_in__point_is_nearby FOREIGN KEY (reference_point_id, nearby_point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    Point_has_type ADD CONSTRAINT point_fkeys_in__point_is_nearby FOREIGN KEY (reference_point_id, nearby_point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
-
+    Point_has_type ADD CONSTRAINT point_fkeys_in_point_has_type FOREIGN KEY (point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ADD CONSTRAINT point_type_must_exist FOREIGN KEY (type_id) REFERENCES Point_type(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 CREATE OR REPLACE FUNCTION includeItineraryInDay() RETURNS TRIGGER AS $include_function$
    BEGIN
