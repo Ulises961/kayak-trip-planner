@@ -33,9 +33,9 @@ CREATE TABLE
 
 CREATE TABLE
     Trip (
-        inventory SERIAL,
-        itinerary SERIAL,
-        PRIMARY KEY (inventory, itinerary)
+        inventory_id INTEGER,
+        itinerary_id INTEGER,
+        PRIMARY KEY (inventory_id, itinerary_id)
     );
 
 CREATE TABLE
@@ -212,7 +212,7 @@ ALTER TABLE
     Day ADD CONSTRAINT itinerary_fkeys_in__day FOREIGN KEY (itinerary_id) REFERENCES Itinerary (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    Itinerary ADD CONSTRAINT itinerary_fkeys_in__day FOREIGN KEY (itinerary_id) REFERENCES Itinerary (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    Trip ADD CONSTRAINT itinerary_fkeys_in__trip FOREIGN KEY (itinerary_id) REFERENCES Itinerary (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
     Trip ADD CONSTRAINT inventory_fkeys_in__trip FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
