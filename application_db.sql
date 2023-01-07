@@ -138,7 +138,11 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    Inventory_has_item (inventory_id INTEGER, item_id INTEGER, PRIMARY KEY (inventory_id, item_id));
+    Inventory_has_item (
+        inventory_id INTEGER,
+        item_id INTEGER,
+        PRIMARY KEY (inventory_id, item_id)
+    );
 
 CREATE TABLE
     User_endorses_log (
@@ -149,19 +153,36 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    User_has_log (log_id INTEGER PRIMARY KEY, user_id INTEGER);
+    User_has_log (
+        log_id INTEGER PRIMARY KEY, 
+        user_id INTEGER
+    );
 
 CREATE TABLE
-    User_has_profile_picture (user_id INTEGER PRIMARY KEY, image_id INTEGER);
+    User_has_profile_picture (
+        user_id INTEGER PRIMARY KEY,
+        image_id INTEGER
+    );
 
 CREATE TABLE
-    Point_has_image (image_id INTEGER PRIMARY KEY, point_id INTEGER);
+    Point_has_image (
+        image_id INTEGER PRIMARY KEY, 
+        point_id INTEGER
+    );
 
 CREATE TABLE
-    Point_previous_next (current_point_id INTEGER PRIMARY KEY, previous_point_id INTEGER NULL,  next_point_id INTEGER NULL);
+    Point_previous_next (
+        current_point_id INTEGER PRIMARY KEY,
+        previous_point_id INTEGER NULL,  
+        next_point_id INTEGER NULL
+    );
 
 CREATE TABLE
-    Point_is_nearby (reference_point_id INTEGER , nearby_point_id INTEGER,  PRIMARY KEY(reference_point_id,nearby_point_id));
+    Point_is_nearby (
+        reference_point_id INTEGER,
+        nearby_point_id INTEGER, 
+        PRIMARY KEY(reference_point_id,nearby_point_id)
+    );
 
 CREATE TABLE 
     Point_has_type (
