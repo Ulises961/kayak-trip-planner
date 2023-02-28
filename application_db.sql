@@ -18,24 +18,26 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         is_public BOOLEAN,
         total_miles NUMERIC,
-        expected_total_miles NUMERIC
+        expected_total_miles NUMERIC,
+        trip_id INTEGER
     );
 
 CREATE TABLE
-    Inventory (id SERIAL PRIMARY KEY);
+    Inventory (
+        id SERIAL PRIMARY KEY,
+        trip_id INTEGER );
 
 CREATE TABLE
     Log (
         id SERIAL PRIMARY KEY,
         hours NUMERIC,
-        avg_sea NUMERIC
+        avg_sea NUMERIC,
+        user_id NUMERIC
     );
 
 CREATE TABLE
     Trip (
-        inventory_id INTEGER,
-        itinerary_id INTEGER,
-        PRIMARY KEY (inventory_id, itinerary_id)
+        id SERIAL PRIMARY KEY
     );
 
 CREATE TABLE
@@ -53,15 +55,6 @@ CREATE TABLE
         date DATE,
         itinerary_id INTEGER,
         PRIMARY KEY (day_number, date, itinerary_id)
-    );
-
-CREATE TABLE
-    day_has_points (
-        day_number INTEGER NOT NULL,
-        date DATE NOT NULL,
-        itinerary_id INTEGER NOT NULL,
-        point_id INTEGER NOT NULL,
-        PRIMARY KEY (day_number, date, itinerary_id, point_id)
     );
 
 CREATE TABLE
@@ -117,7 +110,12 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         gps NUMERIC,
         notes TEXT,
-        type point_type DEFAULT 'position'
+        previous_point_id NUMERIC,
+        next_point_id NUMERIC,
+        type point_type DEFAULT 'position',
+        day_number INTEGER NOT NULL,
+        date DATE NOT NULL,
+        itinerary_id INTEGER NOT NULL,
     );
 
 
@@ -152,11 +150,6 @@ CREATE TABLE
         PRIMARY KEY (log_id, endorser, endorsed)
     );
 
-CREATE TABLE
-    User_has_log (
-        log_id INTEGER PRIMARY KEY, 
-        user_id INTEGER
-    );
 
 CREATE TABLE
     User_has_profile_picture (
@@ -171,25 +164,12 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    Point_previous_next (
-        current_point_id INTEGER PRIMARY KEY,
-        previous_point_id INTEGER NULL,  
-        next_point_id INTEGER NULL
-    );
-
-CREATE TABLE
     Point_is_nearby (
         reference_point_id INTEGER,
         nearby_point_id INTEGER, 
         PRIMARY KEY(reference_point_id,nearby_point_id)
     );
 
-CREATE TABLE 
-    Point_has_type (
-        point_id INTEGER,
-        type_id INTEGER,
-        PRIMARY KEY (point_id, type_id)
-    );
 
 ALTER TABLE
     Point_has_image ADD CONSTRAINT point_fkeys_in__point_has_image FOREIGN KEY (point_id) REFERENCES point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
@@ -200,8 +180,7 @@ ALTER TABLE
     ADD CONSTRAINT image_fkeys_in__User_has_profile_picture FOREIGN KEY (image_id) REFERENCES image (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
-    User_has_log ADD CONSTRAINT log_fkeys_in__user_has_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-    ADD CONSTRAINT users_fkeys_in__user_has_log FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT users_fkeys_in__log FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE
     User_endorses_log ADD CONSTRAINT log_fkeys_in__user_endorses_log FOREIGN KEY (log_id) REFERENCES Log (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
@@ -238,8 +217,16 @@ ALTER TABLE
 ALTER TABLE
     Trip ADD CONSTRAINT inventory_fkeys_in__trip FOREIGN KEY (inventory_id) REFERENCES Inventory (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
+ALTER TABLE
+    Itinerary ADD CONSTRAINT trip_fkeys_in__itinerary FOREIGN KEY (trip_id) REFERENCES Trip (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Point ADD CONSTRAINT day_fkeys_in__point FOREIGN KEY (day_number, date, itinerary_id) REFERENCES Day (day_number, date, itinerary_id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE
+    Inventory ADD CONSTRAINT trip_fkeys_in__inventory FOREIGN KEY (trip_id) REFERENCES Trip (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
 ALTER TABLE Point_previous_next
-    ADD CONSTRAINT point_fkeys_in__trip_as_current_point FOREIGN KEY (current_point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT point_fkeys_in__trip_as_previous_point FOREIGN KEY (previous_point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     ADD CONSTRAINT point_fkeys_in__trip_as_next_point FOREIGN KEY (next_point_id) REFERENCES Point (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -254,6 +241,4 @@ CREATE OR REPLACE FUNCTION includeItineraryInDay() RETURNS TRIGGER AS $include_f
       RETURN NEW;
    END;
 $include_function$ LANGUAGE plpgsql;
-
-
 
