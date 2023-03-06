@@ -11,3 +11,8 @@ class Sea (db.Model):
     wind_direction = db.Column(db.Numeric)
     wind_force     = db.Column(db.Numeric)
     cloud          = db.Column(db.String(255))
+  
+    def __repr__(self):
+        return f'<Weather state " time {self.time}, temperature {self.temperature}, wind direction {self.wind_direction}, wind force {self.wind_force}">'
+
+    

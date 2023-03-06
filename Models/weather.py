@@ -6,3 +6,8 @@ class Weather (db.Model):
     date = db.Column(db.Date, db.ForeignKey('day.date'),primary_key=True)
     time = db.Column(db.Time)
     model = db.Column(db.String(255))
+      
+    def __repr__(self):
+        return f'<Weather "{self.time}, Itinerary id {self.itinerary_id}, date {self.date}, day number {self.day_number}">'
+
+    

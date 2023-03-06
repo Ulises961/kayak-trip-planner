@@ -7,7 +7,6 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         mail VARCHAR(255) NOT NULL,
         pwd VARCHAR(255) NOT NULL,
-        salt VARCHAR(255),
         phone NUMERIC UNIQUE NOT NULL,
         name VARCHAR(255) NOT NULL,
         surname VARCHAR(255)
@@ -110,8 +109,6 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         gps NUMERIC,
         notes TEXT,
-        previous_point_id NUMERIC,
-        next_point_id NUMERIC,
         type point_type DEFAULT 'position',
         day_number INTEGER NOT NULL,
         date DATE NOT NULL,
@@ -144,9 +141,8 @@ CREATE TABLE
 CREATE TABLE
     User_endorses_log (
         log_id INTEGER,
-        endorser INTEGER,
-        endorsed INTEGER,
-        PRIMARY KEY (log_id, endorser, endorsed)
+        endorsers INTEGER[],
+        PRIMARY KEY (log_id)
     );
 
 
@@ -164,9 +160,15 @@ CREATE TABLE
 
 CREATE TABLE
     Point_is_nearby (
-        reference_point_id INTEGER,
         nearby_point_id INTEGER, 
-        PRIMARY KEY(reference_point_id,nearby_point_id)
+        PRIMARY KEY(nearby_point_id)
+    );
+
+CREATE TABLE
+    point_previous_next (
+        previous_point_id INTEGER,
+        next_point_id INTEGER
+        PRIMARY KEY(previous_point_id, next_point_id)
     );
 
 

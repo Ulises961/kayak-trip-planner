@@ -17,5 +17,7 @@ class User(db.Model):
     endorsed_logs = db.relationship('Log', secondary=user_endorses_log, backref="endorsers")
     logs = db.relationship('Log', backref="user")
     
-    
+    def __repr__(self):
+        return f'<User "{self.mail}, {self.name}, {self.surname}">'
+
     
