@@ -28,3 +28,4 @@ class Point (db.Model):
     previous  = db.relationship('Point',secondary=point_previous_next,backref='points')
     next = db.relationship('Point',secondary=point_previous_next,backref='points')
     nearby = db.relationship('Point',secondary=nearby_point,backref='points')
+    images= db.relationship('Image', backref='point')
