@@ -1,7 +1,7 @@
-
-
 from app import db
 
 class Trip (db.Model):
-    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), primary_key=True)
-    itinerary_id = db.Column(db.Integer, db.ForeignKey('itinerary.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
+    inventory = db.relationship('Inventory', backref="trip", uselist=False)
+    itinerary = db.relationship('Itinerary', backref="trip", uselist=False)
+

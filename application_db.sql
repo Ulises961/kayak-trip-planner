@@ -130,13 +130,12 @@ CREATE TABLE
 CREATE TABLE
     User_has_trip (
         user_id INTEGER,
-        inventory_id INTEGER,
-        itinerary_id INTEGER,
-        PRIMARY KEY (user_id, inventory_id, itinerary_id)
+        trip_id INTEGER,
+        PRIMARY KEY (user_id, trip_id)
     );
 
 CREATE TABLE
-    Inventory_has_item (
+    Inventory_items (
         inventory_id INTEGER,
         item_id INTEGER,
         PRIMARY KEY (inventory_id, item_id)
