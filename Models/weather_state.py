@@ -1,7 +1,7 @@
 
 from app import db
 
-class Sea (db.Model):
+class WeatherState (db.Model):
     day_number      = db.Column(db.Integer, db.ForeignKey('weather.day_number'), primary_key=True)
     itinerary_id    = db.Column(db.Integer, db.ForeignKey('weather.itinerary_id'), primary_key=True)
     date            = db.Column(db.Date,db.ForeignKey('weather.date'), primary_key=True)

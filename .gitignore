@@ -1,3 +1,5 @@
 *.wiki
 *.bkp
 *.dtmp
+.vscode
+.pytest*
