@@ -4,3 +4,5 @@
 .vscode
 .pytest*
 .env
+kayak-env/
+__pycache__

@@ -19,7 +19,7 @@ class UserSchema(Schema):
     trip = fields.Integer(allow_none=False)  
     endorsed_logs = fields.List(Log, allow_none=True)  
     logs = fields.List(Log, allow_none=True)  
- 
+    image = fields.Integer(allow_none=True)
 
     @post_load
     def make_user(self, data, **kwargs):

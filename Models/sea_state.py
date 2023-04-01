@@ -1,4 +1,4 @@
-from app import db
+from database import db
 
 class SeaState (db.Model):
     day_number      = db.Column(db.Integer, db.ForeignKey('sea.day_number'), primary_key=True)

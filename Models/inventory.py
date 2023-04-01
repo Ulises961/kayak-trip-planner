@@ -1,4 +1,4 @@
-from app import db, bcrypt
+from database import db, bcrypt
 from Models.inventory_items import inventory_items
 
 class Inventory(db.Model):

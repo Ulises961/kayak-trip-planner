@@ -1,5 +1,5 @@
 
-from app import db
+from database import db
 
 class WeatherState (db.Model):
     day_number      = db.Column(db.Integer, db.ForeignKey('weather.day_number'), primary_key=True)
