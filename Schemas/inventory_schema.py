@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 from Models.inventory import Inventory
-from Models.item import Item
+from Schemas.item_schema import ItemSchema
 
 class InventorySchema(Schema):
     """ 
@@ -10,7 +10,7 @@ class InventorySchema(Schema):
 
     id = fields.Integer(allow_none=True)
     trii_id =fields.Integer(allow_none=False)
-    items=fields.List(Item)
+    items=fields.List(fields.Nested(ItemSchema),allow_none=True)
 
 
     @post_load

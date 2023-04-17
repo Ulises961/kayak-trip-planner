@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 from Models.sea import Sea
-
+from Schemas.sea_state_schema import SeaStateSchema
 
 class SeaSchema(Schema):
     """ 
@@ -14,6 +14,7 @@ class SeaSchema(Schema):
     moon_phase   = fields.String(allow_none=True)
     high_tide    = fields.Time('hh:mm',allow_none=True)
     low_tide     = fields.Time('hh:mm',allow_none=True)
+    sea_states  =  fields.List(fields.Nested(SeaStateSchema),allow_none=True)
     
 
 

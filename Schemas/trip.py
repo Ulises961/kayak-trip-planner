@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, post_load
 from Models.trip import Trip
-
+from Schemas.itinerary_shema import ItinerarySchema
+from Schemas.inventory_schema import InventorySchema
 
 class TripSchema(Schema):
     """ 
@@ -9,8 +10,8 @@ class TripSchema(Schema):
     """
 
     id   = fields.Integer(allow_none=False)
-    inventory = fields.Integer(allow_none=False)
-    itinerary = fields.Integer(allow_none=False)
+    inventory = fields.Nested(InventorySchema)
+    itinerary = fields.Nested(ItinerarySchema)
 
 
     @post_load

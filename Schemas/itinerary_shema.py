@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 from Models.itinerary import Itinerary
-from Models.day import Day
+from Schemas.day_schema import DaySchema
 
 class ItinerarySchema(Schema):
     """ 
@@ -12,7 +12,7 @@ class ItinerarySchema(Schema):
     is_public=fields.Booleean(allow_none=False)
     total_miles =fields.float(allow_none=False)
     expected_total_miles=fields.float(allow_none=True)
-    days=fields.List(Day)
+    days=fields.List(fields.Nested(DaySchema),allow_none=True)
     trip_id=fields.Integer(allow_none=False)
 
     @post_load

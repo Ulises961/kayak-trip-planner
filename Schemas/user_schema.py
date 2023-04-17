@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 from Models.user import User
-from Models.log import Log
+from Schemas.log_schema import LogSchema
 
 
 
@@ -17,8 +17,8 @@ class UserSchema(Schema):
     name = fields.String(allow_none=False)  
     surname = fields.String(allow_none=False)  
     trip = fields.Integer(allow_none=False)  
-    endorsed_logs = fields.List(Log, allow_none=True)  
-    logs = fields.List(Log, allow_none=True)  
+    endorsed_logs = fields.List(fields.Nested(LogSchema), allow_none=True)  
+    logs = fields.List(fields.Nested(LogSchema), allow_none=True )
     image = fields.Integer(allow_none=True)
 
     @post_load
