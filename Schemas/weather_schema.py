@@ -14,6 +14,7 @@ class WeatherSchema(Schema):
     time = fields.Time('hh:mm:ss',allow_none=False)
     model = fields.String(allow_none=False)
     weather_states = fields.List(fields.Nested(WeatherStateSchema), allow_none=True)
+    
     @post_load
     def make_weather(self, data, **kwargs):
         return Weather(**data)
