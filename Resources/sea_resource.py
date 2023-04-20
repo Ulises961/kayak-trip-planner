@@ -10,7 +10,7 @@ from database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-DAY_ENDPOINT = "/api/sea/<id>"
+SEA_ENDPOINT = "/api/sea/<id>"
 
 class SeaResource(Resource):
 

@@ -9,9 +9,9 @@ from database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-DAY_ENDPOINT = "/api/sea_state/<id>"
+SEA_STATE_ENDPOINT = "/api/sea_state/<id>"
 
-class SeaResource(Resource):
+class SeaStateResource(Resource):
 
     def retrieveSeaStateById(id):
         sea_state = SeaState.query.filter_by('id', id).first()
@@ -33,7 +33,7 @@ class SeaResource(Resource):
         """
         SeaStateResource POST method. Adds a new sea_state to the database.
 
-        :return: Image, 201 HTTP status code.
+        :return: SeaState, 201 HTTP status code.
         """
         sea_state = SeaStateSchema().load(request.get_json())
 

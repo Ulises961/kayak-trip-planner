@@ -9,7 +9,7 @@ from database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-DAY_ENDPOINT = "/api/image/<id>"
+IMAGE_ENDPOINT = "/api/image/<id>"
 
 class ImageResource(Resource):
 

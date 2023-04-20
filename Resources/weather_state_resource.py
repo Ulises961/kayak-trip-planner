@@ -9,7 +9,7 @@ from database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-DAY_ENDPOINT = "/api/weather_state/<id>"
+WEATHER_STATE_ENDPOINT = "/api/weather_state/<id>"
 
 class WeatherStateResource(Resource):
 

@@ -10,9 +10,9 @@ from database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-DAY_ENDPOINT = "/api/log/<id>"
+LOG_ENDPOINT = "/api/log/<id>"
 
-class ImageResource(Resource):
+class LogResource(Resource):
 
     def retrieveLogById(id):
         log = Log.query.filter_by('id', id).first()
