@@ -3,6 +3,9 @@ from flask_restful import Resource, abort
 from sqlalchemy.orm.exc import NoResultFound
 from Schemas.trip_schema import TripSchema
 from Models.trip import Trip
+from flask import request
+from sqlalchemy.exc import IntegrityError
+from database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
@@ -25,4 +28,23 @@ class TripResource(Resource):
             self.retrieveTripById(id)
         except NoResultFound:
                 abort(404, message=f"Trip with id {id} not found in database")
-        
+    
+    def post(self):
+        """
+        TripResource POST method. Adds a new trip to the database.
+
+        :return: Trip, 201 HTTP status code.
+        """
+        trip = TripSchema().load(request.get_json())
+
+        try:
+            db.session.add(trip)
+            db.session.commit()
+        except IntegrityError as e:
+            logger.warning(
+                f"Integrity Error, this trip is already in the database. Error: {e}"
+            )
+
+            abort(500, message="Unexpected Error!")
+        else:
+            return trip, 201

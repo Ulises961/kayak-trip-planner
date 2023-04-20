@@ -1,6 +1,9 @@
 import logging
+from flask import request
+from database import db
 from flask_restful import Resource, abort
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError
 from Schemas.day_schema import DaySchema
 from Models.day import Day
 
@@ -25,4 +28,26 @@ class DayResource(Resource):
             self.retrieveDayById(id)
         except NoResultFound:
                 abort(404, message=f"Day with id {id} not found in database")
+
+    def post(self):
+        """
+        DayResource POST method. Adds a new Day to the database.
+
+        :return: Day, 201 HTTP status code.
+        """
+        day = DaySchema().load(request.get_json())
+
+        try:
+            db.session.add(day)
+            db.session.commit()
+        except IntegrityError as e:
+            logger.warning(
+                f"Integrity Error, this day is already in the database. Error: {e}"
+            )
+
+            abort(500, message="Unexpected Error!")
+        else:
+            return day, 201
+
+
         

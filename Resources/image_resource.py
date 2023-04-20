@@ -3,7 +3,9 @@ from flask_restful import Resource, abort
 from sqlalchemy.orm.exc import NoResultFound
 from Schemas.image_schema import ImageSchema 
 from Models.image import Image
-
+from flask import request
+from sqlalchemy.exc import IntegrityError
+from database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
@@ -39,3 +41,23 @@ class ImageResource(Resource):
                 self.retrieveAllImages()
             except NoResultFound:
                 abort(404, message="No images available")
+    
+    def post(self):
+        """
+        ImageResource POST method. Adds a new image to the database.
+
+        :return: Image, 201 HTTP status code.
+        """
+        image = ImageSchema().load(request.get_json())
+
+        try:
+            db.session.add(image)
+            db.session.commit()
+        except IntegrityError as e:
+            logger.warning(
+                f"Integrity Error, this image is already in the database. Error: {e}"
+            )
+
+            abort(500, message="Unexpected Error!")
+        else:
+            return image, 201
