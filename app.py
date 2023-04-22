@@ -5,7 +5,7 @@ from database import db
 import logging
 import os
 
-from Resources.user_resource import UserResource, USER_ENDPOINT
+from Resources.day_resource import DayResource, DAY_ENDPOINT
 from Resources.image_resource import ImageResource, IMAGE_ENDPOINT
 from Resources.inventory_resource import InventoryResource, INVENTORY_ENDPOINT
 from Resources.item_resource import ItemResource, ITEM_ENDPOINT
@@ -45,12 +45,19 @@ def createApp(config_mode:str):
             logging.StreamHandler()
         ])
     api = Api(app)
-    # api.add_resource(PlayersResource, PLAYERS_ENDPOINT, f"{PLAYERS_ENDPOINT}/<id>")
-    # api.add_resource(SeasonsResource, SEASONS_ENDPOINT)
-    # api.add_resource(StatsResource, STATS_ENDPOINT)
-    # api.add_resource(StatsPlayerResource, STATS_PLAYER_ENDPOINT)
-    # api.add_resource(StatsSeasonResource, STATS_SEASON_ENDPOINT)
-    # api.add_resource(TeamsResource, TEAMS_ENDPOINT, f"{TEAMS_ENDPOINT}/<id>")
+    api.add_resource(DayResource, DAY_ENDPOINT)
+    api.add_resource(ImageResource, IMAGE_ENDPOINT)
+    api.add_resource(InventoryResource, INVENTORY_ENDPOINT)
+    api.add_resource(ItemResource, ITEM_ENDPOINT)
+    api.add_resource(ItineraryResource, ITINERARY_ENDPOINT)
+    api.add_resource(LogResource, LOG_ENDPOINT)
+    api.add_resource(PointResource, POINT_ENDPOINT)
+    api.add_resource(SeaResource, SEA_ENDPOINT)
+    api.add_resource(SeaStateResource, SEA_STATE_ENDPOINT)
+    api.add_resource(TripResource, TRIP_ENDPOINT)
+    api.add_resource(UserResource, USER_ENDPOINT)
+    api.add_resource(WeatherResource, WEATHER_ENDPOINT)
+    api.add_resource(WeatherStateResource, WEATHER_STATE_ENDPOINT)
     return app
 
 
