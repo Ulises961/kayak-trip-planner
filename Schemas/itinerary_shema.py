@@ -9,9 +9,9 @@ class ItinerarySchema(Schema):
     """
 
     id = fields.Integer(allow_none=True)
-    is_public=fields.Booleean(allow_none=False)
-    total_miles =fields.float(allow_none=False)
-    expected_total_miles=fields.float(allow_none=True)
+    is_public=fields.Boolean(allow_none=False)
+    total_miles =fields.Float(allow_none=False)
+    expected_total_miles=fields.Float(allow_none=True)
     days=fields.List(fields.Nested(DaySchema),allow_none=True)
     trip_id=fields.Integer(allow_none=False)
 

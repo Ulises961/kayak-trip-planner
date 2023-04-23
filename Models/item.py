@@ -10,6 +10,6 @@ class ItemCategoryType(enum.Enum):
 
 class Item (db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
-    category = enum.Enum(ItemCategoryType) 
+    category = db.Column(db.Enum(ItemCategoryType)) 
     checked = db.Column(db.Boolean)
     name = db.Column(db.String(255))

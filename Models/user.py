@@ -1,4 +1,5 @@
-from database import db, bcrypt
+from database import db
+from flask_bcrypt import generate_password_hash
 from Models.user_has_trip import user_has_trip
 from Models.user_endorses_log import user_endorses_log
 from Models.user_has_profile_picture import userHasProfilePicture
@@ -6,7 +7,7 @@ class User(db.Model):
 
     def __init__(self, mail, password):
         self.mail = mail
-        self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+        self.password = generate_password_hash(password).decode('UTF-8')
 
     id= db.Column('id', db.Integer, primary_key = True, autoincrement = "auto")
     mail = db.Column(db.String(255), nullable=False, unique=True)

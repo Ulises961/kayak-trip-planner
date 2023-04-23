@@ -1,6 +1,6 @@
 from database import db
 import enum
-from Models.point_has_image import pointHasImage
+from Models.point_has_image import PointHasImage
 
 
 class PointType(enum.Enum):
@@ -25,7 +25,7 @@ class Point (db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement="auto")
     gps = db.Column(db.Numeric)
     notes = db.Column(db.Text)
-    type = enum.Enum(PointType)
+    type = db.Column(db.Enum(PointType))
     day_number = db.Column(db.Integer, db.ForeignKey('day.day_number'))
     date = db.Column(db.Integer, db.ForeignKey('day.date'))
     itinerary_id = db.Column(db.Integer, db.ForeignKey('day.itinerary_id'))
@@ -33,7 +33,7 @@ class Point (db.Model):
         'Point', secondary=point_next_to, backref='points')
     next = db.relationship('Point', secondary=point_next_to, backref='points')
     nearby = db.relationship('Point', secondary=nearby_point, backref='points')
-    images = db.relationship('Image', secondary=pointHasImage,
+    images = db.relationship('Image', secondary=PointHasImage,
                              lazy="subquery", backref=db.backref('point', lazy=True))
 
     def __repr__(self):

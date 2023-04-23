@@ -3,7 +3,9 @@ from flask_restful import Api
 from config import config
 from database import db
 import logging
+from logging.handlers import RotatingFileHandler 
 import os
+from dotenv import load_dotenv
 
 from Resources.day_resource import DayResource, DAY_ENDPOINT
 from Resources.image_resource import ImageResource, IMAGE_ENDPOINT
@@ -40,7 +42,7 @@ def createApp(config_mode:str):
         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
         datefmt="%m-%d %H:%M",
         handlers=[
-            logging.RotatingFileHandler(
+            RotatingFileHandler(
                 "kayak-trip-planner.log", maxBytes=2000, backupCount=5, encoding='UTF-8'),
             logging.StreamHandler()
         ])
@@ -62,5 +64,6 @@ def createApp(config_mode:str):
 
 
 if __name__ == "__main__":
+    load_dotenv()
     app = createApp(os.getenv("CONFIG_MODE"))
     app.run()
