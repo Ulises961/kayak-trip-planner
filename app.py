@@ -35,6 +35,8 @@ def createApp(config_mode:str):
     # Get current config from the config.py file using the config_mode set in .env file
     app.config.from_object(config[config_mode])
     db.init_app(app)
+    with app.app_context():
+        db.create_all()
 
     # Configure logger
     logging.basicConfig(

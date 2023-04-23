@@ -16,7 +16,7 @@ class User(db.Model):
     name = db.Column(db.String(255), nullable=False)
     surname = db.Column(db.String(255))
     trips = db.relationship('Trip', secondary=user_has_trip, backref="users")
-    endorsed_logs = db.relationship('Log', secondary=user_endorses_log, backref="endorsers")
+    endorsed_logs = db.relationship('Log', secondary=user_endorses_log, backref="user")
     logs = db.relationship('Log', backref="user")
     image = db.relationship('Image', secondary = userHasProfilePicture, backref=db.backref('user', lazy=True))
     
