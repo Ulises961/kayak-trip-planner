@@ -22,13 +22,16 @@ nearby_point = db.Table('point_is_nearby',
 
 
 class Point (db.Model):
+    __table_args__ = (
+        db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_primary_key_in_point"),
+    )
     id = db.Column(db.Integer, primary_key=True, autoincrement="auto")
     gps = db.Column(db.Numeric)
     notes = db.Column(db.Text)
     type = db.Column(db.Enum(PointType))
-    day_number = db.Column(db.Integer, db.ForeignKey('day.day_number'))
-    date = db.Column(db.Integer, db.ForeignKey('day.date'))
-    itinerary_id = db.Column(db.Integer, db.ForeignKey('day.itinerary_id'))
+    day_number = db.Column(db.Integer)
+    date = db.Column(db.Date)
+    itinerary_id = db.Column(db.Integer)
     previous = db.relationship(
         'Point', secondary=point_next_to, backref='points')
     next = db.relationship('Point', secondary=point_next_to, backref='points')
