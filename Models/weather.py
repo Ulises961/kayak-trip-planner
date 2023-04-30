@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 
 class Weather (db.Model):
     __table_args__ = (

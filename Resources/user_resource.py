@@ -5,17 +5,17 @@ from Schemas.user_schema import UserSchema
 from Models.user import User
 from flask import request
 from sqlalchemy.exc import IntegrityError
-from database import db
+from Api.database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-USER_ENDPOINT = "/api/user/<id>"
+USER_ENDPOINT = "/api/user"
 
 class UserResource(Resource):
 
     def retrieveUserStateById(id):
         user = User.query.filter_by('id', id).first()
-        user_json = UserSchema.dump(user)
+        user_json = UserSchema().dump(user)
         if not user_json:
              raise NoResultFound()
         return user_json
@@ -36,7 +36,7 @@ class UserResource(Resource):
         :return: User, 201 HTTP status code.
         """
         user = UserSchema().load(request.get_json())
-
+        print('request',request)
         try:
             db.session.add(user)
             db.session.commit()
@@ -47,4 +47,4 @@ class UserResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return user, 201
+            return UserSchema().dump(user), 201

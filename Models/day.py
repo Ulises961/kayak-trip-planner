@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 
 class Day (db.Model):
     day_number = db.Column(db.Integer, primary_key = True)

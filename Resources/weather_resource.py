@@ -5,7 +5,7 @@ from Schemas.weather_schema import WeatherSchema
 from Models.weather import Weather
 from flask import request
 from sqlalchemy.exc import IntegrityError
-from database import db
+from Api.database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 

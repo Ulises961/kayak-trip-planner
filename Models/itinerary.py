@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 
 class Itinerary (db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')

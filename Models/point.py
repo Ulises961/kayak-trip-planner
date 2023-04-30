@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 import enum
 from Models.point_has_image import PointHasImage
 
@@ -32,9 +32,8 @@ class Point (db.Model):
     day_number = db.Column(db.Integer)
     date = db.Column(db.Date)
     itinerary_id = db.Column(db.Integer)
-    previous = db.relationship(
-        'Point', secondary=point_next_to, backref='points')
-    next = db.relationship('Point', secondary=point_next_to, backref='points')
+    previous = db.Column(db.Integer, db.ForeignKey('point.id'))
+    next =  db.Column(db.Integer, db.ForeignKey('point.id'))
     nearby = db.relationship('Point', secondary=nearby_point, backref='points')
     images = db.relationship('Image', secondary=PointHasImage,
                              lazy="subquery", backref=db.backref('point', lazy=True))

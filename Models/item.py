@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 import enum
 
 class ItemCategoryType(enum.Enum):

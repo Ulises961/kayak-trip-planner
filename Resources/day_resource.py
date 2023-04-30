@@ -1,6 +1,6 @@
 import logging
 from flask import request
-from database import db
+from Api.database import db
 from flask_restful import Resource, abort
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError

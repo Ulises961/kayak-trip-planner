@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 
 PointHasImage = db.Table('point_has_image',
                          db.Column('image_id', db.Integer, db.ForeignKey(

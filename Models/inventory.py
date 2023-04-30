@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 from Models.inventory_items import inventory_items
 
 class Inventory(db.Model):

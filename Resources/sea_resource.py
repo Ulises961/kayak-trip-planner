@@ -5,7 +5,7 @@ from Schemas.sea_schema import SeaSchema
 from Models.sea import Sea
 from flask import request
 from sqlalchemy.exc import IntegrityError
-from database import db
+from Api.database import db
 
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running

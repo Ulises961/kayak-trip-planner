@@ -5,7 +5,7 @@ from Schemas.itinerary_shema import ItinerarySchema
 from Models.itinerary import Itinerary
 from flask import request
 from sqlalchemy.exc import IntegrityError
-from database import db
+from Api.database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 

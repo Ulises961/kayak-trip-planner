@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
-from config import config
-from database import db
+from .config import config
+from .database import db
 import logging
 from logging.handlers import RotatingFileHandler 
 import os
@@ -67,7 +67,7 @@ def createApp(config_mode:str):
     api.add_resource(SeaResource, SEA_ENDPOINT)
     api.add_resource(SeaStateResource, SEA_STATE_ENDPOINT)
     api.add_resource(TripResource, TRIP_ENDPOINT)
-    api.add_resource(UserResource, USER_ENDPOINT)
+    api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<id>")
     api.add_resource(WeatherResource, WEATHER_ENDPOINT)
     api.add_resource(WeatherStateResource, WEATHER_STATE_ENDPOINT)
     return app

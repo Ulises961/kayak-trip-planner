@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 from Models.point import Point
-from database import db
+from Api.database import db
 from Models.point_has_image import PointHasImage
 from Schemas.image_schema import ImageSchema
 

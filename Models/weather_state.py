@@ -1,5 +1,5 @@
 
-from database import db
+from Api.database import db
 
 
 class WeatherState (db.Model):

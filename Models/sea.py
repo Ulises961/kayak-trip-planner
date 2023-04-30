@@ -1,5 +1,5 @@
 
-from database import db
+from Api.database import db
 
 class Sea (db.Model):
     __table_args__ = (

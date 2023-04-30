@@ -1,4 +1,4 @@
-from database import db
+from Api.database import db
 
 inventory_items = db.Table('inventory_items',
     db.Column('inventory_id', db.Integer, db.ForeignKey('inventory.id')),
