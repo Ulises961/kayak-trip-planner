@@ -13,7 +13,7 @@ USER_ENDPOINT = "/api/user"
 
 class UserResource(Resource):
 
-    def retrieveUserStateById(id):
+    def retrieveUserById(id):
         user = User.query.filter_by('id', id).first()
         user_json = UserSchema().dump(user)
         if not user_json:
@@ -24,18 +24,28 @@ class UserResource(Resource):
         """
         UserResource GET method. Retrieves the information related to the user with the passed id in the request
         """
-        try:
-            self.retrieveUserStateById(id)
-        except NoResultFound:
-                abort(404, message=f"User with id {id} not found in database")
-    
+        if id:
+            try:
+                self.retrieveUserById(id)
+            except NoResultFound:
+                    abort(404, message=f"User with id {id} not found in database")
+        else: 
+            users= User.query.all()
+            return [UserSchema().dump(user) for user in users]
+
     def post(self):
         """
         UserResource POST method. Adds a new user to the database.
 
         :return: User, 201 HTTP status code.
         """
-        user = UserSchema().load(request.get_json())
+        try:
+            user = UserSchema().load(request.get_json())
+        except TypeError as e:
+            logger.warning(
+                f"Missing positional parameters. Error: {e}")   
+            abort(500, message="Missing parameters")
+
         print('request',request)
         try:
             db.session.add(user)
