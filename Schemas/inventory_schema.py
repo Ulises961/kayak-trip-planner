@@ -9,7 +9,7 @@ class InventorySchema(Schema):
     """
 
     id = fields.Integer(allow_none=True)
-    trii_id =fields.Integer(allow_none=False)
+    trip_id =fields.Integer(allow_none=False)
     items=fields.List(fields.Nested(ItemSchema),allow_none=True)
 
 

@@ -66,7 +66,7 @@ def createApp(config_mode:str):
     api.add_resource(PointResource, POINT_ENDPOINT)
     api.add_resource(SeaResource, SEA_ENDPOINT)
     api.add_resource(SeaStateResource, SEA_STATE_ENDPOINT)
-    api.add_resource(TripResource, TRIP_ENDPOINT)
+    api.add_resource(TripResource, TRIP_ENDPOINT, f"{TRIP_ENDPOINT}/<id>")
     api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<id>")
     api.add_resource(WeatherResource, WEATHER_ENDPOINT)
     api.add_resource(WeatherStateResource, WEATHER_STATE_ENDPOINT)

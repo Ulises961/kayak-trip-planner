@@ -1,7 +1,7 @@
 from Resources.user_resource import USER_ENDPOINT
 
 
-NUM_PLAYERS_IN_BASE_DB = 2
+NUM_USERS_IN_BASE_DB = 2
 
 
 def test_user_post(app):
@@ -25,25 +25,7 @@ def test_user_missing_arguments(app):
     assert response.status_code == 500
 
 def test_get_all_users(app):
-    response = app.get(f"{USER_ENDPOINT}")
+    response = app.get(USER_ENDPOINT)
     assert response.status_code == 200
-    assert len(response.json) == NUM_PLAYERS_IN_BASE_DB
+    assert len(response.json) == NUM_USERS_IN_BASE_DB
 
-
-# def test_get_all_players_by_position(app):
-#     response = app.get(f"{USER_ENDPOINT}?position=QB")
-
-#     for player in response.json:
-#         assert player["position"] == "QB"
-
-
-# def test_get_single_player(app):
-#     response = app.get("/api/players/1")
-
-#     assert response.status_code == 200
-#     assert response.json["name"] == "Alvin Kamara"
-
-
-# def test_get_single_player_not_found(app):
-#     response = app.get("/api/players/16")
-#     assert response.status_code == 404

@@ -8,10 +8,10 @@ class TripSchema(Schema):
     Trip Schema
     used for loading/dumping Trip entities
     """
-
-    id   = fields.Integer(allow_none=False)
-    inventory = fields.Nested(InventorySchema)
-    itinerary = fields.Nested(ItinerarySchema)
+    
+    id   = fields.Integer(allow_none=True)
+    inventory = fields.Nested(InventorySchema(exclude=['trip_id']))
+    itinerary = fields.Nested(ItinerarySchema(exclude=['trip_id']))
 
 
     @post_load

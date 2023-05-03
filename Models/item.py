@@ -2,13 +2,17 @@ from Api.database import db
 import enum
 
 class ItemCategoryType(enum.Enum):
-    FIRST_AID = 'first_aid'
-    CAMPING = 'camping'
-    REPAIR = 'repair'
-    TRAVEL = 'travel'
-    GENERIC = 'generic'
+    FIRST_AID = "first_aid"
+    CAMPING = "camping"
+    REPAIR = "repair"
+    TRAVEL = "travel"
+    GENERIC = "generic"
 
 class Item (db.Model):
+    def __init__(self,category, name):
+        self.category = category
+        self.name = name
+
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
     category = db.Column(db.Enum(ItemCategoryType)) 
     checked = db.Column(db.Boolean)

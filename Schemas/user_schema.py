@@ -12,7 +12,7 @@ class UserSchema(Schema):
     """
 
     id   = fields.Integer(allow_none=False)
-    mail = fields.String(allow_none=False)
+    mail = fields.Email(allow_none=False)
     pwd = fields.String(allow_none=False)
     phone = fields.String(allow_none=False)  
     name = fields.String(allow_none=False)  

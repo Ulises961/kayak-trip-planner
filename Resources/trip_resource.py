@@ -9,13 +9,13 @@ from Api.database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-TRIP_ENDPOINT = "/api/trip/<id>"
+TRIP_ENDPOINT = "/api/trip"
 
 class TripResource(Resource):
 
-    def retrieveTripById(id):
-        trip = Trip.query.filter_by('id', id).first()
-        trip_json = TripSchema.dump(trip)
+    def retrieveTripById(self,id):
+        trip = Trip.query.filter_by(id= id).first()
+        trip_json = TripSchema().dump(trip)
         if not trip_json:
              raise NoResultFound()
         return trip_json
@@ -24,27 +24,33 @@ class TripResource(Resource):
         """
         TripResource GET method. Retrieves the information related to a trip with the passed id in the request
         """
-        try:
-            self.retrieveTripById(id)
-        except NoResultFound:
-                abort(404, message=f"Trip with id {id} not found in database")
-    
+        if id:
+            try:
+                self.retrieveTripById(id)
+            except NoResultFound:
+                    abort(404, message=f"Trip with id {id} not found in database")
+        else:
+            trips = Trip.query.all()
+            return [TripSchema().dump(trip) for trip in trips] 
     def post(self):
         """
         TripResource POST method. Adds a new trip to the database.
 
         :return: Trip, 201 HTTP status code.
         """
-        trip = TripSchema().load(request.get_json())
 
         try:
+            trip = TripSchema().load(request.get_json())
             db.session.add(trip)
             db.session.commit()
+            return TripSchema().dumps(trip), 201
         except IntegrityError as e:
             logger.warning(
                 f"Integrity Error, this trip is already in the database. Error: {e}"
             )
 
             abort(500, message="Unexpected Error!")
-        else:
-            return trip, 201
+        except TypeError as e:
+            logger.warning(
+                f"Missing positional parameters. Error: {e}")   
+            abort(500, message="Missing parameters")
