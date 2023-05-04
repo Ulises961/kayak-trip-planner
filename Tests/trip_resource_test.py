@@ -1,7 +1,7 @@
 from Resources.trip_resource import TRIP_ENDPOINT
 from Models.item import ItemCategoryType
 
-NUM_TRIPS_IN_DB = 1
+NUM_TRIPS_IN_DB = 3
 
 def test_insert_trip_w_itinerary_and_inventory(app):
     itinerary = {"is_public": True, "total_miles": 25}
@@ -12,14 +12,21 @@ def test_insert_trip_w_itinerary_and_inventory(app):
     response = app.post(TRIP_ENDPOINT, json=trip)
     assert response.status_code == 201
 
+def test_insert_trip_w_itinerary_and_empty_inventory(app):
+    itinerary = {"is_public": True, "total_miles": 25}
+    inventory = {}
+    trip = {"inventory":inventory, "itinerary":itinerary}
+
+    response = app.post(TRIP_ENDPOINT, json=trip)
+    assert response.status_code == 201
+
 def test_insert_trip_w_o_itinerary(app):
     itinerary = {"is_public": True, "total_miles": 25}
     inventory = {"items":
                  [{"category": 'travel', "name": 'compass'}, {"category": "first_aid", "name": 'scissors'}]}
     trip = {"inventory":inventory}
-
     response = app.post(TRIP_ENDPOINT, json=trip)
-    assert response.status_code == 500
+    assert response.status_code == 201
 
 def test_get_all_trips(app):
     response = app.get(TRIP_ENDPOINT)
@@ -29,11 +36,3 @@ def test_get_all_trips(app):
 def test_get_trip_by_id(app):
     response = app.get(f"{TRIP_ENDPOINT}/1")
     assert response.status_code == 200
-
-def test_insert_trip_w_itinerary_and_empty_inventory(app):
-    itinerary = {"is_public": True, "total_miles": 25}
-    inventory = {}
-    trip = {"inventory":inventory, "itinerary":itinerary}
-
-    response = app.post(TRIP_ENDPOINT, json=trip)
-    assert response.status_code == 500
