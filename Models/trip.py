@@ -5,9 +5,7 @@ from Models.itinerary import Itinerary
 from Models.inventory import Inventory
  
 class Trip (db.Model):
-    def __init__(self, inventory=None, itinerary=None):
-        self.inventory = inventory
-        self.itinerary = itinerary
+
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
     inventory: Mapped[Optional[Inventory]] = db.relationship( backref="trip_inventory", uselist=False)
     itinerary:  Mapped[Optional[Itinerary]] = db.relationship( backref="trip_itinerary", uselist=False)

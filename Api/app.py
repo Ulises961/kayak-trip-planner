@@ -1,7 +1,14 @@
 from flask import Flask
 from flask_restful import Api
-from .config import config
-from .database import db
+import path
+import sys
+
+ # directory reach
+directory = path.Path(__file__).abspath()
+sys.path.append(directory.parent.parent)
+
+from Api.config import config
+from Api.database import db
 import logging
 from logging.handlers import RotatingFileHandler 
 import os

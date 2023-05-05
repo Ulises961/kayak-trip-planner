@@ -11,6 +11,7 @@ python-dotenv = "*"
 flask-bcrypt = "*"
 flask-restful = "*"
 pytest = "*"
+path = "*"
 
 [dev-packages]
 

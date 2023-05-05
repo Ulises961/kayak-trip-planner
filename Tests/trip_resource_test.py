@@ -1,5 +1,4 @@
 from Resources.trip_resource import TRIP_ENDPOINT
-from Models.item import ItemCategoryType
 
 NUM_TRIPS_IN_DB = 3
 
