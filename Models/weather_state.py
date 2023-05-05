@@ -1,7 +1,6 @@
 
 from Api.database import db
 
-
 class WeatherState (db.Model):
     __table_args__ = (
         db.ForeignKeyConstraint(['day_number', 'itinerary_id', 'date'], [

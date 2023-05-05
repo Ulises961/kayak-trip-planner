@@ -3,7 +3,12 @@ from flask_bcrypt import generate_password_hash
 from Models.user_has_trip import user_has_trip
 from Models.user_endorses_log import user_endorses_log
 from Models.user_has_profile_picture import userHasProfilePicture
-
+from typing import List
+from typing import Optional
+from sqlalchemy.orm import Mapped
+from Models.log import Log
+from Models.image import Image
+from Models.trip import Trip
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -20,10 +25,10 @@ class User(db.Model):
     phone = db.Column(db.String(255), unique=True, nullable=False)
     name = db.Column(db.String(255), nullable=False)
     surname = db.Column(db.String(255), nullable=True)
-    trips = db.relationship('Trip', secondary=user_has_trip, backref="travellers")
-    endorsed_logs = db.relationship(
-        'Log', secondary=user_endorses_log, backref="user_endorsed_logs")
-    logs = db.relationship('Log', backref="user_logs")
+    trips : Mapped[Optional[List[Trip]]] = db.relationship(secondary=user_has_trip, backref="travellers")
+    endorsed_logs : Mapped[Optional[List[Log]]] = db.relationship(
+         secondary=user_endorses_log, backref="user_endorsed_logs")
+    logs : Mapped[Optional[List[Log]]] = db.relationship(backref="user_logs")
     image = db.relationship(
         'Image', secondary=userHasProfilePicture, backref=db.backref('user_picture', lazy=True))
 

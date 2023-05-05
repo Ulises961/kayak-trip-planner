@@ -1,5 +1,9 @@
 
 from Api.database import db
+from typing import List
+from typing import Optional
+from sqlalchemy.orm import Mapped
+from Models.sea_state import SeaState
 
 class Sea (db.Model):
     __table_args__ = (
@@ -11,4 +15,5 @@ class Sea (db.Model):
     moon_phase   = db.Column(db.String(255))
     high_tide    = db.Column(db.Time)
     low_tide     = db.Column(db.Time)
+    sea_states: Mapped[Optional[List[SeaState]]] =db.relationship(backref='sea')
     

@@ -1,4 +1,8 @@
 from Api.database import db
+from typing import Optional
+from typing import List
+from sqlalchemy.orm import Mapped
+from Models.weather_state import WeatherState
 
 class Weather (db.Model):
     __table_args__ = (
@@ -9,6 +13,7 @@ class Weather (db.Model):
     date = db.Column(db.Date,primary_key=True)
     time = db.Column(db.Time)
     model = db.Column(db.String(255))
+    weather_states: Mapped[Optional[List[WeatherState]]]
       
     def __repr__(self):
         return f'<Weather "{self.time}, Itinerary id {self.itinerary_id}, date {self.date}, day number {self.day_number}">'
