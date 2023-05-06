@@ -12,6 +12,8 @@ flask-bcrypt = "*"
 flask-restful = "*"
 pytest = "*"
 path = "*"
+marshmallow = "*"
+typing = "*"
 
 [dev-packages]
 
