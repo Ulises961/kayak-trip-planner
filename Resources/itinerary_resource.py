@@ -47,4 +47,4 @@ class ItineraryResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return itinerary, 201
+            return ItinerarySchema().dump(itinerary), 201
