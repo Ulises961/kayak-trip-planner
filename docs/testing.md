@@ -4,6 +4,9 @@
 To test the API you can use pytest, for example
 ```bash
 pytest Test/
+```
+
+```bash
 ========================================================= test session starts =========================================================
 platform linux -- Python 3.10.11, pytest-7.3.1, pluggy-1.0.0 -- /home/bsultan/.local/share/virtualenvs/kayak-trip-planner-KtTF46qY/bin/python
 cachedir: .pytest_cache
