@@ -10,6 +10,6 @@ def test_insert_day_with_sea_and_weather(app):
             "points":[],
         }
     ]
-    itinerary ={"days":daysList}
-    app.post(ITINERARY_ENDPOINT, json=itinerary)
-    assert 201, itinerary
+    itinerary ={"days":daysList, "trip_id":1}
+    response = app.post(ITINERARY_ENDPOINT, json=itinerary)
+    assert response.status_code == 201

@@ -1,9 +1,9 @@
 from Resources.trip_resource import TRIP_ENDPOINT
-
+from datetime import date
 NUM_TRIPS_IN_DB = 3
 
 def test_insert_trip_w_itinerary_and_inventory(app):
-    itinerary = {"is_public": True, "total_miles": 25,"days":[]}
+    itinerary = {"is_public": True, "total_miles": 25,"days":[ ]}
     inventory = {"items":
                  [{"category": 'travel', "name": 'compass'}, {"category": "first_aid", "name": 'scissors'}]}
     trip = {"inventory":inventory, "itinerary":itinerary}
