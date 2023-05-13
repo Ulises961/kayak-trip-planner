@@ -4,7 +4,7 @@ from Api.database import db
 class WeatherState (db.Model):
     __table_args__ = (
         db.ForeignKeyConstraint(['day_number', 'itinerary_id', 'date'], [
-                                'weather.day_number', 'weather.itinerary_id', 'weather.date'], name="weather_day_primary_key_in_weather_state"),
+                                'weather.day_number', 'weather.itinerary_id', 'weather.date'], name="weather_day_foreign_keys_in_weather_state"),
     )
     day_number = db.Column(db.Integer,  primary_key=True)
     itinerary_id = db.Column(db.Integer,  primary_key=True)

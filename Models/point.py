@@ -23,7 +23,7 @@ nearby_point = db.Table('point_is_nearby',
 
 class Point (db.Model):
     __table_args__ = (
-        db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_primary_key_in_point"),
+        db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_foreign_key_in_point"),
     )
     id = db.Column(db.Integer, primary_key=True, autoincrement="auto")
     gps = db.Column(db.Numeric)

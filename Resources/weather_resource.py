@@ -9,7 +9,7 @@ from Api.database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-WEATHER_ENDPOINT = "/api/weather/<id>"
+WEATHER_ENDPOINT = "/api/weather"
 
 class WeatherResource(Resource):
 

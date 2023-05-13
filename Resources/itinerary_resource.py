@@ -9,7 +9,7 @@ from Api.database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-ITINERARY_ENDPOINT = "/api/itinerary/<id>"
+ITINERARY_ENDPOINT = "/api/itinerary"
 
 class ItineraryResource(Resource):
 

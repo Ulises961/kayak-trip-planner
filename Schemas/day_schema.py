@@ -11,8 +11,7 @@ class DaySchema(Schema):
     """
 
     day_number = fields.Integer(allow_none=False)
-    position =fields.Integer(allow_none=False)
-    date=fields.Date('dd-mm-yyyy',allow_none=False)
+    date=fields.Date('%Y-%m-%d',allow_none=False)
     points=fields.List(fields.Nested(PointSchema))
     sea=fields.Nested(SeaSchema)
     weather=fields.Nested(WeatherSchema)

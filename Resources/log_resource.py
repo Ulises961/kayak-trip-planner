@@ -10,7 +10,7 @@ from Api.database import db
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
 
-LOG_ENDPOINT = "/api/log/<id>"
+LOG_ENDPOINT = "/api/log"
 
 class LogResource(Resource):
 

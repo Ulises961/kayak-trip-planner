@@ -7,7 +7,7 @@ from Models.sea_state import SeaState
 
 class Sea (db.Model):
     __table_args__ = (
-        db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_primary_key_in_sea"),
+        db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_foreign_keys_in_sea"),
     )
     day_number   = db.Column(db.Integer, primary_key=True)
     itinerary_id = db.Column(db.Integer,  primary_key=True)
@@ -15,5 +15,5 @@ class Sea (db.Model):
     moon_phase   = db.Column(db.String(255))
     high_tide    = db.Column(db.Time)
     low_tide     = db.Column(db.Time)
-    sea_states: Mapped[Optional[List[SeaState]]] =db.relationship(backref='sea')
+    sea_states: Mapped[Optional[List[SeaState]]] = db.relationship(backref='sea')
     

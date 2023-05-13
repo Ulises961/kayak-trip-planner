@@ -3,7 +3,7 @@ from Resources.trip_resource import TRIP_ENDPOINT
 NUM_TRIPS_IN_DB = 3
 
 def test_insert_trip_w_itinerary_and_inventory(app):
-    itinerary = {"is_public": True, "total_miles": 25}
+    itinerary = {"is_public": True, "total_miles": 25,"days":[]}
     inventory = {"items":
                  [{"category": 'travel', "name": 'compass'}, {"category": "first_aid", "name": 'scissors'}]}
     trip = {"inventory":inventory, "itinerary":itinerary}
@@ -12,7 +12,7 @@ def test_insert_trip_w_itinerary_and_inventory(app):
     assert response.status_code == 201
 
 def test_insert_trip_w_itinerary_and_empty_inventory(app):
-    itinerary = {"is_public": True, "total_miles": 25}
+    itinerary = {"is_public": True, "total_miles": 25, 'days':[]}
     inventory = {}
     trip = {"inventory":inventory, "itinerary":itinerary}
 
@@ -20,7 +20,6 @@ def test_insert_trip_w_itinerary_and_empty_inventory(app):
     assert response.status_code == 201
 
 def test_insert_trip_w_o_itinerary(app):
-    itinerary = {"is_public": True, "total_miles": 25}
     inventory = {"items":
                  [{"category": 'travel', "name": 'compass'}, {"category": "first_aid", "name": 'scissors'}]}
     trip = {"inventory":inventory}
