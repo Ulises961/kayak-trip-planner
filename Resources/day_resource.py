@@ -46,8 +46,8 @@ class DayResource(Resource):
             )
 
             abort(500, message="Unexpected Error!")
-        else:
-            return day, 201
+        finally:
+            return DaySchema().dump(day), 201
 
 
         

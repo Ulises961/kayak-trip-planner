@@ -11,11 +11,10 @@ class Weather (db.Model):
     day_number   = db.Column(db.Integer, primary_key=True)
     itinerary_id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date,primary_key=True)
-    time = db.Column(db.Time)
     model = db.Column(db.String(255))
     weather_states: Mapped[Optional[List[WeatherState]]] = db.relationship(backref='weather')
       
     def __repr__(self):
-        return f'<Weather "{self.time}, Itinerary id {self.itinerary_id}, date {self.date}, day number {self.day_number}">'
+        return f'<Weather "Itinerary id {self.itinerary_id}, Date {self.date}, Day number {self.day_number}, Weather states {self.weather_states}">'
 
     
