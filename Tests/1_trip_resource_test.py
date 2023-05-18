@@ -33,4 +33,5 @@ def test_get_all_trips(app):
 
 def test_get_trip_by_id(app):
     response = app.get(f"{TRIP_ENDPOINT}/1")
+    print (response.json)
     assert response.status_code == 200

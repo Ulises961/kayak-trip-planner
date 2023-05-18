@@ -14,7 +14,7 @@ TRIP_ENDPOINT = "/api/trip"
 
 class TripResource(Resource):
 
-    def __retrieveTripById(id):
+    def __retrieveTripById(self,id):
         trip = Trip.query.filter_by(id= id).first()
         trip_json = TripSchema().dump(trip)
         if not trip_json:
