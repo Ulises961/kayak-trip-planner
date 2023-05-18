@@ -25,7 +25,7 @@ class DayResource(Resource):
         
         return day_json, 200
 
-    def get(self, id=None, itineraryId=None):
+    def get(self, id=None):
         """
         DayResource GET method. Retrieves the information related to the day with the passed id in the request
         """
