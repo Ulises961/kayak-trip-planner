@@ -21,7 +21,7 @@ class TripResource(Resource):
              raise NoResultFound()
         return trip_json, 200
     
-    def get(self, id=None, userId=None):
+    def get(self, id=None):
         """
         TripResource GET method. Retrieves the information related to a trip with the passed id in the request
         """
