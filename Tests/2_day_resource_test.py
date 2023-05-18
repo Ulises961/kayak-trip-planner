@@ -53,5 +53,10 @@ def test_insert_sea_to_day(app):
         "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
         "sea": sea
     }
-    response = app.post(DAY_ENDPOINT, json=day)
+    response = app.put(DAY_ENDPOINT, json=day)
     assert response.status_code == 201
+
+def test_get_day_by_id(app):
+    day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
+    response = app.get(f"{DAY_ENDPOINT}?itinerary_id=1&day_number=1&date={day_date}")
+    assert response.status_code == 200

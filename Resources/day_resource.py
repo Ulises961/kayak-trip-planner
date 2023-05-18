@@ -16,8 +16,8 @@ DAY_ENDPOINT = "/api/day"
 
 class DayResource(Resource):
 
-    def __retrieveDayById(id):
-        day = Day.query.filter_by('id', id).first()
+    def __retrieveDayByKey(self, day_number,date,itinerary_id):
+        day = Day.query.filter_by(day_number= day_number,date=date,itinerary_id = itinerary_id).first()
         day_json = DaySchema.dump(day)
 
         if not day_json:
@@ -25,15 +25,15 @@ class DayResource(Resource):
         
         return day_json, 200
 
-    def get(self, id=None):
+    def get(self, day_number=None, date=None, itinerary_id=None):
         """
         DayResource GET method. Retrieves the information related to the day with the passed id in the request
         """
-        if id:
+        if day_number and date and itinerary_id:
             logger.info(f"Retrive day with id {id}")
             
             try:
-                json = self.__retrieveDayById(id)
+                json = self.__retrieveDayByKey(day_number,date,itinerary_id)
                 return json, 200
             except NoResultFound:
                 abort(404, message=f"Day with id {id} not found in database")
@@ -60,6 +60,26 @@ class DayResource(Resource):
         day = DaySchema().load(request.get_json())
 
         try:
+            db.session.add(day)
+            db.session.commit()
+
+        except IntegrityError as e:
+            logger.warning(
+                f"Integrity Error, this day is already in the database. Error: {e}"
+            )
+            abort(500, message="Unexpected Error!")
+
+        finally:
+            return DaySchema().dump(day), 201
+    
+    def put(self):
+        
+        logger.info(f"Update day {request.get_json()} in db")
+        updatedDay = DaySchema().load(request.get_json())
+
+        try:
+            day = Day.query.filter_by(day_number= updatedDay.day_number,date=updatedDay.date,itinerary_id = updatedDay.itinerary_id).first()
+            day = Day.update(updatedDay)
             db.session.add(day)
             db.session.commit()
 
