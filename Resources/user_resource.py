@@ -15,21 +15,22 @@ USER_ENDPOINT = "/api/user"
 
 class UserResource(Resource):
 
-    def __retrieveUserById(id):
-        user = User.query.filter_by('id', id).first()
+    def __retrieveUserById(self,id):
+        user = User.query.filter_by(id=id).first()
         user_json = UserSchema().dump(user)
         if not user_json:
             raise NoResultFound()
         return user_json
 
-    def get(self, id=None):
+    def get(self):
         """
         UserResource GET method. Retrieves the information related to the user with the passed id in the request
         """
+        
+        id = request.args.get('id')
         if id:
             logger.info(
                 f"Retrieving user with id {id}")
-            abort(500, message="Missing parameters")
             try:
                 user_json = self.__retrieveUserById(id)
                 return user_json, 200
@@ -55,15 +56,14 @@ class UserResource(Resource):
         """
         try:
             user = UserSchema().load(request.get_json())
-        except TypeError as e:
-            logger.warning(
-                f"Missing positional parameters. Error: {e}")
-            abort(500, message="Missing parameters")
-
-        print('request', request)
-        try:
             db.session.add(user)
             db.session.commit()
+
+        except TypeError as e:
+            logger.warning(
+                f"Missing parameters. Error: {e}")
+            abort(500, message="Missing parameters")
+        
         except IntegrityError as e:
             logger.warning(
                 f"Integrity Error, this user is already in the database. Error: {e}"
@@ -72,3 +72,45 @@ class UserResource(Resource):
             abort(500, message="Unexpected Error!")
         else:
             return UserSchema().dump(user), 201
+    
+    def put(self):
+        """
+        UserResource POST method. Updates an existing user.
+
+        :return: User, 201 HTTP status code.
+        """
+        try:
+            updateData = UserSchema().load(request.get_json())
+            user = User.query.filter_by(id = updateData.id)
+            user = user.update(updateData)
+            db.session.add(user)
+            db.session.commit()
+            
+        except TypeError as e:
+            logger.warning(
+                f"Missing parameters. Error: {e}")
+            abort(500, message="Missing parameters")
+
+        except IntegrityError as e:
+            logger.warning(
+                f"Integrity Error: {e}"
+            )
+            abort(500, message="Unexpected Error!")
+
+        finally: return UserSchema().dump(user), 201
+
+    def delete(self):
+        try:
+            id = request.args.get('id')
+            logger.info(f"Deleting day {id} ")
+
+            userToDelete = User.query.filter_by(
+                id=id).first()
+            db.session.delete(userToDelete)
+            db.session.commit()
+            logger.info(f"User with id {id} successfully deleted")
+            return "Deletion successful", 200
+        
+        except Exception | ValueError as e:
+            abort(
+                500, message=f"Error while performing deletion,\nDetail: {e}")
