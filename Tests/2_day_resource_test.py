@@ -69,4 +69,4 @@ def test_delte_day(app):
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     response = app.delete(
         f"{DAY_ENDPOINT}?itinerary_id=1&day_number=1&date={day_date}")
-    assert response.status_code == 0
+    assert response.status_code == 200
