@@ -14,8 +14,8 @@ class DaySchema(Schema):
     itinerary_id = fields.Integer(allow_none=False)
     date=fields.Date('%Y-%m-%d',allow_none=False)
     points=fields.List(fields.Nested(PointSchema))
-    sea=fields.Nested(SeaSchema)
-    weather=fields.Nested(WeatherSchema)
+    sea=fields.Nested(SeaSchema, allow_none = True)
+    weather=fields.Nested(WeatherSchema, allow_none = True)
 
     @post_load
     def make_day(self, data, **kwargs):

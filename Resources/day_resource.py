@@ -16,24 +16,31 @@ DAY_ENDPOINT = "/api/day"
 
 class DayResource(Resource):
 
-    def __retrieveDayByKey(self, day_number,date,itinerary_id):
-        day = Day.query.filter_by(day_number= day_number,date=date,itinerary_id = itinerary_id).first()
-        day_json = DaySchema.dump(day)
+    def __retrieveDayByKey(self, day_number, date, itinerary_id):
+        day = Day.query.filter_by(
+            day_number=day_number, date=date, itinerary_id=itinerary_id).first()
+        day_json = DaySchema().dump(day)
 
         if not day_json:
             raise NoResultFound()
-        
+
         return day_json, 200
 
-    def get(self, day_number=None, date=None, itinerary_id=None):
+    def get(self):
         """
         DayResource GET method. Retrieves the information related to the day with the passed id in the request
         """
+        try:
+            day_number = request.args.get('day_number')
+            date = request.args.get('date')
+            itinerary_id = request.args.get('itinerary_id')
+        except ValueError:
+            abort(500, message=f"Missing parameters, {ValueError}")
         if day_number and date and itinerary_id:
             logger.info(f"Retrive day with id {id}")
-            
+
             try:
-                json = self.__retrieveDayByKey(day_number,date,itinerary_id)
+                json = self.__retrieveDayByKey(day_number, date, itinerary_id)
                 return json, 200
             except NoResultFound:
                 abort(404, message=f"Day with id {id} not found in database")
@@ -71,14 +78,15 @@ class DayResource(Resource):
 
         finally:
             return DaySchema().dump(day), 201
-    
+
     def put(self):
-        
+
         logger.info(f"Update day {request.get_json()} in db")
         updatedDay = DaySchema().load(request.get_json())
 
         try:
-            day = Day.query.filter_by(day_number= updatedDay.day_number,date=updatedDay.date,itinerary_id = updatedDay.itinerary_id).first()
+            day = Day.query.filter_by(day_number=updatedDay.day_number,
+                                      date=updatedDay.date, itinerary_id=updatedDay.itinerary_id).first()
             day = Day.update(updatedDay)
             db.session.add(day)
             db.session.commit()
@@ -91,3 +99,22 @@ class DayResource(Resource):
 
         finally:
             return DaySchema().dump(day), 201
+
+    def delete(self):
+        try:
+            day_number = request.args.get('day_number')
+            date = request.args.get('date')
+            itinerary_id = request.args.get('itinerary_id')
+
+            logger.info(f"Deleting day {day_number, date, itinerary_id} ")
+
+            dayToDelete = Day.query.filter_by(
+                day_number=day_number, date=date, itinerary_id=itinerary_id).first()
+            db.session.delete(dayToDelete)
+            db.session.commit()
+            logger.info(f"Day {day_number, date, itinerary_id} successfully deleted")
+            return 200, "Deletion successful"
+        
+        except Exception | ValueError as e:
+            abort(
+                500, message=f"Error while performing deletion,\nDetail: {e}")

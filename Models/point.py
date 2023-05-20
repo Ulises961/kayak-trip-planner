@@ -34,9 +34,9 @@ class Point (db.Model):
     itinerary_id = db.Column(db.Integer)
     previous = db.Column(db.Integer, db.ForeignKey('point.id'))
     next =  db.Column(db.Integer, db.ForeignKey('point.id'))
-    nearby = db.relationship('Point', secondary=nearby_point, backref='points')
+    nearby = db.relationship('Point', secondary=nearby_point, backref='points',cascade='all, delete')
     images = db.relationship('Image', secondary=PointHasImage,
-                             lazy="subquery", backref=db.backref('point', lazy=True))
+                             lazy="subquery", backref=db.backref('point', lazy=True), cascade='all, delete')
 
     def __repr__(self):
         return f'<Point "{self.gps}, type {self.type}">'

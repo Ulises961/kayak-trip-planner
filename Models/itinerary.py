@@ -11,7 +11,7 @@ class Itinerary (db.Model):
     is_public = db.Column(db.Boolean)
     total_miles = db.Column(db.Numeric)
     expected_total_miles = db.Column(db.Numeric)
-    days: Mapped[Optional[List[Day]]] = db.relationship(backref='itinerary')
+    days: Mapped[Optional[List[Day]]] = db.relationship(backref='itinerary',cascade='all, delete')
     trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), nullable=False)
 
 
