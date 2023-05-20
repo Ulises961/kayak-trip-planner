@@ -58,14 +58,14 @@ def test_insert_sea_to_day(app):
     assert response.status_code == 201
 
 
-def test_get_day_by_id(app):
+def test_get_day(app):
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     response = app.get(
         f"{DAY_ENDPOINT}?itinerary_id=1&day_number=1&date={day_date}")
     assert response.status_code == 200
 
 
-def test_delte_day(app):
+def test_delete_day(app):
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     response = app.delete(
         f"{DAY_ENDPOINT}?itinerary_id=1&day_number=1&date={day_date}")

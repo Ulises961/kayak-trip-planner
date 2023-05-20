@@ -64,11 +64,16 @@ class DayResource(Resource):
         """
 
         logger.info(f"Insert day {request.get_json()} in db")
-        day = DaySchema().load(request.get_json())
 
         try:
+            day = DaySchema().load(request.get_json())
             db.session.add(day)
             db.session.commit()
+
+        except TypeError as e:
+            logger.warning(
+                f"Missing parameters. Error: {e}")
+            abort(500, message="Missing parameters")
 
         except IntegrityError as e:
             logger.warning(
@@ -82,18 +87,23 @@ class DayResource(Resource):
     def put(self):
 
         logger.info(f"Update day {request.get_json()} in db")
-        updatedDay = DaySchema().load(request.get_json())
-
+        
         try:
+            updatedDay = DaySchema().load(request.get_json())
             day = Day.query.filter_by(day_number=updatedDay.day_number,
                                       date=updatedDay.date, itinerary_id=updatedDay.itinerary_id).first()
             day = day.update(updatedDay)
             db.session.add(day)
             db.session.commit()
+        
+        except TypeError as e:
+            logger.warning(
+                f"Missing parameters. Error: {e}")
+            abort(500, message="Missing parameters")
 
         except IntegrityError as e:
             logger.warning(
-                f"Integrity Error, this day is already in the database. Error: {e}"
+                f"Integrity Error: {e}"
             )
             abort(500, message="Unexpected Error!")
 
