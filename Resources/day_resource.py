@@ -87,7 +87,7 @@ class DayResource(Resource):
         try:
             day = Day.query.filter_by(day_number=updatedDay.day_number,
                                       date=updatedDay.date, itinerary_id=updatedDay.itinerary_id).first()
-            day = Day.update(updatedDay)
+            day = day.update(updatedDay)
             db.session.add(day)
             db.session.commit()
 
@@ -113,7 +113,7 @@ class DayResource(Resource):
             db.session.delete(dayToDelete)
             db.session.commit()
             logger.info(f"Day {day_number, date, itinerary_id} successfully deleted")
-            return 200, "Deletion successful"
+            return "Deletion successful", 200
         
         except Exception | ValueError as e:
             abort(
