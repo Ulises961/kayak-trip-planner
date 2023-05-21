@@ -7,3 +7,4 @@
 kayak-env/
 __pycache__
 *.log*
+Pipfile.lock
