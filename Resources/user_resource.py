@@ -6,7 +6,7 @@ from Models.user import User
 from flask import request
 from sqlalchemy.exc import IntegrityError
 from Api.database import db
-
+from sqlalchemy.exc import ProgrammingError
 # It will print the name of this module when the main app is running
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class UserResource(Resource):
         """
         UserResource GET method. Retrieves the information related to the user with the passed id in the request
         """
-        
+
         id = request.args.get('id')
         if id:
             logger.info(
@@ -55,19 +55,23 @@ class UserResource(Resource):
         :return: User, 201 HTTP status code.
         """
         try:
-            user = UserSchema().load(request.get_json())
+            user_json= request.get_json()
+            user = UserSchema().load(user_json)
             db.session.add(user)
             db.session.commit()
 
         except TypeError as e:
             logger.warning(
                 f"Missing parameters. Error: {e}")
+            db.session.rollback()
             abort(500, message="Missing parameters")
+      
         
         except IntegrityError as e:
             logger.warning(
                 f"Integrity Error, this user is already in the database. Error: {e}"
             )
+            db.session.rollback()
 
             abort(500, message="Unexpected Error!")
         else:
@@ -79,26 +83,30 @@ class UserResource(Resource):
 
         :return: User, 201 HTTP status code.
         """
+        user = None
+        updated_user=UserSchema().load(request.get_json())
+
         try:
-            updateData = UserSchema().load(request.get_json())
-            user = User.query.filter_by(id = updateData.id)
-            user = user.update(updateData)
-            db.session.add(user)
+            updated_user=UserSchema().load(request.get_json())
+            user =  User.query.filter_by(id =updated_user.id).first()
+            updated_user = UserSchema().load(request.get_json(),instance=user)
+            db.session.add(updated_user)
             db.session.commit()
             
-        except TypeError as e:
+        except Exception as e:
             logger.warning(
                 f"Missing parameters. Error: {e}")
+            db.session.rollback()
+
             abort(500, message="Missing parameters")
 
-        except IntegrityError as e:
+        finally: 
+            updated_user = User.query.filter_by(id = updated_user.id).first()
             logger.warning(
-                f"Integrity Error: {e}"
+                f"User: {user}"
             )
-            abort(500, message="Unexpected Error!")
-
-        finally: return UserSchema().dump(user), 201
-
+            return UserSchema().dump(updated_user), 201
+            # return 201
     def delete(self):
         try:
             id = request.args.get('id')
@@ -112,5 +120,6 @@ class UserResource(Resource):
             return "Deletion successful", 200
         
         except Exception | ValueError as e:
+            db.session.rollback()
             abort(
                 500, message=f"Error while performing deletion,\nDetail: {e}")

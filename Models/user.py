@@ -16,7 +16,7 @@ class User(db.Model):
         self.pwd = generate_password_hash(pwd).decode('UTF-8')
         self.__dict__.update(kwargs)
 
-    id = db.Column('id', db.Integer, primary_key=True, autoincrement="auto")
+    id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
     mail = db.Column(db.String(255), nullable=False, unique=True)
     pwd = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(255), unique=True, nullable=False)
@@ -30,4 +30,4 @@ class User(db.Model):
         'Image', secondary=userHasProfilePicture, backref=db.backref('user_picture', lazy=True))
 
     def __repr__(self):
-        return f'<User "{self.mail}, {self.name}, {self.surname}, {self.pwd}">'
+        return f'<User "{self.id} {self.mail}, {self.name}, {self.surname}, {self.pwd}">'

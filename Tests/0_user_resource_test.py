@@ -16,15 +16,15 @@ def test_user_post(app):
 
 
 def test_user_extra_arguments(app):
-    missing_pos_json = {"mail": "test1.user@gmail.com", 'pwd': 'pwd',
+    new_user_json = {"mail": "test1.user@gmail.com", 'pwd': 'pwd',
                         'phone': '+391234567899', 'name': 'Don', 'surname': 'charles'}
-    response = app.post(f"{USER_ENDPOINT}", json=missing_pos_json)
+    response = app.post(f"{USER_ENDPOINT}", json=new_user_json)
     assert response.status_code == 201
 
 
 def test_user_missing_arguments(app):
-    missing_pos_json = {"mail": "test2.user@gmail.com"}
-    response = app.post(f"{USER_ENDPOINT}", json=missing_pos_json)
+    new_user_json = {"mail": "test2.user@gmail.com"}
+    response = app.post(f"{USER_ENDPOINT}", json=new_user_json)
     assert response.status_code == 500
 
 
@@ -40,8 +40,17 @@ def test_get_user(app):
     assert response.status_code == 200
     assert json.loads(response.data)['name'] == "Test User"
 
+def test_update_user(app):
+    updatedUser = {'id':1, 'mail':"ulises.sosa@gmail.com", 'name': 'Ulises', 'surname':'Sosa'} 
+    response = app.put(f"{USER_ENDPOINT}", json=updatedUser)
+    assert json.loads(response.data)['name'] == "Ulises"
+    assert json.loads(response.data)['surname'] == "Sosa"
+    assert json.loads(response.data)['mail'] == "ulises.sosa@gmail.com"
+    assert response.status_code == 201
 
 def test_delete_user(app):
     response = app.delete(
         f"{USER_ENDPOINT}?&id={1}")
     assert response.status_code == 200
+
+
