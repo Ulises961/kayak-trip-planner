@@ -13,7 +13,7 @@ class DaySchema(Schema):
     day_number = fields.Integer(allow_none=False)
     itinerary_id = fields.Integer(allow_none=False)
     date=fields.Date('%Y-%m-%d',allow_none=False)
-    points=fields.List(fields.Nested(PointSchema))
+    points=fields.List(fields.Nested(PointSchema), allow_none = True)
     sea=fields.Nested(SeaSchema, allow_none = True)
     weather=fields.Nested(WeatherSchema, allow_none = True)
 
