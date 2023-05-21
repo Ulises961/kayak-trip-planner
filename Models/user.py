@@ -12,11 +12,8 @@ from Models.trip import Trip
 
 class User(db.Model):
     __tablename__ = 'users'
-    def __init__(self, mail, pwd, name, phone, **kwargs):
-        self.mail = mail
+    def __init__(self, pwd, **kwargs):
         self.pwd = generate_password_hash(pwd).decode('UTF-8')
-        self.phone = phone
-        self.name = name
         self.__dict__.update(kwargs)
 
     id = db.Column('id', db.Integer, primary_key=True, autoincrement="auto")
@@ -25,12 +22,12 @@ class User(db.Model):
     phone = db.Column(db.String(255), unique=True, nullable=False)
     name = db.Column(db.String(255), nullable=False)
     surname = db.Column(db.String(255), nullable=True)
-    trips : Mapped[Optional[List[Trip]]] = db.relationship(secondary=user_has_trip, backref="travellers",cascade='all, delete')
+    trips : Mapped[Optional[List[Trip]]] = db.relationship(secondary=user_has_trip, backref="travellers")
     endorsed_logs : Mapped[Optional[List[Log]]] = db.relationship(
          secondary=user_endorses_log, backref="user_endorsed_logs")
-    logs : Mapped[Optional[List[Log]]] = db.relationship(backref="user_logs", cascade='all, delete')
-    image = db.relationship(
-        'Image', secondary=userHasProfilePicture, backref=db.backref('user_picture', lazy=True), cascade='all, delete')
+    logs : Mapped[Optional[List[Log]]] = db.relationship(backref="user_logs")
+    image:  Mapped[Optional[Image]]  = db.relationship(
+        'Image', secondary=userHasProfilePicture, backref=db.backref('user_picture', lazy=True))
 
     def __repr__(self):
-        return f'<User "{self.mail}, {self.name}, {self.surname}">'
+        return f'<User "{self.mail}, {self.name}, {self.surname}, {self.pwd}">'
