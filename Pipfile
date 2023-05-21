@@ -13,6 +13,7 @@ flask-restful = "*"
 pytest = "*"
 path = "*"
 marshmallow = "*"
+marshmallow-sqlalchemy = "*"
 typing = "*"
 
 [dev-packages]
