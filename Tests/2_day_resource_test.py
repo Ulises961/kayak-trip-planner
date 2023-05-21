@@ -2,6 +2,7 @@ from Resources.day_resource import DAY_ENDPOINT
 from Resources.itinerary_resource import ITINERARY_ENDPOINT
 from datetime import date, datetime
 from Schemas.day_schema import DaySchema
+import json
 
 def test_insert_itinerary_with_day(app):
     daysList = [
@@ -34,7 +35,7 @@ def test_insert_weather_to_day(app):
         "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
         "weather": weather
     }
-    response = app.post(DAY_ENDPOINT, json=day)
+    response = app.put(DAY_ENDPOINT, json=day)
     assert response.status_code == 201
 
 
@@ -70,3 +71,21 @@ def test_delete_day(app):
     response = app.delete(
         f"{DAY_ENDPOINT}?itinerary_id=1&day_number=1&date={day_date}")
     assert response.status_code == 200
+
+def test_update_day(app):
+
+    day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
+    sea = {
+        "itinerary_id": 1,
+        "high_tide": datetime.now().time().strftime('%H:%M'),
+        "low_tide": datetime.now().time().strftime('%H:%M'),
+        "moon_phase":None,
+        "day_number": 1,
+        "sea_states": [],
+        "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
+    }
+    updated_day = {'date':day_date,'itinerary_id':1,'day_number':1, 'sea':sea} 
+    response = app.put(f"{DAY_ENDPOINT}", json=updated_day)
+    assert json.loads(response.data)['sea'] == sea
+    assert response.status_code == 201
+

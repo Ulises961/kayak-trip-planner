@@ -1,4 +1,4 @@
-from marshmallow import fields, post_load
+from marshmallow import fields
 from Models.user import User
 from Schemas.log_schema import LogSchema
 from Schemas.trip_schema import TripSchema
@@ -27,6 +27,3 @@ class UserSchema(SQLAlchemySchema):
     logs = fields.List(fields.Nested(LogSchema), allow_none=True )
     image = fields.Nested(ImageSchema, allow_none=True)
 
-    # @post_load
-    # def make_user(self, data, **kwargs):
-    #     return User(**data)

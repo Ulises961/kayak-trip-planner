@@ -35,6 +35,7 @@ class DayResource(Resource):
             date = request.args.get('date')
             itinerary_id = request.args.get('itinerary_id')
         except ValueError:
+            db.session.rollback()
             abort(500, message=f"Missing parameters, {ValueError}")
         if day_number and date and itinerary_id:
             logger.info(f"Retrive day with id {id}")
@@ -43,6 +44,7 @@ class DayResource(Resource):
                 json = self.__retrieveDayByKey(day_number, date, itinerary_id)
                 return json, 200
             except NoResultFound:
+                db.session.rollback()
                 abort(404, message=f"Day with id {id} not found in database")
 
         else:
@@ -54,6 +56,7 @@ class DayResource(Resource):
                     abort(404, message=f"No days in db")
                 return days_json, 200
             except IntegrityError:
+                db.session.rollback()
                 abort(500, message=f"Error while retrieving days")
 
     def post(self):
@@ -73,12 +76,14 @@ class DayResource(Resource):
         except TypeError as e:
             logger.warning(
                 f"Missing parameters. Error: {e}")
+            db.session.rollback()
             abort(500, message="Missing parameters")
 
         except IntegrityError as e:
             logger.warning(
                 f"Integrity Error, this day is already in the database. Error: {e}"
             )
+            db.session.rollback()
             abort(500, message="Unexpected Error!")
 
         finally:
@@ -87,27 +92,34 @@ class DayResource(Resource):
     def put(self):
 
         logger.info(f"Update day {request.get_json()} in db")
-        
+        day_json = request.get_json()
         try:
-            updatedDay = DaySchema().load(request.get_json())
-            day = Day.query.filter_by(day_number=updatedDay.day_number,
-                                      date=updatedDay.date, itinerary_id=updatedDay.itinerary_id).first()
-            day = day.update(updatedDay)
+            day = Day.query.filter_by(day_number=day_json['day_number'],
+                                      date=day_json['date'], itinerary_id=day_json['itinerary_id']).first()
+            day = DaySchema().load(day_json, instance=day)
             db.session.add(day)
             db.session.commit()
-        
+
         except TypeError as e:
             logger.warning(
                 f"Missing parameters. Error: {e}")
+            db.session.rollback()
             abort(500, message="Missing parameters")
 
         except IntegrityError as e:
+            db.session.rollback()
             logger.warning(
                 f"Integrity Error: {e}"
             )
             abort(500, message="Unexpected Error!")
 
         finally:
+            day = Day.query.filter_by(
+                day_number=day_json['day_number'],
+                date=day_json['date'], 
+                itinerary_id=day_json['itinerary_id']
+                ).first()
+            
             return DaySchema().dump(day), 201
 
     def delete(self):
@@ -122,9 +134,11 @@ class DayResource(Resource):
                 day_number=day_number, date=date, itinerary_id=itinerary_id).first()
             db.session.delete(dayToDelete)
             db.session.commit()
-            logger.info(f"Day {day_number, date, itinerary_id} successfully deleted")
+            logger.info(
+                f"Day {day_number, date, itinerary_id} successfully deleted")
             return "Deletion successful", 200
-        
+
         except Exception | ValueError as e:
+            db.session.rollback()
             abort(
                 500, message=f"Error while performing deletion,\nDetail: {e}")
