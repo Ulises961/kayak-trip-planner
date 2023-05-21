@@ -66,7 +66,7 @@ class InventoryResource(Resource):
             db.session.commit()
         except IntegrityError as e:
             logger.warning(
-                f"Integrity Error, this inventory is already in the database. Error: {e}"
+                f"Error: {e}"
             )
 
             abort(500, message="Unexpected Error!")
