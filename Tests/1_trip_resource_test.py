@@ -1,5 +1,5 @@
 from Resources.trip_resource import TRIP_ENDPOINT
-from datetime import date
+
 NUM_TRIPS_IN_DB = 3
 
 def test_insert_trip_w_itinerary_and_inventory(app):
@@ -32,6 +32,5 @@ def test_get_all_trips(app):
     assert len(response.json) == NUM_TRIPS_IN_DB
 
 def test_get_trip_by_id(app):
-    response = app.get(f"{TRIP_ENDPOINT}/1")
-    print (response.json)
+    response = app.get(f"{TRIP_ENDPOINT}?id=1")
     assert response.status_code == 200

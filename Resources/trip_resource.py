@@ -15,16 +15,17 @@ TRIP_ENDPOINT = "/api/trip"
 class TripResource(Resource):
 
     def __retrieveTripById(self,id):
-        trip = Trip.query.filter_by(id= id).first()
+        trip = Trip.query.filter_by(id = id).first()
         trip_json = TripSchema().dump(trip)
         if not trip_json:
              raise NoResultFound()
         return trip_json, 200
     
-    def get(self, id=None):
+    def get(self):
         """
         TripResource GET method. Retrieves the information related to a trip with the passed id in the request
         """
+        id = request.args.get('id')
         if id:
             logger.info(f"Retrieving trip with id {id}")
             try:
@@ -66,3 +67,44 @@ class TripResource(Resource):
             logger.warning(
                 f"Missing positional parameters. Error: {e}")   
             abort(500, message="Missing parameters")
+
+    def put(self):
+
+        logger.info(f"Update trip {request.get_json()} in db")
+        
+        try:
+            updatedTrip = TripSchema().load(request.get_json())
+            trip = Trip.query.filter_by(id=updatedTrip.id).first()
+            trip = trip.update(updatedTrip)
+            db.session.add(trip)
+            db.session.commit()
+        
+        except TypeError as e:
+            logger.warning(
+                f"Missing parameters. Error: {e}")
+            abort(500, message="Missing parameters")
+
+        except IntegrityError as e:
+            logger.warning(
+                f"Integrity Error: {e}"
+            )
+            abort(500, message="Unexpected Error!")
+
+        finally:
+            return TripSchema().dump(trip), 201
+
+    def delete(self):
+        try:
+            id = request.args.get('id')
+            logger.info(f"Deleting day {id} ")
+
+            dayToDelete = Trip.query.filter_by(
+                id=id).first()
+            db.session.delete(dayToDelete)
+            db.session.commit()
+            logger.info(f"Trip {id} successfully deleted")
+            return "Deletion successful", 200
+        
+        except Exception | ValueError as e:
+            abort(
+                500, message=f"Error while performing deletion,\nDetail: {e}")
