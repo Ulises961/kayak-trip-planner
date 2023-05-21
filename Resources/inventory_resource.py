@@ -47,4 +47,4 @@ class InventoryResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return inventory, 201
+            return InventorySchema().dump(inventory), 201

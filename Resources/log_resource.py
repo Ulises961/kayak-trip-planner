@@ -51,4 +51,4 @@ class LogResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return log, 201
+            return LogSchema.dump(log), 201

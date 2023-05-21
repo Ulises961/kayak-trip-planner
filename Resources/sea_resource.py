@@ -48,4 +48,4 @@ class SeaResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return sea, 201
+            return SeaSchema.dump(sea), 201

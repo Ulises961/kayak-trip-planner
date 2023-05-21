@@ -48,4 +48,4 @@ class PointResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return point, 201
+            return PointSchema.dump(point), 201
