@@ -106,7 +106,7 @@ class UserResource(Resource):
                 f"User: {user}"
             )
             return UserSchema().dump(updated_user), 201
-            # return 201
+            
     def delete(self):
         try:
             id = request.args.get('id')
