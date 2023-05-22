@@ -14,36 +14,37 @@ TRIP_ENDPOINT = "/api/trip"
 
 class TripResource(Resource):
 
-    def __retrieveTripById(self,id):
-        trip = Trip.query.filter_by(id = id).first()
-        trip_json = TripSchema().dump(trip)
-        if not trip_json:
-             raise NoResultFound()
-        return trip_json, 200
+    def __retrieve_trip_by_id(self,id):
+        return Trip.query.filter_by(id = id).first()
+
     
     def get(self):
         """
         TripResource GET method. Retrieves the information related to a trip with the passed id in the request
         """
-        id = request.args.get('id')
-        if id:
-            logger.info(f"Retrieving trip with id {id}")
-            try:
-                self.__retrieveTripById(id)
-            except NoResultFound:
-                    logger.error(f"Trip with id {id} not found in database")
-                    abort(404, message=f"Trip with id {id} not found in database")
 
-        else:
-            logger.info(f"retrieving all Trips in db")
-            try:
+        try:
+            id = request.args.get('id')
+            if id:
+                logger.info(f"Retrieving trip with id {id}")
+                trip = self.__retrieve_trip_by_id(id)
+                trip_json = TripSchema().dump(trip)
+                if not trip_json:
+                    raise NoResultFound()
+                return trip_json, 200
+            else:
+                logger.info(f"retrieving all Trips in db")
                 trips = Trip.query.all()
                 trips_json =  [TripSchema().dump(trip) for trip in trips]
                 if len(trips_json) == 0:
                     abort(404, message=f"No trips in db")
                 return trips_json, 200
-            except Exception as e:
-                    abort(500, message=f"Error:{e}")
+        except NoResultFound:
+                logger.error(f"Trip with id {id} not found in database")
+                abort(404, message=f"Trip with id {id} not found in database")
+        except Exception as e:
+                abort(500, message=f"Error:{e}")
+        
         
     def post(self):
         """
@@ -90,9 +91,8 @@ class TripResource(Resource):
             id = request.args.get('id')
             logger.info(f"Deleting day {id} ")
 
-            dayToDelete = Trip.query.filter_by(
-                id=id).first()
-            db.session.delete(dayToDelete)
+            trip_to_delete = self.__retrieve_trip_by_id(id)
+            db.session.delete(trip_to_delete)
             db.session.commit()
             logger.info(f"Trip {id} successfully deleted")
             return "Deletion successful", 200
