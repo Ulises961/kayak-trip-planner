@@ -24,3 +24,7 @@ def test_get_inventory_by_id(app):
     assert json.loads(response.data)['items'][0]['name'] == "map"
     assert json.loads(response.data)['items'][1]['name'] == "Oki"
     assert response.status_code == 200
+
+def test_delete_inventory(app):
+    response = app.delete(f"{INVENTORY_ENDPOINT}?id=40")
+    assert response.status_code == 200

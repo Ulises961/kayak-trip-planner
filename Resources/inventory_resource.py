@@ -13,45 +13,40 @@ INVENTORY_ENDPOINT = "/api/inventory"
 
 class InventoryResource(Resource):
 
-    def retrieveInventoryById(self, id):
-        inventory = Inventory.query.filter_by(id=id).first()
-        inventory_json = InventorySchema().dump(inventory)
-        if not inventory_json:
-            raise NoResultFound()
-        return inventory_json
+    def retrieve_inventory_by_id(self, id):
+        return Inventory.query.filter_by(id=id).first()
+        
     
     def get(self):
         """
         InventoryResource GET method. Retrieves the information related to the inventory with the passed id in the request
         """
-        
-        inventory_id = None
-        
+
         try:
             inventory_id = request.args.get('id')
-        except ValueError:
-            db.session.rollback()
-            abort(500, message=f"Missing parameters, {ValueError}")
-            
-        if inventory_id:
-            logger.info(f"Retrive inventory with id {inventory_id}")
+            if inventory_id:
+                logger.info(f"Retrive inventory with id {inventory_id}")
 
-            try:
-                json = self.retrieveInventoryById(id=inventory_id)
-                return json, 200
-            except NoResultFound:
-                db.session.rollback()
-                abort(404, message=f"Inventory with id {inventory_id} not found in database")
-        else:
-            logger.info(f"Retrive all inventories from db")
-            try:
+                inventory = self.retrieve_inventory_by_id(inventory_id)
+                inventory_json = InventorySchema().dump(inventory)
+
+                if not inventory_json:
+                    raise NoResultFound()
+                return inventory_json,200
+            else:
+                logger.info(f"Retrive all inventories from db")
+                
                 inventories = Inventory.query.all()
                 inventories_json = [InventorySchema().dump(inventory) for inventory in inventories]
                 return inventories_json, 200
             
-            except IntegrityError:
-                db.session.rollback()
-                abort(500, message=f"Error while retrieving days")
+        except IntegrityError:
+            db.session.rollback()
+            abort(500, message=f"Error while retrieving days")
+        
+        except NoResultFound:
+            db.session.rollback()
+            abort(404, message=f"Inventory with id {inventory_id} not found in database")
     
     def post(self):
         """
@@ -59,17 +54,18 @@ class InventoryResource(Resource):
 
         :return: Inventory, 201 HTTP status code.
         """
-        inventory = InventorySchema().load(request.get_json())
-
         try:
+            inventory = InventorySchema().load(request.get_json())
             db.session.add(inventory)
             db.session.commit()
-        except IntegrityError as e:
+
+        except Exception as e:
+            db.session.rollback()
             logger.warning(
                 f"Error: {e}"
             )
 
-            abort(500, message="Unexpected Error!")
+            abort(500, message=f"Error:{e}")
         else:
             return InventorySchema().dump(inventory), 201
         
@@ -81,18 +77,29 @@ class InventoryResource(Resource):
         try:
             db.session.merge(updatedInventory)
             db.session.commit()
-    
-        except TypeError as e:
-            logger.warning(
-                f"Missing parameters. Error: {e}")
-            abort(500, message="Missing parameters")
-
-        except IntegrityError as e:
-            logger.warning(
-                f"Integrity Error: {e}"
-            )
-            abort(500, message="Unexpected Error!")
-
-        else:
             inventory = Inventory.query.filter_by(id=updatedInventory.id).first()
             return InventorySchema().dump(inventory), 201
+
+    
+        except Exception as e:
+            logger.warning(
+                f"Error: {e}"
+            )
+            db.session.rollback()
+            abort(500, message="Error: {e}")
+    
+    def delete(self):
+        try:
+            inventory_id = request.args.get('id')
+            logger.info(f"Deleting inventory {inventory_id} ")
+
+            inventory_to_delete = self.retrieve_inventory_by_id(inventory_id)
+            db.session.delete(inventory_to_delete)
+            db.session.commit()
+            logger.info(f"Inventory with id {inventory_id} successfully deleted")
+            return "Deletion successful", 200
+        
+        except Exception as e:
+            db.session.rollback()
+            abort(
+                500, message=f"Error: {e}")
