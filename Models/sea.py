@@ -15,5 +15,5 @@ class Sea (db.Model):
     moon_phase   = db.Column(db.String(255))
     high_tide    = db.Column(db.Time)
     low_tide     = db.Column(db.Time)
-    sea_states: Mapped[Optional[List[SeaState]]] = db.relationship(backref='sea',cascade='all, delete')
+    sea_states: Mapped[Optional[List[SeaState]]] = db.relationship(backref='sea',cascade='all, delete, delete-orphan,save-update')
     

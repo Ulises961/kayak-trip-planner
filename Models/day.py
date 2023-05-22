@@ -11,9 +11,9 @@ class Day (db.Model):
     itinerary_id = db.Column(db.Integer, db.ForeignKey('itinerary.id'), primary_key=True)
     date = db.Column(db.Date, primary_key = True)
     points:Mapped[Optional[List[Point]]] = db.relationship(backref='day')
-    weather:Mapped[Optional[Weather]] = db.relationship(backref='day', uselist=False, cascade='all, delete')
-    sea:Mapped[Optional[Sea]] = db.relationship(backref='day', uselist=False, cascade='all, delete')
+    weather:Mapped[Optional[Weather]] = db.relationship(backref='day', uselist=False, cascade='all, delete, delete-orphan,save-update')
+    sea:Mapped[Optional[Sea]] = db.relationship(backref='day', uselist=False, cascade='all, delete, delete-orphan,save-update')
     
 
     def __repr__(self):
-        return f'<Day "{self.day_number}, Date {self.date}">'
+        return f'<Day "{self.day_number}, Date {self.date}, Itinerary {self.itinerary_id}">'
