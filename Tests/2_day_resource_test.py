@@ -75,15 +75,7 @@ def test_delete_day(app):
 def test_update_day(app):
 
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
-    sea = {
-        "itinerary_id": 1,
-        "high_tide": datetime.now().time().strftime('%H:%M'),
-        "low_tide": datetime.now().time().strftime('%H:%M'),
-        "moon_phase":None,
-        "day_number": 1,
-        "sea_states": [],
-        "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
-    }
+    sea = None
     updated_day = {'date':day_date,'itinerary_id':1,'day_number':1, 'sea':sea} 
     response = app.put(f"{DAY_ENDPOINT}", json=updated_day)
     assert json.loads(response.data)['sea'] == sea

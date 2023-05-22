@@ -16,15 +16,10 @@ DAY_ENDPOINT = "/api/day"
 
 class DayResource(Resource):
 
-    def __retrieveDayByKey(self, day_number, date, itinerary_id):
-        day = Day.query.filter_by(
+    def __retrieve_day_by_key(self, day_number, date, itinerary_id):
+        return Day.query.filter_by(
             day_number=day_number, date=date, itinerary_id=itinerary_id).first()
-        day_json = DaySchema().dump(day)
 
-        if not day_json:
-            raise NoResultFound()
-        
-        return day_json, 200
 
     def get(self):
         """
@@ -34,26 +29,26 @@ class DayResource(Resource):
             day_number = request.args.get('day_number')
             date = request.args.get('date')
             itinerary_id = request.args.get('itinerary_id')
-        except Exception as e:
-            abort(500, message=f"Error: {e}")
-        if day_number and date and itinerary_id:
-            logger.info(f"Retrive day with id {id}")
 
-            try:
-                json = self.__retrieveDayByKey(day_number, date, itinerary_id)
-                return json, 200
-            except NoResultFound:
-                abort(404, message=f"Day with id {id} not found in database")
-        else:
-            logger.info(f"Retrive all days from db")
-            try:
+            if day_number and date and itinerary_id:
+                logger.info(f"Retrive day with id {id}")
+                try:
+                    day = self.__retrieve_day_by_key(day_number, date, itinerary_id)
+                    day_json = DaySchema().dump(day)
+                    if not day_json:
+                        raise NoResultFound()
+                    return day_json, 200
+                except NoResultFound:
+                    abort(404, message=f"Day with id {id} not found in database")
+            else:
+                logger.info(f"Retrive all days from db")
                 days = Day.query.all()
                 days_json = [DaySchema().dump(day) for day in days]
                 if len(days_json) == 0:
                     abort(404, message=f"No days in db")
                 return days_json, 200
-            except Exception as e:
-                abort(500, message=f"Error:{e}")
+        except Exception as e:
+            abort(500, message=f"Error:{e}")
 
     def post(self):
         """
@@ -114,9 +109,8 @@ class DayResource(Resource):
 
             logger.info(f"Deleting day {day_number, date, itinerary_id} ")
 
-            dayToDelete = Day.query.filter_by(
-                day_number=day_number, date=date, itinerary_id=itinerary_id).first()
-            db.session.delete(dayToDelete)
+            dat_to_delete = self.__retrieve_day_by_key(day_number, date, itinerary_id)
+            db.session.delete(dat_to_delete)
             db.session.commit()
             logger.info(
                 f"Day {day_number, date, itinerary_id} successfully deleted")
