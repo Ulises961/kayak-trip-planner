@@ -13,7 +13,7 @@ INVENTORY_ENDPOINT = "/api/inventory"
 
 class InventoryResource(Resource):
 
-    def retrieve_inventory_by_id(self, id):
+    def __retrieve_inventory_by_id(self, id):
         return Inventory.query.filter_by(id=id).first()
         
     
@@ -27,7 +27,7 @@ class InventoryResource(Resource):
             if inventory_id:
                 logger.info(f"Retrive inventory with id {inventory_id}")
 
-                inventory = self.retrieve_inventory_by_id(inventory_id)
+                inventory = self.__retrieve_inventory_by_id(inventory_id)
                 inventory_json = InventorySchema().dump(inventory)
 
                 if not inventory_json:
@@ -70,17 +70,15 @@ class InventoryResource(Resource):
             return InventorySchema().dump(inventory), 201
         
     def put(self):
-
-        logger.info(f"Update trip {request.get_json()} in db")
-        updatedInventory = InventorySchema().load(request.get_json())
-        
         try:
+            logger.info(f"Update trip {request.get_json()} in db")
+            updatedInventory = InventorySchema().load(request.get_json())
             db.session.merge(updatedInventory)
             db.session.commit()
             inventory = Inventory.query.filter_by(id=updatedInventory.id).first()
+        
             return InventorySchema().dump(inventory), 201
-
-    
+        
         except Exception as e:
             logger.warning(
                 f"Error: {e}"
@@ -93,7 +91,7 @@ class InventoryResource(Resource):
             inventory_id = request.args.get('id')
             logger.info(f"Deleting inventory {inventory_id} ")
 
-            inventory_to_delete = self.retrieve_inventory_by_id(inventory_id)
+            inventory_to_delete = self.__retrieve_inventory_by_id(inventory_id)
             db.session.delete(inventory_to_delete)
             db.session.commit()
             logger.info(f"Inventory with id {inventory_id} successfully deleted")
