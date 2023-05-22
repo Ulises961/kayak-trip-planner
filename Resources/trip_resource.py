@@ -42,8 +42,8 @@ class TripResource(Resource):
                 if len(trips_json) == 0:
                     abort(404, message=f"No trips in db")
                 return trips_json, 200
-            except IntegrityError:
-                    abort(500, message=f"Error while retrieving trips")
+            except Exception as e:
+                    abort(500, message=f"Error:{e}")
         
     def post(self):
         """
@@ -57,16 +57,12 @@ class TripResource(Resource):
             db.session.add(trip)
             db.session.commit()
             return TripSchema().dumps(trip), 201
-        except IntegrityError as e:
+        except Exception as e:
+            db.session.rollback()
             logger.warning(
-                f"Integrity Error, this trip is already in the database. Error: {e}"
+                f"Error: {e}"
             )
-
-            abort(500, message="Unexpected Error!")
-        except TypeError as e:
-            logger.warning(
-                f"Missing positional parameters. Error: {e}")   
-            abort(500, message="Missing parameters")
+            abort(500, message=f"{e}")
 
     def put(self):
 
@@ -78,20 +74,14 @@ class TripResource(Resource):
             trip = trip.update(updatedTrip)
             db.session.add(trip)
             db.session.commit()
-        
-        except TypeError as e:
-            logger.warning(
-                f"Missing parameters. Error: {e}")
-            abort(500, message="Missing parameters")
-
-        except IntegrityError as e:
-            logger.warning(
-                f"Integrity Error: {e}"
-            )
-            abort(500, message="Unexpected Error!")
-
-        finally:
+            trip = Trip.query.filter_by(id=updatedTrip.id).first()
             return TripSchema().dump(trip), 201
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.warning(
+                f"Error: {e}")
+            abort(500, message=e)
 
     def delete(self):
         try:
@@ -105,6 +95,7 @@ class TripResource(Resource):
             logger.info(f"Trip {id} successfully deleted")
             return "Deletion successful", 200
         
-        except Exception | ValueError as e:
+        except Exception as e:
+            db.session.rollback()
             abort(
-                500, message=f"Error while performing deletion,\nDetail: {e}")
+                500, message=f"Error: {e}")

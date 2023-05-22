@@ -45,8 +45,8 @@ class UserResource(Resource):
                 if len(users_json) == 0:
                     abort(404, message=f"No users in db")
                 return users_json, 200
-            except IntegrityError:
-                abort(500, message=f"Error while retrieving users")
+            except Exception as e:
+                abort(500, message=f"Error: {e}")
 
     def post(self):
         """
@@ -60,20 +60,12 @@ class UserResource(Resource):
             db.session.add(user)
             db.session.commit()
 
-        except TypeError as e:
+        except Exception as e:
             logger.warning(
                 f"Missing parameters. Error: {e}")
             db.session.rollback()
-            abort(500, message="Missing parameters")
-      
-        
-        except IntegrityError as e:
-            logger.warning(
-                f"Integrity Error, this user is already in the database. Error: {e}"
-            )
-            db.session.rollback()
+            abort(500, message=f"Error:{e}")
 
-            abort(500, message="Unexpected Error!")
         else:
             return UserSchema().dump(user), 201
     
@@ -92,21 +84,20 @@ class UserResource(Resource):
             updated_user = UserSchema().load(request.get_json(),instance=user)
             db.session.add(updated_user)
             db.session.commit()
-            
-        except Exception as e:
-            logger.warning(
-                f"Missing parameters. Error: {e}")
-            db.session.rollback()
 
-            abort(500, message="Missing parameters")
-
-        finally: 
             updated_user = User.query.filter_by(id = updated_user.id).first()
             logger.warning(
                 f"User: {user}"
             )
             return UserSchema().dump(updated_user), 201
             
+        except Exception as e:
+            logger.warning(
+                f"Error: {e}")
+            db.session.rollback()
+
+            abort(500, message=f"Error:{e}")
+
     def delete(self):
         try:
             id = request.args.get('id')
@@ -119,7 +110,7 @@ class UserResource(Resource):
             logger.info(f"User with id {id} successfully deleted")
             return "Deletion successful", 200
         
-        except Exception | ValueError as e:
+        except Exception as e:
             db.session.rollback()
             abort(
-                500, message=f"Error while performing deletion,\nDetail: {e}")
+                500, message=f"Error: {e}")
