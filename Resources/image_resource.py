@@ -60,4 +60,4 @@ class ImageResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return image, 201
+            return ImageSchema.dump(image), 201

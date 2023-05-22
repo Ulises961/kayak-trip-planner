@@ -51,4 +51,4 @@ class ItemResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return item, 201
+            return ItemSchema.dump(item), 201

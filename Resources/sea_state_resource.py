@@ -47,4 +47,4 @@ class SeaStateResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return sea_state, 201
+            return SeaStateSchema.dump(sea_state), 201

@@ -47,4 +47,4 @@ class WeatherStateResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return weather_state, 201
+            return WeatherStateSchema.dump(weather_state), 201
