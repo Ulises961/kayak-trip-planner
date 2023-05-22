@@ -12,7 +12,7 @@ class Inventory(db.Model):
 
     id= db.Column('id', db.Integer, primary_key = True, autoincrement = "auto")
     trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
-    items : Mapped[Optional[List[Item]]]= db.relationship( secondary = inventory_items, backref='inventories', cascade='all, delete')
+    items : Mapped[Optional[List[Item]]]= db.relationship( secondary = inventory_items, backref='inventories', cascade='all, delete, delete-orphan,save-update')
     
     def __repr__(self):
         return f'<Inventory "{self.id}">'
