@@ -6,7 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 from Schemas.day_schema import DaySchema
 from Models.day import Day
-from Models.itinerary import Itinerary
+
 
 # It will print the name of this module when the main app is running
 logger = logging.getLogger(__name__)
@@ -88,10 +88,8 @@ class DayResource(Resource):
 
         try:
             day_json = request.get_json()
-            day = Day.query.filter_by(day_number=day_json['day_number'],
-                                      date=day_json['date'], itinerary_id=day_json['itinerary_id']).first()
-            day = DaySchema().load(day_json, instance=day)
-            db.session.add(day)
+            day = DaySchema().load(day_json)
+            db.session.merge(day)
             db.session.commit()
 
             day = Day.query.filter_by(

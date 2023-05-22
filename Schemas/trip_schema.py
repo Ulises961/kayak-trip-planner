@@ -3,6 +3,7 @@ from Models.trip import Trip
 from Schemas.itinerary_shema import ItinerarySchema
 from Schemas.inventory_schema import InventorySchema
 
+
 class TripSchema(Schema):
     """ 
     Trip Schema

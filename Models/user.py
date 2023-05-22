@@ -12,8 +12,9 @@ from Models.trip import Trip
 
 class User(db.Model):
     __tablename__ = 'users'
-    def __init__(self, pwd, **kwargs):
-        self.pwd = generate_password_hash(pwd).decode('UTF-8')
+    def __init__(self, pwd=None, **kwargs):
+        if pwd:
+            self.pwd = generate_password_hash(pwd).decode('UTF-8')
         self.__dict__.update(kwargs)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')

@@ -80,11 +80,8 @@ class UserResource(Resource):
 
         try:
             updated_user=UserSchema().load(request.get_json())
-            user =  User.query.filter_by(id =updated_user.id).first()
-            updated_user = UserSchema().load(request.get_json(),instance=user)
-            db.session.add(updated_user)
+            db.session.merge(updated_user)
             db.session.commit()
-
             updated_user = User.query.filter_by(id = updated_user.id).first()
             logger.warning(
                 f"User: {user}"

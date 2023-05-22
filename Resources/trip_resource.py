@@ -53,10 +53,14 @@ class TripResource(Resource):
         """
 
         try:
-            trip = TripSchema().load(request.get_json())
+            trip_json = request.get_json()
+            trip = TripSchema().load(trip_json)
             db.session.add(trip)
             db.session.commit()
-            return TripSchema().dumps(trip), 201
+
+            trip = Trip.query.filter_by(id=trip.id).first()
+            return TripSchema().dump(trip), 201
+
         except Exception as e:
             db.session.rollback()
             logger.warning(
@@ -70,9 +74,7 @@ class TripResource(Resource):
         
         try:
             updatedTrip = TripSchema().load(request.get_json())
-            trip = Trip.query.filter_by(id=updatedTrip.id).first()
-            trip = trip.update(updatedTrip)
-            db.session.add(trip)
+            db.session.merge(trip)
             db.session.commit()
             trip = Trip.query.filter_by(id=updatedTrip.id).first()
             return TripSchema().dump(trip), 201
