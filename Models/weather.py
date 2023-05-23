@@ -7,8 +7,7 @@ from Models.weather_state import WeatherState
 
 class Weather (db.Model):
     __table_args__ = (
-        db.ForeignKeyConstraint(['day_number', 'itinerary_id', 'date'], [
-                                'day.day_number', 'day.itinerary_id', 'day.date'], name="day_foreign_key_in_weather"),
+        db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_foreign_key_in_weather"),
     )
     day_number = db.Column(db.Integer, primary_key=True)
     itinerary_id = db.Column(db.Integer, primary_key=True)
