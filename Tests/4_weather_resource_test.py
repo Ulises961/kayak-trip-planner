@@ -14,6 +14,11 @@ def test_insert_weather(app):
     response = app.post(WEATHER_ENDPOINT, json=weather)
     assert response.status_code == 201
 
+def test_delete_weather(app):
+    day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
+    response = app.delete(f"{WEATHER_ENDPOINT}?day_number=1&itinerary_id=1&date={day_date}")
+    assert response.status_code == 200
+
 def test_update_weather(app):
     weather = {
         "itinerary_id": 1,
@@ -38,10 +43,5 @@ def test_get_weather(app):
         "weather_states": [],
         "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     }
-    assert response.status_code == 200
-
-def test_delete_weather(app):
-    day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
-    response = app.delete(f"{WEATHER_ENDPOINT}?day_number=1&itinerary_id=1&date={day_date}")
     assert response.status_code == 200
 

@@ -13,38 +13,51 @@ WEATHER_STATE_ENDPOINT = "/api/weather_state"
 
 class WeatherStateResource(Resource):
 
-    def retrieveWeatherStateById(id):
-        weather_state = WeatherState.query.filter_by('id', id).first()
-        weather_state_json = WeatherStateSchema.dump(weather_state)
-        if not weather_state_json:
-             raise NoResultFound()
-        return weather_state_json
+    def __retrieve_weather_state_by_key(self,day_number, date, itinerary_id, time):
+        return WeatherState.query.filter_by(day_number=day_number, date=date, itinerary_id=itinerary_id, time=time).first()
     
     def get(self, id=None):
         """
         WeatherStateResource GET method. Retrieves the information related to the weather state with the passed id in the request
         """
         try:
-            self.retrieveWeatherStateById(id)
+            weather_state = WeatherStateSchema().dump(request.arg.json())
+            weather_state = self.__retrieve_weather_state_by_key( weather_state.day_number,
+                weather_state.date,
+                weather_state.itinerary_id,
+                weather_state.time
+                )
+            weather_state_json =  WeatherStateSchema().dump(weather_state)
+            if not weather_state_json:
+                raise NoResultFound()
+            return weather_state_json, 200
         except NoResultFound:
                 abort(404, message=f"Weather State with id {id} not found in database")
-    
+        except Exception as e:
+            abort(500, message=f"Error: {e}")
+
     def post(self):
         """
         WeatherStateResource POST method. Adds a new weather_state to the database.
 
         :return: WeatherState, 201 HTTP status code.
         """
-        weather_state = WeatherStateSchema().load(request.get_json())
-
         try:
+            weather_state = WeatherStateSchema().load(request.get_json())
             db.session.add(weather_state)
             db.session.commit()
+            weather_state = self.__retrieve_weather_state_by_key(
+                weather_state.day_number,
+                weather_state.date,
+                weather_state.itinerary_id,
+                weather_state.time
+                )
+            return WeatherStateSchema().dump(weather_state), 201
         except IntegrityError as e:
             logger.warning(
                 f"Integrity Error, this weather_state is already in the database. Error: {e}"
             )
-
+            db.session.rollback()
             abort(500, message="Unexpected Error!")
-        else:
-            return WeatherStateSchema.dump(weather_state), 201
+        
+            
