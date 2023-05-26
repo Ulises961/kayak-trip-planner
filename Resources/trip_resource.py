@@ -75,7 +75,7 @@ class TripResource(Resource):
         
         try:
             updatedTrip = TripSchema().load(request.get_json())
-            db.session.merge(trip)
+            db.session.merge(updatedTrip)
             db.session.commit()
             trip = Trip.query.filter_by(id=updatedTrip.id).first()
             return TripSchema().dump(trip), 201
