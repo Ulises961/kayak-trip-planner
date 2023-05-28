@@ -15,7 +15,7 @@ class SeaStateResource(Resource):
 
     def retrieveSeaStateById(id):
         sea_state = SeaState.query.filter_by('id', id).first()
-        sea_state_json = SeaStateSchema.dump(sea_state)
+        sea_state_json = SeaStateSchema().dump(sea_state)
         if not sea_state_json:
              raise NoResultFound()
         return sea_state_json
@@ -47,4 +47,4 @@ class SeaStateResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return SeaStateSchema.dump(sea_state), 201
+            return SeaStateSchema().dump(sea_state), 201

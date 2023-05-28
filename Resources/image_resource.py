@@ -15,14 +15,14 @@ class ImageResource(Resource):
 
     def retrieveImageById(id):
         image = Image.query.filter_by('id', id).first()
-        image_json = ImageSchema.dump(image)
+        image_json = ImageSchema().dump(image)
         if not image_json:
              raise NoResultFound()
         return image_json
 
     def retrieveAllImages():
         images = Image.query.all()
-        images_json = [ImageSchema.dump(image) for image in images]
+        images_json = [ImageSchema().dump(image) for image in images]
         if not images_json:
                 raise NoResultFound()
         return images_json
@@ -60,4 +60,4 @@ class ImageResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return ImageSchema.dump(image), 201
+            return ImageSchema().dump(image), 201

@@ -16,7 +16,7 @@ class PointResource(Resource):
 
     def retrievePointById(id):
         point = Point.query.filter_by('id', id).first()
-        point_json = PointSchema.dump(point)
+        point_json = PointSchema().dump(point)
         if not point_json:
              raise NoResultFound()
         return point_json
@@ -48,4 +48,4 @@ class PointResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return PointSchema.dump(point), 201
+            return PointSchema().dump(point), 201

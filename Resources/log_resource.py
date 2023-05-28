@@ -14,11 +14,11 @@ LOG_ENDPOINT = "/api/log"
 
 class LogResource(Resource):
 
-    def retrieveLogById(id):
+    def retrieveLogById(self, id):
         log = Log.query.filter_by('id', id).first()
-        log_json = LogSchema.dump(log)
+        log_json = LogSchema().dump(log)
         if not log_json:
-             raise NoResultFound()
+            raise NoResultFound()
         return log_json
     
     def get(self, id=None):
@@ -39,7 +39,14 @@ class LogResource(Resource):
 
         :return: Log, 201 HTTP status code.
         """
-        log = LogSchema().load(request.get_json())
+        log_json = request.get_json()
+        
+        print()
+        print()
+        print(log_json)
+        print()
+        
+        log = LogSchema().load(log_json)
 
         try:
             db.session.add(log)
@@ -51,4 +58,4 @@ class LogResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return LogSchema.dump(log), 201
+            return LogSchema().dump(log), 201

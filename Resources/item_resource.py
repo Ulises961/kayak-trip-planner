@@ -16,7 +16,7 @@ class ItemResource(Resource):
 
     def retrieveItemById(id):
         item = Item.query.filter_by('id', id).first()
-        item_json = ItemSchema.dump(item)
+        item_json = ItemSchema().dump(item)
         if not item_json:
              raise NoResultFound()
         return item_json
@@ -51,4 +51,4 @@ class ItemResource(Resource):
 
             abort(500, message="Unexpected Error!")
         else:
-            return ItemSchema.dump(item), 201
+            return ItemSchema().dump(item), 201
