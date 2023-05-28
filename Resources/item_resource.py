@@ -15,7 +15,7 @@ ITEM_ENDPOINT = "/api/item"
 class ItemResource(Resource):
 
     def retrieveItemById(id):
-        item = Item.query.filter_by('id', id).first()
+        item = Item.query.filter_by(id = id).first()
         item_json = ItemSchema().dump(item)
         if not item_json:
              raise NoResultFound()
@@ -52,3 +52,36 @@ class ItemResource(Resource):
             abort(500, message="Unexpected Error!")
         else:
             return ItemSchema().dump(item), 201
+
+    def put(self):
+        try:
+            logger.info(f"Update item {request.get_json()} in db")
+            updatedItem = ItemSchema().load(request.get_json())
+            db.session.merge(updatedItem)
+            db.session.commit()
+            inventory = Item.query.filter_by(id=updatedItem.id).first()
+        
+            return ItemSchema().dump(inventory), 201
+        
+        except Exception as e:
+            logger.warning(
+                f"Error: {e}"
+            )
+            db.session.rollback()
+            abort(500, message="Error: {e}")
+    
+    def delete(self):
+        try:
+            item_id = request.args.get('id')
+            logger.info(f"Deleting item {item_id} ")
+
+            item = self.retrieveItemById(item_id)
+            db.session.delete(item)
+            db.session.commit()
+            logger.info(f"Item with id {item_id} successfully deleted")
+            return "Deletion successful", 200
+        
+        except Exception as e:
+            db.session.rollback()
+            abort(
+                500, message=f"Error: {e}")

@@ -2,7 +2,7 @@ from Resources.item_resource import ITEM_ENDPOINT
 import json 
 
 def test_insert_item_unchecked(app):
-    item = {"category": 'generic', "name": 'generic_item'}
+    item = {"id": 55, "category": 'generic', "checked": False, "name": 'generic_item'}
 
     response = app.post(ITEM_ENDPOINT, json=item)
     assert response.status_code == 201
