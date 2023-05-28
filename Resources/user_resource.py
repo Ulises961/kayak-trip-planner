@@ -55,11 +55,6 @@ class UserResource(Resource):
         try:
             user_json= request.get_json()
             
-            print()
-            print()
-            print(user_json)
-            print()
-            
             user = UserSchema().load(user_json)
             db.session.add(user)
             db.session.commit()

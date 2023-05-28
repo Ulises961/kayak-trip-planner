@@ -14,7 +14,7 @@ SEA_STATE_ENDPOINT = "/api/sea_state"
 class SeaStateResource(Resource):
 
     def retrieveSeaStateById(id):
-        sea_state = SeaState.query.filter_by('id', id).first()
+        sea_state = SeaState.query.filter_by(id = id).first()
         sea_state_json = SeaStateSchema().dump(sea_state)
         if not sea_state_json:
              raise NoResultFound()

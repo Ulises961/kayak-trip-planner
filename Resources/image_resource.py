@@ -14,7 +14,7 @@ IMAGE_ENDPOINT = "/api/image"
 class ImageResource(Resource):
 
     def retrieveImageById(id):
-        image = Image.query.filter_by('id', id).first()
+        image = Image.query.filter_by(id = id).first()
         image_json = ImageSchema().dump(image)
         if not image_json:
              raise NoResultFound()

@@ -15,7 +15,7 @@ POINT_ENDPOINT = "/api/point"
 class PointResource(Resource):
 
     def retrievePointById(id):
-        point = Point.query.filter_by('id', id).first()
+        point = Point.query.filter_by(id = id).first()
         point_json = PointSchema().dump(point)
         if not point_json:
              raise NoResultFound()
