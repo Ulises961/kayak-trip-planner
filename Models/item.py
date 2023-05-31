@@ -9,9 +9,6 @@ class ItemCategoryType(enum.Enum):
     GENERIC = "generic"
 
 class Item (db.Model):
-    def __init__(self,category, name):
-        self.category = category
-        self.name = name
 
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
     category = db.Column(db.Enum(ItemCategoryType)) 
