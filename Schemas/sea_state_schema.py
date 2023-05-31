@@ -10,8 +10,8 @@ class SeaStateSchema(Schema):
 
     day_number = fields.Integer(allow_none=True)
     itinerary_id=fields.Integer(allow_none=False)
-    date =fields.Date('dd-mm-yyyy',allow_none=False)
-    time=fields.Time('hh:mm:ss',allow_none=True)
+    date =fields.Date('%Y-%m-%d',allow_none=False)
+    time=fields.Time('%H:%M:%S',allow_none=True)
     wave_height=fields.Float(allow_none=False)
     wave_direction=fields.Float(allow_none=False)
     swell_direction=fields.Float(allow_none=False)
