@@ -21,7 +21,7 @@ class WeatherStateResource(Resource):
         WeatherStateResource GET method. Retrieves the information related to the weather state with the passed id in the request
         """
         try:
-            weather_state = WeatherStateSchema().dump(request.arg.json())
+            weather_state = WeatherStateSchema().dump(request.get_json())
             weather_state = self.__retrieve_weather_state_by_key( weather_state.day_number,
                 weather_state.date,
                 weather_state.itinerary_id,
@@ -59,5 +59,49 @@ class WeatherStateResource(Resource):
             )
             db.session.rollback()
             abort(500, message="Unexpected Error!")
+    
+    def put(self):
+        try:
+            logger.info(f"Update weather state {request.get_json()} in db")
+            weather_state = WeatherStateSchema().load(request.get_json())
+            db.session.merge(weather_state)
+            db.session.commit()
+            weather_state = self.__retrieve_weather_state_by_key( weather_state.day_number,
+                weather_state.date,
+                weather_state.itinerary_id,
+                weather_state.time
+                )
+
+            return WeatherStateSchema().dump(weather_state), 201
+
+        except Exception as e:
+            logger.warning(
+                f"Error: {e}"
+            )
+            db.session.rollback()
+            abort(500, message="Error: {e}")
+
+    def delete(self):
+        try:
+
+            weather_state = WeatherStateSchema().dump(request.get_json())
+            logger.info(f"Deleting weather state {weather_state} ")
+
+            weather_state = self.__retrieve_weather_state_by_key( weather_state.day_number,
+                weather_state.date,
+                weather_state.itinerary_id,
+                weather_state.time
+                )
+            db.session.delete(weather_state)
+            db.session.commit()
+            logger.info(f"Weather state {weather_state} successfully deleted")
+            return "Deletion successful", 200
+
+        except Exception as e:
+            db.session.rollback()
+            abort(
+                500, message=f"Error: {e}")
+
+        
         
             
