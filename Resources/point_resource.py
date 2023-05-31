@@ -14,19 +14,21 @@ POINT_ENDPOINT = "/api/point"
 
 class PointResource(Resource):
 
-    def retrievePointById(id):
-        point = Point.query.filter_by(id = id).first()
-        point_json = PointSchema().dump(point)
-        if not point_json:
-             raise NoResultFound()
-        return point_json
+    def __retrieve_point_by_id(self,id):
+        return Point.query.filter_by(id = id).first()
+        
     
-    def get(self, id=None):
+    def get(self):
         """
         PointResource GET method. Retrieves the information related to the point with the passed id in the request
         """
         try:
-            self.retrieveItineraryById(id)
+            id = request.args.get('id')
+            point = self.__retrieve_point_by_id(id)
+            point_json = PointSchema().dump(point)
+            if not point_json:
+                raise NoResultFound()
+            return point_json,200
         except NoResultFound:
                 abort(404, message=f"Itinerary with id {id} not found in database")
     
@@ -36,16 +38,53 @@ class PointResource(Resource):
 
         :return: Point, 201 HTTP status code.
         """
-        point = PointSchema().load(request.get_json())
 
         try:
+            point = PointSchema().load(request.get_json())
             db.session.add(point)
             db.session.commit()
+            point = self.__retrieve_point_by_id(point.id)
+            return PointSchema().dump(point), 201
+        
         except IntegrityError as e:
+            db.session.rollback()
             logger.warning(
                 f"Integrity Error, this point is already in the database. Error: {e}"
             )
 
             abort(500, message="Unexpected Error!")
-        else:
+        
+    def put(self):
+        try:
+            logger.info(f"Update point {request.get_json()} in db")
+            point = PointSchema().load(request.get_json())
+            db.session.merge(point)
+            db.session.commit()
+            point = self.__retrieve_point_by_id(point.id)
+
             return PointSchema().dump(point), 201
+
+        except Exception as e:
+            logger.warning(
+                f"Error: {e}"
+            )
+            db.session.rollback()
+            abort(500, message="Error: {e}")
+
+    def delete(self):
+        try:
+            point_id = request.args.get('id')
+            logger.info(f"Deleting point {point_id} ")
+
+            point = self.__retrieve_point_by_id(point_id)
+            db.session.delete(point)
+            db.session.commit()
+            logger.info(f"Item with id {point_id} successfully deleted")
+            return "Deletion successful", 200
+
+        except Exception as e:
+            db.session.rollback()
+            abort(
+                500, message=f"Error: {e}")
+
+        
