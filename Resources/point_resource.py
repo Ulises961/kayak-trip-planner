@@ -49,10 +49,10 @@ class PointResource(Resource):
         except IntegrityError as e:
             db.session.rollback()
             logger.error(
-                f"Integrity Error, this point is already in the database. Error: {e}"
+                f"Error: {e}"
             )
 
-            abort(500, message="Unexpected Error!")
+            abort(500, message="Error: {e}")
         
     def put(self):
         try:

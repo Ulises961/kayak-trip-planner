@@ -8,13 +8,6 @@ class PointType(enum.Enum):
     POSITION = 'position'
     INTEREST = 'interest'
 
-
-nearby_point = db.Table('point_is_nearby',
-                        db.Column('nearby_point_id', db.Integer,
-                                  db.ForeignKey('point.id'))
-                        )
-
-
 class Point (db.Model):
     __table_args__ = (
         db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_foreign_key_in_point"),
@@ -34,7 +27,7 @@ class Point (db.Model):
     reference : db.Mapped[Optional['Point']]  = db.relationship('Point',  foreign_keys=[reference_id], back_populates='nearby', remote_side=[id])
     nearby : db.Mapped[List[Optional['Point']]] = db.relationship('Point',  foreign_keys=[reference_id])
     images = db.relationship('Image', secondary=PointHasImage,
-                             lazy="subquery", backref=db.backref('point', lazy=True), cascade='all, delete, save-update')
+                             lazy="subquery", backref=db.backref('point', lazy=True), cascade='all, delete')
 
     def __repr__(self):
         return f'<Point "{self.gps}, type {self.type}">'

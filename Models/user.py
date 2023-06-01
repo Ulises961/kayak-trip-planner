@@ -28,7 +28,7 @@ class User(db.Model):
          secondary=user_endorses_log, backref="user_endorsed_logs")
     logs : Mapped[Optional[List[Log]]] = db.relationship(backref="user_logs")
     image:  Mapped[Optional[Image]]  = db.relationship(
-        'Image', secondary=userHasProfilePicture, backref=db.backref('user_picture', lazy=True))
+        'Image', secondary=userHasProfilePicture, uselist=False, backref=db.backref('user_picture', lazy=True))
 
     def __repr__(self):
         return f'<User "{self.id} {self.mail}, {self.name}, {self.surname}, {self.pwd}">'

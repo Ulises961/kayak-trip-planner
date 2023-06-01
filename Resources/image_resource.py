@@ -13,34 +13,25 @@ IMAGE_ENDPOINT = "/api/image"
 
 class ImageResource(Resource):
 
-    def retrieveImageById(id):
-        image = Image.query.filter_by(id = id).first()
-        image_json = ImageSchema().dump(image)
-        if not image_json:
-             raise NoResultFound()
-        return image_json
-
-    def retrieveAllImages():
-        images = Image.query.all()
-        images_json = [ImageSchema().dump(image) for image in images]
-        if not images_json:
-                raise NoResultFound()
-        return images_json
+    def __retrieve_image_by_id(self,id):
+        return Image.query.filter_by(id = id).first()
     
     def get(self, id=None):
         """
         ImageResource GET method. Retrieves the information related to the image with the passed id in the request
         """
-        if id:  
-            try:
-                self.retrieveImageById(id)
-            except NoResultFound:
-                abort(404, message=f"Image with id {id} not found in database")
-        else:
-            try:
-                self.retrieveAllImages()
-            except NoResultFound:
+         
+        try:
+            id = request.args.get('id')
+            image = self.__retrieve_image_by_id(id)
+            image_json = ImageSchema().dump(image)
+            if not image_json:
+                raise NoResultFound()
+            return image_json,200
+        except NoResultFound:
                 abort(404, message="No images available")
+        except Exception as e:
+            abort(500, message=f"Error:{e}")
     
     def post(self):
         """
@@ -48,16 +39,50 @@ class ImageResource(Resource):
 
         :return: Image, 201 HTTP status code.
         """
-        image = ImageSchema().load(request.get_json())
 
         try:
+            image = ImageSchema().load(request.get_json())
             db.session.add(image)
             db.session.commit()
+            image = self.__retrieve_image_by_id(image.id)
+            return ImageSchema().dump(image), 201
+        
         except IntegrityError as e:
-            logger.warning(
-                f"Integrity Error, this image is already in the database. Error: {e}"
+            db.session.rollback()
+            logger.error(
+                f"Error: {e}"
             )
 
             abort(500, message="Unexpected Error!")
-        else:
+        
+    def put(self):
+        try:
+            logger.info(f"Update image {request.get_json()} in db")
+            image = ImageSchema().load(request.get_json())
+            db.session.merge(image)
+            db.session.commit()
+            image = self.__retrieve_image_by_id(image.id)
             return ImageSchema().dump(image), 201
+
+        except Exception as e:
+            logger.error(
+                f"Error: {e}"
+            )
+            db.session.rollback()
+            abort(500, message="Error: {e}")
+
+    def delete(self):
+        try:
+            image_id = request.args.get('id')
+            logger.info(f"Deleting image {image_id} ")
+
+            image = self.__retrieve_image_by_id(image_id)
+            db.session.delete(image)
+            db.session.commit()
+            logger.info(f"Image with id {image_id} successfully deleted")
+            return "Deletion successful", 200
+
+        except Exception as e:
+            db.session.rollback()
+            abort(
+                500, message=f"Error: {e}")

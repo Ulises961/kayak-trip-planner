@@ -33,6 +33,7 @@ def test_insert_points(app):
     assert response_1.status_code == 201
     assert response_2.status_code == 201
     assert response_3.status_code == 201
+    assert response_4.status_code == 201
 
 
 def test_update_point(app):
@@ -55,7 +56,7 @@ def test_link_points(app):
                'day_number': 1,
                'gps': None,
                'id': 3,
-               'images': {},
+               'images': [],
                'itinerary_id': 1,
                'notes': None,
                'type': 'interest'}
@@ -63,7 +64,7 @@ def test_link_points(app):
                'day_number': None,
                'gps': None,
                'id': 4,
-               'images': {},
+               'images': [],
                'itinerary_id': None,
                'notes': None,
                'type': 'interest'}
@@ -74,14 +75,14 @@ def test_link_points(app):
         'day_number': 1,
         'gps': None,
         'id': 1,
-        'images': {},
+        'images': [],
         'itinerary_id': 1,
         'nearby': [point_3, point_4],
         'next': {'date': '2020-12-31',
                  'day_number': 1,
                  'gps': None,
                  'id': 2,
-                 'images': {},
+                 'images': [],
                  'itinerary_id': 1,
                  'notes': None,
                  'type': 'position'},
