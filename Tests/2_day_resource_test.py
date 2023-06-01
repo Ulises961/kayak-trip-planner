@@ -73,7 +73,6 @@ def test_delete_day(app):
     assert response.status_code == 200
 
 def test_update_day(app):
-
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     sea = None
     updated_day = {'date':day_date,'itinerary_id':1,'day_number':1, 'sea':sea} 

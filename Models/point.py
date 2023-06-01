@@ -1,19 +1,13 @@
 from Api.database import db
 import enum
 from Models.point_has_image import PointHasImage
-
+from typing import Optional,List
 
 class PointType(enum.Enum):
     STOP = 'stop'
     POSITION = 'position'
     INTEREST = 'interest'
 
-
-point_next_to = db.Table(
-    'point_previous_next',
-    db.Column('previous_point_id', db.Integer, db.ForeignKey('point.id')),
-    db.Column('next_point_id', db.Integer, db.ForeignKey('point.id'))
-)
 
 nearby_point = db.Table('point_is_nearby',
                         db.Column('nearby_point_id', db.Integer,
@@ -32,9 +26,13 @@ class Point (db.Model):
     day_number = db.Column(db.Integer)
     date = db.Column(db.Date)
     itinerary_id = db.Column(db.Integer)
-    previous = db.Column(db.Integer, db.ForeignKey('point.id'))
-    next =  db.Column(db.Integer, db.ForeignKey('point.id'))
-    nearby = db.relationship('Point', secondary=nearby_point, backref='points',cascade='all, delete,save-update')
+    previous_id= db.Column(db.Integer, db.ForeignKey('point.id')) 
+    next_id= db.Column(db.Integer, db.ForeignKey('point.id')) 
+    reference_id = db.Column(db.Integer, db.ForeignKey('point.id')) 
+    previous : db.Mapped[Optional['Point']]  = db.relationship('Point', foreign_keys=[previous_id], uselist =False, back_populates='next', remote_side=[id])
+    next : db.Mapped[Optional['Point']] = db.relationship('Point', foreign_keys=[next_id], uselist=False, back_populates='previous')
+    reference : db.Mapped[Optional['Point']]  = db.relationship('Point',  foreign_keys=[reference_id], back_populates='nearby', remote_side=[id])
+    nearby : db.Mapped[List[Optional['Point']]] = db.relationship('Point',  foreign_keys=[reference_id])
     images = db.relationship('Image', secondary=PointHasImage,
                              lazy="subquery", backref=db.backref('point', lazy=True), cascade='all, delete, save-update')
 

@@ -48,7 +48,7 @@ class PointResource(Resource):
         
         except IntegrityError as e:
             db.session.rollback()
-            logger.warning(
+            logger.error(
                 f"Integrity Error, this point is already in the database. Error: {e}"
             )
 
@@ -65,7 +65,7 @@ class PointResource(Resource):
             return PointSchema().dump(point), 201
 
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
             db.session.rollback()
