@@ -64,7 +64,7 @@ class TripResource(Resource):
 
         except Exception as e:
             db.session.rollback()
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
             abort(500, message=f"{e}")
@@ -82,7 +82,7 @@ class TripResource(Resource):
         
         except Exception as e:
             db.session.rollback()
-            logger.warning(
+            logger.error(
                 f"Error: {e}")
             abort(500, message=e)
 

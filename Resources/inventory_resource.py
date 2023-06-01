@@ -61,7 +61,7 @@ class InventoryResource(Resource):
 
         except Exception as e:
             db.session.rollback()
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
 
@@ -80,7 +80,7 @@ class InventoryResource(Resource):
             return InventorySchema().dump(inventory), 201
         
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
             db.session.rollback()

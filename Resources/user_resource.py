@@ -60,7 +60,7 @@ class UserResource(Resource):
             db.session.commit()
 
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Missing parameters. Error: {e}")
             db.session.rollback()
             abort(500, message=f"Error:{e}")

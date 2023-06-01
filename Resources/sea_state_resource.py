@@ -54,7 +54,7 @@ class SeaStateResource(Resource):
                 )
             return SeaStateSchema().dump(sea_state), 201
         except IntegrityError as e:
-            logger.warning(
+            logger.error(
                 f"Integrity Error, this sea_state is already in the database. Error: {e}"
             )
             db.session.rollback()
@@ -75,7 +75,7 @@ class SeaStateResource(Resource):
             return SeaStateSchema().dump(sea_state), 201
 
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
             db.session.rollback()

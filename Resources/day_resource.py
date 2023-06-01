@@ -31,7 +31,7 @@ class DayResource(Resource):
             itinerary_id = request.args.get('itinerary_id')
 
             if day_number and date and itinerary_id:
-                logger.info(f"Retrive day with id {id}")
+                logger.info(f"Retrive day number {day_number} with date {date} from itinerary {itinerary_id}")
                 try:
                     day = self.__retrieve_day_by_key(day_number, date, itinerary_id)
                     day_json = DaySchema().dump(day)
@@ -72,7 +72,7 @@ class DayResource(Resource):
                 ).first()
             return DaySchema().dump(day), 201
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}")
             db.session.rollback()
             abort(500, message=f"{e}")
@@ -96,7 +96,7 @@ class DayResource(Resource):
             return DaySchema().dump(day), 201
 
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}")
             db.session.rollback()
             abort(500, message="e")

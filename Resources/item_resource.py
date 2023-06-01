@@ -64,7 +64,7 @@ class ItemResource(Resource):
             return ItemSchema().dump(item), 201
 
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
             db.session.rollback()

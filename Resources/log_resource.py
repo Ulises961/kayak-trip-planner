@@ -47,7 +47,7 @@ class LogResource(Resource):
             db.session.add(log)
             db.session.commit()
         except IntegrityError as e:
-            logger.warning(
+            logger.error(
                 f"Integrity Error, this log is already in the database. Error: {e}"
             )
 
@@ -66,7 +66,7 @@ class LogResource(Resource):
             return LogSchema().dump(log), 201
         
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
             db.session.rollback()

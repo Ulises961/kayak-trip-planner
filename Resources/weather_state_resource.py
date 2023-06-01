@@ -54,7 +54,7 @@ class WeatherStateResource(Resource):
                 )
             return WeatherStateSchema().dump(weather_state), 201
         except IntegrityError as e:
-            logger.warning(
+            logger.error(
                 f"Integrity Error, this weather_state is already in the database. Error: {e}"
             )
             db.session.rollback()
@@ -75,7 +75,7 @@ class WeatherStateResource(Resource):
             return WeatherStateSchema().dump(weather_state), 201
 
         except Exception as e:
-            logger.warning(
+            logger.error(
                 f"Error: {e}"
             )
             db.session.rollback()
