@@ -4,17 +4,13 @@ import json, uuid
 
 NUM_USERS_IN_BASE_DB = 2
 
-test_public_id = str(uuid.uuid4())
-
 def test_user_post(app):
-    global test_public_id
-    
     new_user_json = {
         "mail": "test.user@gmail.com",
         "pwd": "testPassword",
         "phone": "+390123456789",
         "name": "Test User",
-        "public_id": test_public_id
+        "public_id": str(uuid.uuid4())
     }
     
     response = app.post(USER_ENDPOINT, json=new_user_json)
@@ -53,12 +49,15 @@ def test_get_user(app):
     assert json.loads(response.data)['name'] == "Test User"
 
 def test_update_user(app):
+    response = app.get(f"{USER_ENDPOINT}?id={1}")
+    originalUser = json.loads(response.data)
+    
     updatedUser = {'id':1, 'mail':"ulises.sosa@gmail.com", 'name': 'Ulises', 'surname':'Sosa'} 
     response = app.put(f"{USER_ENDPOINT}", json=updatedUser)
     assert json.loads(response.data)['name'] == "Ulises"
     assert json.loads(response.data)['surname'] == "Sosa"
     assert json.loads(response.data)['mail'] == "ulises.sosa@gmail.com"
-    assert json.loads(response.data)['public_id'] == test_public_id
+    assert json.loads(response.data)['public_id'] == originalUser["public_id"]
     assert response.status_code == 201
 
 def test_delete_user(app):
