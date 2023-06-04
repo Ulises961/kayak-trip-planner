@@ -13,6 +13,9 @@ def test_user_post(app):
         "public_id": str(uuid.uuid4())
     }
     
+    print(f"\n\nnew_user_json = {new_user_json}")    
+    print(f"The post object is of type: {type(new_user_json)}")
+    
     response = app.post(USER_ENDPOINT, json=new_user_json)
     assert response.status_code == 201
     
@@ -47,6 +50,30 @@ def test_get_user(app):
         f"{USER_ENDPOINT}?id={1}")
     assert response.status_code == 200
     assert json.loads(response.data)['name'] == "Test User"
+
+def test_user_update_error(app):
+    response = app.get(f"{USER_ENDPOINT}?id={1}")
+    original_user = json.loads(response.data)
+    original_user["name"] = "test"
+    
+    print(f"\n\noriginal_user = {original_user}")
+    print(f"The result of GET is of type: {type(original_user)}")
+    
+    updated_json = json.dumps(original_user)
+    print(f"\njson.dumps(original_user) = {updated_json}")
+    print(f"If we do a json.dumps() of the GET we get the type: {type(updated_json)}")
+    
+    updated_user = json.loads(updated_json)
+    print(f"\njson.loads(updated_json) = {updated_user}")
+    print(f"If we  then do a json.loads() of the json we get the type: {type(updated_user)}")
+    
+    print(f"The thing is, non of these are acceppted by the Schema file")    
+    
+    
+    response = app.put(f"{USER_ENDPOINT}", json=updated_user)
+    assert json.loads(response.data)['public_id'] == original_user["public_id"]
+    assert json.loads(response.data)['name'] == "test"
+    assert response.status_code == 201
 
 def test_update_user(app):
     response = app.get(f"{USER_ENDPOINT}?id={1}")
