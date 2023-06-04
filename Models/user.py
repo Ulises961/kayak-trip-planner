@@ -18,6 +18,7 @@ class User(db.Model):
         self.__dict__.update(kwargs)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
+    public_id = db.Column(db.String(255), nullable=False, unique=True)
     mail = db.Column(db.String(255), nullable=False, unique=True)
     pwd = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(255), unique=True, nullable=False)

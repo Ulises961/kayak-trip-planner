@@ -1,6 +1,6 @@
 from Resources.log_resource import LOG_ENDPOINT
 from Resources.user_resource import USER_ENDPOINT
-import json 
+import json, uuid 
 
 def create_user(app, id, mail, phone):
     return {
@@ -8,7 +8,8 @@ def create_user(app, id, mail, phone):
         "mail": mail,
         "pwd": "testPassword",
         "phone": phone,
-        "name": "Test User"
+        "name": "Test User",
+        "public_id": str(uuid.uuid4())
     }
 
 def test_insert_log(app):
