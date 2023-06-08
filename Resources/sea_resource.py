@@ -15,27 +15,35 @@ SEA_ENDPOINT = "/api/sea"
 
 class SeaResource(Resource):
 
-    def __retrieve_sea_by_key(self, day_number, date, itinerary_id):
+    def __retrieve_sea_by_key(self, day_id):
         return Sea.query.filter_by(
-            day_number=day_number, date=date, itinerary_id=itinerary_id).first()
+            day_id=day_id).first()
 
-
-    def get(self):
+    def get(self, id=None):
         """
         SeaResource GET method. Retrieves the information related to the sea with the passed keys in the request
         """
         try:
-            day_number = request.args.get('day_number')
-            date = request.args.get('date')
-            itinerary_id = request.args.get('itinerary_id')
-            sea = self.__retrieve_sea_by_key(day_number, date, itinerary_id)
-            sea_json = SeaSchema().dump(sea)
-            if not sea_json:
-                raise NoResultFound()
-            return sea_json, 200
+            day_id = request.args.get('day_id')
+            if day_id:
+                sea = self.__retrieve_sea_by_key(day_id)
+                sea_json = SeaSchema().dump(sea)
+                if not sea_json:
+                    raise NoResultFound()
+                return sea_json, 200
+            else:
+                logger.info(f"Retrive all seas from db")
+                seas = Sea.query.all()
+                sea_json = [SeaSchema().dump(sea) for sea in seas]
+                if len(sea_json) == 0:
+                    raise NoResultFound()
+                return sea_json, 200
+            
         except NoResultFound:
             abort(
-                404, message=f"Sea with day number{day_number}date {date} itinerary id{itinerary_id} not found in database")
+                404, message=f"Sea not found in database")
+        except Exception as e:
+            abort(500, message=f"Error:{e}")
 
     def post(self):
         """
@@ -51,9 +59,7 @@ class SeaResource(Resource):
             db.session.add(sea)
             db.session.commit()
             sea = self.__retrieve_sea_by_key(
-                sea.day_number,
-                sea.date,
-                sea.itinerary_id
+                sea.day_id,
             )
             return SeaSchema().dump(sea), 201
 
@@ -76,9 +82,7 @@ class SeaResource(Resource):
             db.session.merge(updated_sea)
             db.session.commit()
             updated_sea = self.__retrieve_sea_by_key(
-                updated_sea.day_number,
-                updated_sea.date,
-                updated_sea.itinerary_id
+                updated_sea.day_id,
             )
             logger.info(
                 f"Sea: {updated_sea}"
@@ -99,17 +103,16 @@ class SeaResource(Resource):
         """
 
         try:
-            day_number = request.args.get('day_number')
-            date = request.args.get('date')
-            itinerary_id = request.args.get('itinerary_id')
+     
+            day_id = request.args.get('day_id')
             logger.info(
-                f"Deleting sea with day number{day_number}date {date} itinerary id{itinerary_id}")
-            sea = self.__retrieve_sea_by_key(day_number, date, itinerary_id)
+                f"Deleting sea with day_id{day_id}")
+            sea_to_delete = self.__retrieve_sea_by_key(day_id)
 
-            db.session.delete(sea)
+            db.session.delete(sea_to_delete)
             db.session.commit()
             logger.info(
-                f"Sea with with day number{day_number}date {date} itinerary id{itinerary_id} successfully deleted")
+                f"Sea with id{sea_to_delete.day_id} successfully deleted")
             return "Deletion successful", 200
 
         except Exception as e:
