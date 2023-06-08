@@ -19,12 +19,11 @@ class SeaResource(Resource):
         return Sea.query.filter_by(
             day_id=day_id).first()
 
-    def get(self, id=None):
+    def get(self, day_id=None):
         """
         SeaResource GET method. Retrieves the information related to the sea with the passed keys in the request
         """
         try:
-            day_id = request.args.get('day_id')
             if day_id:
                 sea = self.__retrieve_sea_by_key(day_id)
                 sea_json = SeaSchema().dump(sea)
@@ -95,7 +94,7 @@ class SeaResource(Resource):
             db.session.rollback()
             abort(500, message=f"Error:{e}")
 
-    def delete(self):
+    def delete(self, day_id=None):
         """
         Sea Resource DELETE method. Eliminates an existing sea from the db.
 
@@ -103,8 +102,6 @@ class SeaResource(Resource):
         """
 
         try:
-     
-            day_id = request.args.get('day_id')
             logger.info(
                 f"Deleting sea with day_id{day_id}")
             sea_to_delete = self.__retrieve_sea_by_key(day_id)
