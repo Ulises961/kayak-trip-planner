@@ -7,6 +7,12 @@ def test_insert_inventory_without_trip(app):
 
     response = app.post(INVENTORY_ENDPOINT, json=inventory)
     assert response.status_code == 201
+    
+def test_insert_inventory_empty(app):
+    inventory = {"id": 41 ,"items": []}
+
+    response = app.post(INVENTORY_ENDPOINT, json=inventory)
+    assert response.status_code == 201
 
 def test_update_inventory(app):
     inventory_items = [{"category": 'travel', "name": 'map'}, {"category": "first_aid", "name": 'Oki'}]
