@@ -19,6 +19,14 @@ def test_insert_log(app):
     app.post(USER_ENDPOINT, json=user)
     response = app.post(LOG_ENDPOINT, json=log)
     assert response.status_code == 201
+    
+def test_insert_extra_log(app):
+    user= create_user(app, 71, "user70@mail.com", "+397777777")
+    log = {"id": 77, "hours": 7, "avg_sea": 7, "user_id": 71}
+
+    app.post(USER_ENDPOINT, json=user)
+    response = app.post(LOG_ENDPOINT, json=log)
+    assert response.status_code == 201
 
 def test_update_log(app):
     log = {"id": 70, "hours": 7, "avg_sea": 77, "user_id": 71}
