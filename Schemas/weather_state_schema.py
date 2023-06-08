@@ -8,9 +8,7 @@ class WeatherStateSchema(Schema):
     used for loading/dumping Weather State entities
     """
 
-    day_number = fields.Integer(allow_none=False)
-    itinerary_id=fields.Integer(allow_none=False)
-    date =fields.Date('%Y-%m-%d',allow_none=False)
+    day_id = fields.Integer(allow_none=False)
     time=fields.Time('%H:%M:%S',allow_none=False)
     temperature=fields.Float(allow_none=True)
     precipitation=fields.Float(allow_none=True)

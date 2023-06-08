@@ -8,9 +8,7 @@ class WeatherSchema(Schema):
     used for loading/dumping Weather entities
     """
 
-    day_number   = fields.Integer(allow_none=False)
-    itinerary_id = fields.Integer(allow_none=False)
-    date = fields.Date('%Y-%m-%d',allow_none=False)
+    day_id   = fields.Integer(allow_none=False)
     model = fields.String(allow_none=False)
     weather_states = fields.List(fields.Nested(WeatherStateSchema), allow_none=True)
     

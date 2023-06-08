@@ -9,7 +9,7 @@ class DaySchema(Schema):
     Day Schema
     used for loading/dumping Day entities
     """
-
+    id = fields.Integer(allow_none=False)
     day_number = fields.Integer(allow_none=False)
     itinerary_id = fields.Integer(allow_none=False)
     date=fields.Date('%Y-%m-%d',allow_none=False)

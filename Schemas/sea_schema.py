@@ -8,9 +8,7 @@ class SeaSchema(Schema):
     used for loading/dumping Sea entities
     """
 
-    day_number   = fields.Integer(allow_none=False)
-    itinerary_id = fields.Integer(allow_none=False)
-    date         = fields.Date('%Y-%m-%d',allow_none=False)
+    day_id   = fields.Integer(allow_none=False)
     moon_phase   = fields.String(allow_none=True)
     high_tide    = fields.Time('%H:%M',allow_none=True)
     low_tide     = fields.Time('%H:%M',allow_none=True)

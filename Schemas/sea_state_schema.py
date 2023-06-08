@@ -8,9 +8,7 @@ class SeaStateSchema(Schema):
     used for loading/dumping Sea State entities
     """
 
-    day_number = fields.Integer(allow_none=True)
-    itinerary_id=fields.Integer(allow_none=False)
-    date =fields.Date('%Y-%m-%d',allow_none=False)
+    day_id = fields.Integer(allow_none=True)
     time=fields.Time('%H:%M:%S',allow_none=True)
     wave_height=fields.Float(allow_none=False)
     wave_direction=fields.Float(allow_none=False)

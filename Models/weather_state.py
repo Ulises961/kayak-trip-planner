@@ -3,12 +3,10 @@ from Api.database import db
 
 class WeatherState (db.Model):
     __table_args__ = (
-        db.ForeignKeyConstraint(['day_number', 'itinerary_id', 'date'], [
-                                'weather.day_number', 'weather.itinerary_id', 'weather.date'], name="weather_day_foreign_keys_in_weather_state"),
+        db.ForeignKeyConstraint(['day_id'], [
+                                'weather.day_id'], name="weather_day_foreign_keys_in_weather_state"),
     )
-    day_number = db.Column(db.Integer,  primary_key=True)
-    itinerary_id = db.Column(db.Integer,  primary_key=True)
-    date = db.Column(db.Date, primary_key=True)
+    day_id = db.Column(db.Integer,  primary_key=True)
     time = db.Column(db.Time, primary_key=True)
     temperature = db.Column(db.Numeric)
     precipitation = db.Column(db.Numeric)
