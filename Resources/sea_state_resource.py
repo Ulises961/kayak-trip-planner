@@ -23,7 +23,6 @@ class SeaStateResource(Resource):
         SeaStateResource GET method. Retrieves the information related to the sea state with the passed id in the request
         """
         try:
-
             sea_state = SeaStateSchema().dump(request.get_json())
             sea_state = self.__retrieve_sea_state_by_key(day_id,
                                                          sea_state.time
