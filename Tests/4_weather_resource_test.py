@@ -4,9 +4,7 @@ from datetime import date, datetime
 
 def test_insert_weather(app):
     weather = {
-        "day_number": 1,
-        "itinerary_id": 1,
-        "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
+        "day_id": 1,
         "model":"ICON",
         "weather_states": []
     }
@@ -15,33 +13,26 @@ def test_insert_weather(app):
     assert response.status_code == 201
 
 def test_delete_weather(app):
-    day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
-    response = app.delete(f"{WEATHER_ENDPOINT}?day_number=1&itinerary_id=1&date={day_date}")
+    response = app.delete(f"{WEATHER_ENDPOINT}/1")
     assert response.status_code == 200
 
 def test_update_weather(app):
     weather = {
-        "itinerary_id": 1,
+        "day_id": 1,
         "model":"GFS",
-        "day_number": 1,
         "weather_states": [],
-        "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     }
-    response = app.put(WEATHER_ENDPOINT, json=weather)
-    
+    response = app.put(WEATHER_ENDPOINT, json=weather)   
     assert json.loads(response.data)['model'] == "GFS"
     assert response.status_code == 200
 
 
 def test_get_weather(app):
-    day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
-    response = app.get(f"{WEATHER_ENDPOINT}?day_number=1&itinerary_id=1&date={day_date}")
+    response = app.get(f"{WEATHER_ENDPOINT}/1")
     assert json.loads(response.data) == {
-        "itinerary_id": 1,
+        "day_id": 1,
         "model":"GFS",
-        "day_number": 1,
         "weather_states": [],
-        "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     }
     assert response.status_code == 200
 

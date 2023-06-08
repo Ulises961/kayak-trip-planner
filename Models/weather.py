@@ -15,4 +15,4 @@ class Weather (db.Model):
         backref='weather', cascade='all, delete, delete-orphan,save-update')
 
     def __repr__(self):
-        return f'<Weather "Itinerary id {self.itinerary_id}, Date {self.date}, Day number {self.day_number}, Weather states {self.weather_states}">'
+        return f'<Weather "Day id {self.day_id}, Model {self.model} Weather states {self.weather_states}">'

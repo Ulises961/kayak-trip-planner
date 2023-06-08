@@ -15,25 +15,34 @@ WEATHER_ENDPOINT = "/api/weather"
 
 class WeatherResource(Resource):
 
-    def __retrieve_weather_by_key(self, day_number, date, itinerary_id):
-        return Weather.query.filter_by(day_number=day_number, date=date, itinerary_id=itinerary_id).first()
+    def __retrieve_weather_by_key(self, day_id):
+        return Weather.query.filter_by(day_id=day_id).first()
 
-    def get(self):
+    def get(self, day_id=None):
         """
         WeatherResource GET method. Retrieves the information related to the weather with the passed id in the request
         """
         try:
-            day_number = request.args.get('day_number')
-            date = request.args.get('date')
-            itinerary_id = request.args.get('itinerary_id')
-            weather = self.__retrieve_weather_by_key(
-                day_number, date, itinerary_id)
-            weather_json = WeatherSchema().dump(weather)
-            if not weather_json:
-                raise NoResultFound()
-            return weather_json, 200
+            if day_id:
+                weather = self.__retrieve_weather_by_key(
+                    day_id)
+                weather_json = WeatherSchema().dump(weather)
+                if not weather_json:
+                    raise NoResultFound()
+                return weather_json, 200
+                
+            else:
+                logger.info(f"Retrive all weather from db")
+                weather = Weather.query.all()
+                weather_json = [WeatherSchema().dump(weather) for weather in weather]
+                if len(weather_json) == 0:
+                    raise NoResultFound()
+                return weather_json, 200
         except NoResultFound:
             abort(404, message=f"Weather with id {id} not found in database")
+        except Exception as e:
+            abort(500, message=f"Error:{e}")
+
 
     def post(self):
         """
@@ -46,9 +55,7 @@ class WeatherResource(Resource):
             db.session.commit()
 
             weather = self.__retrieve_weather_by_key(
-                weather.day_number,
-                weather.date,
-                weather.itinerary_id
+                weather.day_id
                 )
             return WeatherSchema().dump(weather), 201
         except Exception as e:
@@ -70,9 +77,7 @@ class WeatherResource(Resource):
             db.session.merge(updated_weather)
             db.session.commit()
             updated_weather = self.__retrieve_weather_by_key(
-                updated_weather.day_number,
-                updated_weather.date,
-                updated_weather.itinerary_id
+                updated_weather.day_id
             )
             logger.info(
                 f"Weather: {updated_weather}"
@@ -85,24 +90,19 @@ class WeatherResource(Resource):
             db.session.rollback()
             abort(500, message=f"Error:{e}")
 
-    def delete(self):
+    def delete(self, day_id):
         """
         Weather Resource DELETE method. Eliminates an existing weather from the db.
 
         :return: Deletion successful,200 HTTP status code. | 500, Error
         """
         try:
-            day_number = request.args.get('day_number')
-            date = request.args.get('date')
-            itinerary_id = request.args.get('itinerary_id')
-            logger.info(
-                f"Deleting weather with day number{day_number}date {date} itinerary id{itinerary_id}")
-            weather = self.__retrieve_weather_by_key(day_number, date, itinerary_id)
+            weather = self.__retrieve_weather_by_key(day_id)
 
             db.session.delete(weather)
             db.session.commit()
             logger.info(
-                f"Weather with with day number{day_number}date {date} itinerary id{itinerary_id} successfully deleted")
+                f"Weather with with day id{weather.day_id} successfully deleted")
             return "Deletion successful", 200
 
         except Exception as e:
