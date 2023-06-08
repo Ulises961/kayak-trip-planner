@@ -71,12 +71,12 @@ def createApp(config_mode:str):
     api.add_resource(ItineraryResource, ITINERARY_ENDPOINT, f"{ITINERARY_ENDPOINT}/<id>")
     api.add_resource(LogResource, LOG_ENDPOINT,f"{LOG_ENDPOINT}/<id>")
     api.add_resource(PointResource, POINT_ENDPOINT, f"{POINT_ENDPOINT}/<id>")
-    api.add_resource(SeaResource, SEA_ENDPOINT, f"{SEA_ENDPOINT}/<id>")
-    api.add_resource(SeaStateResource, SEA_STATE_ENDPOINT, f"{SEA_STATE_ENDPOINT}/<id>")
+    api.add_resource(SeaResource, SEA_ENDPOINT, f"{SEA_ENDPOINT}/<day_id>")
+    api.add_resource(SeaStateResource, SEA_STATE_ENDPOINT, f"{SEA_STATE_ENDPOINT}/<day_id>")
     api.add_resource(TripResource, TRIP_ENDPOINT, f"{TRIP_ENDPOINT}/<id>")
     api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<id>")
-    api.add_resource(WeatherResource, WEATHER_ENDPOINT, f"{WEATHER_ENDPOINT}/<id>")
-    api.add_resource(WeatherStateResource, WEATHER_STATE_ENDPOINT, f"{WEATHER_STATE_ENDPOINT}/<id>")
+    api.add_resource(WeatherResource, WEATHER_ENDPOINT, f"{WEATHER_ENDPOINT}/<day_id>")
+    api.add_resource(WeatherStateResource, WEATHER_STATE_ENDPOINT, f"{WEATHER_STATE_ENDPOINT}/<day_id>")
     return app
 
 
