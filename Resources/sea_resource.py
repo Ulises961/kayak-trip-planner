@@ -94,7 +94,7 @@ class SeaResource(Resource):
             db.session.rollback()
             abort(500, message=f"Error:{e}")
 
-    def delete(self, day_id=None):
+    def delete(self, day_id):
         """
         Sea Resource DELETE method. Eliminates an existing sea from the db.
 
