@@ -33,7 +33,7 @@ class DayResource(Resource):
             day_number = request.args.get('day_number')
             date = request.args.get('date')
             itinerary_id = request.args.get('itinerary_id')
-
+            
             if id:
                 day = self.__retrieve_day_by_id(id)
                 day_json = DaySchema().dump(day)
@@ -99,23 +99,22 @@ class DayResource(Resource):
         logger.info(f"Update day {request.get_json()} in db")
 
         try:
-            day_json = request.get_json()
-            day = DaySchema().load(day_json)
+            day = DaySchema().load(request.get_json())
             db.session.merge(day)
             db.session.commit()
 
             if id: 
-                day = self.__retrieve_day_by_id(
-                    day_json['id']
+                updated_day = self.__retrieve_day_by_id(
+                    day.id
                 )
 
-            return DaySchema().dump(day), 201
+            return DaySchema().dump(updated_day), 201
 
         except Exception as e:
             logger.error(
                 f"Error: {e}")
             db.session.rollback()
-            abort(500, message="e")
+            abort(500, message=f"Error:{e}")
 
     def delete(self,id=None):
         try:
@@ -134,6 +133,8 @@ class DayResource(Resource):
                     day_number, date, itinerary_id)
             db.session.delete(day_to_delete)
             db.session.commit()
+            logger.info(
+                f"Day with id{day_to_delete.id} successfully deleted")
             return "Deletion successful", 200
 
         except Exception as e:
