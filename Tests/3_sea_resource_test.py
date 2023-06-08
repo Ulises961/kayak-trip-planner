@@ -14,8 +14,8 @@ def test_insert_sea(app):
     response = app.post(SEA_ENDPOINT, json=sea)
     assert response.status_code == 201
 
-def test_delete_seaby_key(app):
-    response = app.delete(f"{SEA_ENDPOINT}?day_id=1")
+def test_delete_sea_by_key(app):
+    response = app.delete(f"{SEA_ENDPOINT}/1")
     assert response.status_code == 200
 
 
@@ -34,7 +34,7 @@ def test_update_sea(app):
 
 
 def test_get_sea(app):
-    response = app.get(f"{SEA_ENDPOINT}?day_id=1")
+    response = app.get(f"{SEA_ENDPOINT}/1")
     assert json.loads(response.data) == {
         "day_id": 1,
         "high_tide": datetime.now().time().strftime('%H:%M'),
