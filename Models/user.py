@@ -12,12 +12,17 @@ from Models.trip import Trip
 
 class User(db.Model):
     __tablename__ = 'users'
-    def __init__(self, pwd=None, **kwargs):
+    def __init__(self, pwd=None, endorsed_logs=[], logs=[], **kwargs):
         if pwd:
             self.pwd = generate_password_hash(pwd).decode('UTF-8')
+            
+        self.endorsed_logs = endorsed_logs
+        self.logs = logs
+        
         self.__dict__.update(kwargs)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
+    public_id = db.Column(db.String(255), nullable=False, unique=True)
     mail = db.Column(db.String(255), nullable=False, unique=True)
     pwd = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(255), unique=True, nullable=False)

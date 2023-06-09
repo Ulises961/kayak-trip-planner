@@ -11,6 +11,7 @@ class UserSchema(Schema):
     """
 
     id   = fields.Integer(allow_none=False)
+    public_id = fields.String(allow_none=False)
     mail = fields.Email(allow_none=True)
     pwd = fields.String(allow_none=True)
     phone = fields.String(allow_none=True)  

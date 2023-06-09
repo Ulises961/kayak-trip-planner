@@ -5,7 +5,7 @@ name: Python application
 
 on:
   push:
-    branches: [ "project-structure"]
+    branches: [ "project-structure", "jwt-tokens"]
   pull_request:
     branches: [ "master"]
 

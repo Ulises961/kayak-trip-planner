@@ -3,8 +3,10 @@ from flask_restful import Resource, abort
 from sqlalchemy.orm.exc import NoResultFound
 from Schemas.user_schema import UserSchema
 from Models.user import User
-from flask import request
+from flask import request, jsonify, current_app, make_response
+from flask_bcrypt import check_password_hash
 from Api.database import db
+import jwt, datetime
 
 # It will print the name of this module when the main app is running
 logger = logging.getLogger(__name__)
@@ -109,3 +111,25 @@ class UserResource(Resource):
                 f"Error: {e}")
             abort(
                 500, message=f"Error: {e}")
+
+    def login(self):
+        auth = request.get_json()
+
+        if not auth or not auth["email"] or not auth["password"]:
+            return make_response('could not verify', 401, {'Authentication': 'login required"'})
+
+        user = User.query.filter_by(email=auth["email"]).first()
+
+        if check_password_hash(auth["password"], user.password):
+            token = jwt.encode(
+                {
+                    'public_id': user.public_id,
+                    'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=45)
+                },
+                current_app.config['SECRET_KEY'],
+                "HS256"
+            )
+
+            return jsonify({'token': token})
+
+        return make_response('could not verify',  401, {'Authentication': '"login required"'})
