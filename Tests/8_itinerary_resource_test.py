@@ -9,12 +9,14 @@ def test_update_itinerary(app):
             "day_number": 1,
             "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
             "points": [],
+            "id":1
         },
         {
             "day_number": 2,
             "date": date.fromisoformat('2020-01-01').strftime("%Y-%m-%d"),
             "points": [],
-            "itinerary_id":1
+            "itinerary_id":1,
+            "id":2
         }
     ]
 
