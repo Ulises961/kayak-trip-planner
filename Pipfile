@@ -15,6 +15,7 @@ path = "*"
 marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 typing = "*"
+jwt = "*"
 
 [dev-packages]
 
