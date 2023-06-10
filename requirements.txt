@@ -1,0 +1,12 @@
+path
+flake8
+pytest
+flask
+marshmallow
+marshmallow-sqlalchemy
+flask-sqlalchemy
+psycopg2-binary
+flask-restful
+flask-bcrypt
+python-dotenv
+jwt

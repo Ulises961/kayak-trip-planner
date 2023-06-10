@@ -1,3 +1,10 @@
 *.wiki
 *.bkp
 *.dtmp
+.vscode
+.pytest*
+.env
+kayak-env/
+__pycache__
+*.log*
+Pipfile.lock
