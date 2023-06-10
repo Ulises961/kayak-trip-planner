@@ -32,7 +32,7 @@ class PointResource(Resource):
             else:
                 logger.info(f"Retrive all points from db")
                 points = Point.query.all()
-                point_json = [PointSchema().dump(sea) for point in points]
+                point_json = [PointSchema().dump(point) for point in points]
                 if len(point_json) == 0:
                     raise NoResultFound()
                 return point_json, 200
