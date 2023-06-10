@@ -60,7 +60,7 @@ def createApp(config_mode:str):
         datefmt="%m-%d %H:%M",
         handlers=[
             RotatingFileHandler(
-                "kayak-trip-planner.log", maxBytes=2000, backupCount=5, encoding='UTF-8'),
+                "/var/log/kayak-trip-planner.log", maxBytes=2000, backupCount=5, encoding='UTF-8'),
             logging.StreamHandler()
         ])
     api = Api(app)

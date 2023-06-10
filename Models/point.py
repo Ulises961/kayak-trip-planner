@@ -10,15 +10,13 @@ class PointType(enum.Enum):
 
 class Point (db.Model):
     __table_args__ = (
-        db.ForeignKeyConstraint(['day_number','itinerary_id','date'],['day.day_number','day.itinerary_id','day.date'], name="day_foreign_key_in_point"),
+        db.ForeignKeyConstraint(['day_id'],['day.id'], name="day_foreign_key_in_point"),
     )
     id = db.Column(db.Integer, primary_key=True, autoincrement="auto")
     gps = db.Column(db.Numeric)
     notes = db.Column(db.Text)
     type = db.Column(db.Enum(PointType))
-    day_number = db.Column(db.Integer)
-    date = db.Column(db.Date)
-    itinerary_id = db.Column(db.Integer)
+    day_id = db.Column(db.Integer)
     previous_id= db.Column(db.Integer, db.ForeignKey('point.id')) 
     next_id= db.Column(db.Integer, db.ForeignKey('point.id')) 
     reference_id = db.Column(db.Integer, db.ForeignKey('point.id')) 

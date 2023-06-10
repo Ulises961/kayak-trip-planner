@@ -13,9 +13,7 @@ class PointSchema(Schema):
     gps = fields.Float(allow_none=True)
     notes = fields.String(allow_none=True)
     type = fields.Enum(PointType, by_value=True)
-    day_number = fields.Integer(allow_none=True)
-    date = fields.Date('%Y-%m-%d', allow_none=True)
-    itinerary_id = fields.Integer(allow_none=True)
+    day_id = fields.Integer(allow_none=True)
     previous = fields.Nested(lambda: PointSchema(
     ), allow_none=True, exclude=("previous", "next", "nearby"))
     next = fields.Nested(lambda: PointSchema(), allow_none=True,

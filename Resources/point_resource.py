@@ -18,19 +18,29 @@ class PointResource(Resource):
         return Point.query.filter_by(id = id).first()
         
     
-    def get(self):
+    def get(self, id=None):
         """
         PointResource GET method. Retrieves the information related to the point with the passed id in the request
         """
         try:
-            id = request.args.get('id')
-            point = self.__retrieve_point_by_id(id)
-            point_json = PointSchema().dump(point)
-            if not point_json:
-                raise NoResultFound()
-            return point_json,200
+            if id:
+                point = self.__retrieve_point_by_id(id)
+                point_json = PointSchema().dump(point)
+                if not point_json:
+                    raise NoResultFound()
+                return point_json,200
+            else:
+                logger.info(f"Retrive all points from db")
+                points = Point.query.all()
+                point_json = [PointSchema().dump(sea) for point in points]
+                if len(point_json) == 0:
+                    raise NoResultFound()
+                return point_json, 200
         except NoResultFound:
-                abort(404, message=f"Itinerary with id {id} not found in database")
+                abort(404, message=f"Point {id} not found in database")
+        except Exception as e:
+            abort(500, message=f"Error:{e}")
+
     
     def post(self):
         """
@@ -56,7 +66,6 @@ class PointResource(Resource):
         
     def put(self):
         try:
-            logger.info(f"Update point {request.get_json()} in db")
             point = PointSchema().load(request.get_json())
             db.session.merge(point)
             db.session.commit()
@@ -71,15 +80,14 @@ class PointResource(Resource):
             db.session.rollback()
             abort(500, message="Error: {e}")
 
-    def delete(self):
+    def delete(self,id):
         try:
-            point_id = request.args.get('id')
-            logger.info(f"Deleting point {point_id} ")
+            logger.info(f"Deleting point {id} ")
 
-            point = self.__retrieve_point_by_id(point_id)
+            point = self.__retrieve_point_by_id(id)
             db.session.delete(point)
             db.session.commit()
-            logger.info(f"Item with id {point_id} successfully deleted")
+            logger.info(f"Item with id {id} successfully deleted")
             return "Deletion successful", 200
 
         except Exception as e:
