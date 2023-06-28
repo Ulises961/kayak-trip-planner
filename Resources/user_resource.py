@@ -14,12 +14,7 @@ USER_ENDPOINT = "/api/user"
 
 
 class UserResource(Resource):
-    method_decorators = {
-        'get': [authenticate_restful],
-        'post': [authenticate_admin],
-        'put': [authenticate_restful],
-        'delete': [authenticate_restful],
-    }
+
     def __retrieveUserById(self,id):
         return User.query.filter_by(id=id).first()
 

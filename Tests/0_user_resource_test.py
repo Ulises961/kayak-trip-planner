@@ -11,7 +11,9 @@ def test_user_post(app):
         "phone": "+390123456789",
         "name": "Test User",
         "public_id": str(uuid.uuid4()),
-        "endorsed_logs": []
+        "endorsed_logs": [],
+        'username' : 'test',
+        'admin':True
     }
     
     response = app.post(USER_ENDPOINT, json=new_user_json)
@@ -24,6 +26,7 @@ def test_user_extra_arguments(app):
         'phone': '+391234567899',
         'name': 'Don',
         'surname': 'charles',
+        'username': 'charles99',
         'public_id': str(uuid.uuid4()),
         "endorsed_logs": []
     }

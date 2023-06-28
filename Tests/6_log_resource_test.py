@@ -9,7 +9,8 @@ def create_user(app, id, mail, phone):
         "pwd": "testPassword",
         "phone": phone,
         "name": "Test User",
-        "public_id": str(uuid.uuid4())
+        "public_id": str(uuid.uuid4()),
+        "username" : "Testy"
     }
 
 def test_insert_log(app):

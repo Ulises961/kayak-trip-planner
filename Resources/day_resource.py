@@ -16,13 +16,6 @@ DAY_ENDPOINT = "/api/day"
 
 class DayResource(Resource):
     
-    method_decorators = {
-        'get': [authenticate_restful],
-        'post': [authenticate_restful],
-        'put': [authenticate_restful],
-        'delete': [authenticate_restful],
-    }
-
     def __retrieve_day_by_key(self, day_number, date, itinerary_id):
         return Day.query.filter_by(
             day_number=day_number, date=date, itinerary_id=itinerary_id).first()
