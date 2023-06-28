@@ -7,6 +7,7 @@ from Models.weather import Weather
 from Models.sea import Sea
 from sqlalchemy import UniqueConstraint
 
+
 class Day (db.Model):
     __table_args__ = (
         UniqueConstraint("day_number", "itinerary_id", "date"),
@@ -16,8 +17,8 @@ class Day (db.Model):
     itinerary_id = db.Column(db.Integer, db.ForeignKey('itinerary.id'))
     date = db.Column(db.Date)
     points:Mapped[Optional[List[Point]]] = db.relationship(backref='day')
-    weather:Mapped[Optional[Weather]] = db.relationship(backref='day', uselist=False, cascade='all, delete, delete-orphan,save-update')
-    sea:Mapped[Optional[Sea]] = db.relationship(backref='day', uselist=False, cascade='all, delete, delete-orphan,save-update')
+    weather:Mapped[Optional[Weather]] = db.relationship(backref='day', uselist=False, cascade='all,delete,save-update')
+    sea:Mapped[Optional[Sea]] = db.relationship(backref='day', uselist=False, cascade='all, delete,save-update')
     
 
     def __repr__(self):

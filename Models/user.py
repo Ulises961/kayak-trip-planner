@@ -22,10 +22,11 @@ class User(db.Model):
         self.__dict__.update(kwargs)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
-    public_id = db.Column(db.String(255), nullable=False, unique=True)
+    public_id = db.Column(db.String(255),  unique=True)
     mail = db.Column(db.String(255), nullable=False, unique=True)
     pwd = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(255), unique=True, nullable=False)
+    username = db.Column(db.String(255), nullable=False, unique=True)
     name = db.Column(db.String(255), nullable=False)
     surname = db.Column(db.String(255), nullable=True)
     trips : Mapped[Optional[List[Trip]]] = db.relationship(secondary=user_has_trip, backref="travellers")
@@ -34,6 +35,7 @@ class User(db.Model):
     logs : Mapped[Optional[List[Log]]] = db.relationship(backref="user_logs")
     image:  Mapped[Optional[Image]]  = db.relationship(
         'Image', secondary=userHasProfilePicture, uselist=False, backref=db.backref('user_picture', lazy=True))
+    admin= db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f'<User "{self.id} {self.mail}, {self.name}, {self.surname}, {self.pwd}">'

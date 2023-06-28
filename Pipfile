@@ -15,7 +15,11 @@ path = "*"
 marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 typing = "*"
-jwt = "*"
+bcrypt-flask = "*"
+pyjwt = "*"
+flask-migrate = "*"
+alembic = "*"
+base = "*"
 
 [dev-packages]
 

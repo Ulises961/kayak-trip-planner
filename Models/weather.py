@@ -12,7 +12,7 @@ class Weather (db.Model):
     day_id = db.Column(db.Integer, primary_key=True)
     model = db.Column(db.String(255))
     weather_states: Mapped[Optional[List[WeatherState]]] = db.relationship(
-        backref='weather', cascade='all, delete, delete-orphan,save-update')
+        backref='weather', cascade='all, delete,save-update')
 
     def __repr__(self):
         return f'<Weather "Day id {self.day_id}, Model {self.model} Weather states {self.weather_states}">'

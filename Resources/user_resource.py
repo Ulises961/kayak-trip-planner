@@ -3,11 +3,10 @@ from flask_restful import Resource, abort
 from sqlalchemy.orm.exc import NoResultFound
 from Schemas.user_schema import UserSchema
 from Models.user import User
-from flask import request, jsonify, current_app, make_response
-from flask_bcrypt import check_password_hash
+from flask import request
 from Api.database import db
 import jwt, datetime
-
+from Api.utils import authenticate_admin, authenticate_restful
 # It will print the name of this module when the main app is running
 logger = logging.getLogger(__name__)
 
@@ -15,7 +14,12 @@ USER_ENDPOINT = "/api/user"
 
 
 class UserResource(Resource):
-
+    method_decorators = {
+        'get': [authenticate_restful],
+        'post': [authenticate_admin],
+        'put': [authenticate_restful],
+        'delete': [authenticate_restful],
+    }
     def __retrieveUserById(self,id):
         return User.query.filter_by(id=id).first()
 
@@ -70,6 +74,7 @@ class UserResource(Resource):
         else:
             return UserSchema().dump(user), 201
     
+
     def put(self):
         """
         UserResource POST method. Updates an existing user.
@@ -112,24 +117,3 @@ class UserResource(Resource):
             abort(
                 500, message=f"Error: {e}")
 
-    def login(self):
-        auth = request.get_json()
-
-        if not auth or not auth["email"] or not auth["password"]:
-            return make_response('could not verify', 401, {'Authentication': 'login required"'})
-
-        user = User.query.filter_by(email=auth["email"]).first()
-
-        if check_password_hash(auth["password"], user.password):
-            token = jwt.encode(
-                {
-                    'public_id': user.public_id,
-                    'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=45)
-                },
-                current_app.config['SECRET_KEY'],
-                "HS256"
-            )
-
-            return jsonify({'token': token})
-
-        return make_response('could not verify',  401, {'Authentication': '"login required"'})

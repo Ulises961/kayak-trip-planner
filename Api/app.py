@@ -13,7 +13,7 @@ import logging
 from logging.handlers import RotatingFileHandler 
 import os
 from dotenv import load_dotenv
-
+from flask_migrate import Migrate
 
 
 from Resources.image_resource import ImageResource, IMAGE_ENDPOINT
@@ -36,6 +36,8 @@ from Resources.weather_state_resource import WeatherStateResource, WEATHER_STATE
 
 from Resources.log_resource import LogResource, LOG_ENDPOINT
 
+from Resources.authentication_resource import api as authApi
+
 
 def createApp(config_mode:str):
     """
@@ -49,9 +51,15 @@ def createApp(config_mode:str):
     app = Flask(__name__)
     # Get current config from the config.py file using the config_mode set in .env file
     app.config.from_object(config[config_mode])
+    app.register_blueprint(authApi)
+    
     db.init_app(app)
     with app.app_context():
         db.create_all()
+
+    migrate = Migrate()
+    migrate.init_app(app,db)
+
 
     # Configure logger
     logging.basicConfig(
@@ -65,7 +73,7 @@ def createApp(config_mode:str):
         ])
     api = Api(app)
     api.add_resource(DayResource, DAY_ENDPOINT, f"{DAY_ENDPOINT}/<id>")
-    api.add_resource(ImageResource, IMAGE_ENDPOINT),f"{IMAGE_ENDPOINT}/<id>"
+    api.add_resource(ImageResource, IMAGE_ENDPOINT,f"{IMAGE_ENDPOINT}/<id>")
     api.add_resource(InventoryResource, INVENTORY_ENDPOINT,f"{INVENTORY_ENDPOINT}/<id>")
     api.add_resource(ItemResource, ITEM_ENDPOINT,f"{ITEM_ENDPOINT}/<id>")
     api.add_resource(ItineraryResource, ITINERARY_ENDPOINT, f"{ITINERARY_ENDPOINT}/<id>")

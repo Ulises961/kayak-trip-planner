@@ -15,12 +15,14 @@ class UserSchema(Schema):
     mail = fields.Email(allow_none=True)
     pwd = fields.String(allow_none=True)
     phone = fields.String(allow_none=True)  
+    username = fields.String(allow_none=True)  
     name = fields.String(allow_none=True)  
     surname = fields.String(allow_none=True)  
     trip = fields.Nested(TripSchema, allow_none=True)  
     endorsed_logs = fields.List(fields.Nested(LogSchema), allow_none=True)  
     logs = fields.List(fields.Nested(LogSchema), allow_none=True )
     image = fields.Nested(ImageSchema, allow_none=True)
+    admin = fields.Bool(allow_none=True)
 
     @post_load
     def make_user(self, data, **kwargs):

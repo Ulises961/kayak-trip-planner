@@ -9,6 +9,6 @@ class Trip (db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
     inventory: Mapped[Optional[Inventory]] = db.relationship(
-        backref="trip_inventory", uselist=False, cascade='all, delete, delete-orphan,save-update')
+        backref="trip_inventory", uselist=False, cascade='all, delete,save-update')
     itinerary:  Mapped[Optional[Itinerary]] = db.relationship(
-        backref="trip_itinerary", uselist=False, cascade='all, delete, delete-orphan,save-update')
+        backref="trip_itinerary", uselist=False, cascade='all, delete,save-update')
