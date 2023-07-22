@@ -33,6 +33,24 @@ def decode_auth_token(auth_token):
         auth_token, current_app.config["SECRET_KEY"], ["HS256"]
     )
 
+def auth_token_required(f):
+   @wraps(f)
+   def decorator(*args, **kwargs):
+       auth_token = None
+       if 'x-access-tokens' in request.headers:
+           auth_token = request.headers['x-access-tokens']
+ 
+       if not auth_token:
+           return jsonify({'message': 'a valid token is missing'})
+       try:
+           data = decode_auth_token(auth_token)
+           current_user = User.query.filter_by(public_id=data['public_id']).first()
+       except:
+           return jsonify({'message': 'token is invalid'})
+ 
+       return f(*args, **kwargs)
+   return decorator
+
 @api.route("/api/auth/ping", methods=["GET"])
 @authenticate_restful
 def check_token(resp):
