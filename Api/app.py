@@ -91,4 +91,4 @@ def createApp(config_mode:str):
 if __name__ == "__main__":
     load_dotenv()
     app = createApp(os.getenv("CONFIG_MODE"))
-    app.run()
+    app.run(host=os.environ['FLASK_HOST'])
