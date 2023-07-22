@@ -107,15 +107,6 @@ def login_user():
         response_object["message"] = "Try again."
         return jsonify(response_object), HTTPStatus.INTERNAL_SERVER_ERROR
 
-
-@api.route("/api/auth/logout", methods=["GET"])
-@authenticate_restful
-def logout_user(resp):
-    log.info(resp)
-    response_object = {"status": "success", "message": "Successfully logged out"}
-    return jsonify(response_object), HTTPStatus.OK
-
-
 @api.route("/api/auth/register", methods=["POST"])
 def register_user():
     user_json = request.get_json()
