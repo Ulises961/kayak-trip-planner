@@ -81,14 +81,15 @@ def login_user():
     if not post_data:
         return jsonify(response_object), HTTPStatus.BAD_REQUEST
 
-    mail = post_data.get("email")
-    password = post_data.get("password")
+    mail = post_data.get("mail")
+    password = post_data.get("pwd")
+    
     
     try:
         user = User.query.filter_by(mail=mail).first()
         
         if user and check_password_hash(user.pwd, password):
-            auth_token = generate_auth_token(user["public_id"])
+            auth_token = generate_auth_token(user.public_id)
             
             if auth_token:
                 response_object = {
