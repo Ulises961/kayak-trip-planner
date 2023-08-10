@@ -92,5 +92,5 @@ def test_reinsert_day(app):
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     new_day = {'id':1,'date':day_date,'itinerary_id':1,'day_number':1} 
     response = app.post(f"{DAY_ENDPOINT}", json=new_day)
-    print(response.data)
+
     assert response.status_code == 201
