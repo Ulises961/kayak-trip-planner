@@ -9,7 +9,6 @@ psycopg2-binary
 flask-restful
 flask-bcrypt
 python-dotenv
-jwt
 pyjwt
 flask-migrate
 alembic
