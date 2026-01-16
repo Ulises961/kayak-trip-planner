@@ -1,17 +1,16 @@
 from flask import Flask
 from flask_restful import Api
-import path
+import os
 import sys
 
  # directory reach
-directory = path.Path(__file__).abspath()
-sys.path.append(directory.parent.parent)
+directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(directory))
 
 from Api.config import config
 from Api.database import db
-import logging
-from logging.handlers import RotatingFileHandler 
-import os
+from Api.logging_config import setup_logging
+from Api.error_handlers import register_error_handlers
 from dotenv import load_dotenv
 from flask_migrate import Migrate
 
@@ -60,17 +59,12 @@ def createApp(config_mode:str):
     migrate = Migrate()
     migrate.init_app(app,db)
 
+    # Configure logging
+    setup_logging(app)
+    
+    # Register error handlers
+    register_error_handlers(app)
 
-    # Configure logger
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-        datefmt="%m-%d %H:%M",
-        handlers=[
-            RotatingFileHandler(
-                "./var/log/kayak-trip-planner.log", maxBytes=2000, backupCount=5, encoding='UTF-8'),
-            logging.StreamHandler()
-        ])
     api = Api(app)
     api.add_resource(DayResource, DAY_ENDPOINT, f"{DAY_ENDPOINT}/<id>")
     api.add_resource(ImageResource, IMAGE_ENDPOINT,f"{IMAGE_ENDPOINT}/<id>")

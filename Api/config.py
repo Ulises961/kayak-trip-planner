@@ -8,22 +8,29 @@ class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv("DEVELOPMENT_DATABASE_URL")
-    SECRET_KEY="411cd120ade053d5a3e06ef19249444e78360e0b"
+    SECRET_KEY = os.getenv("DEVELOPMENT_SECRET_KEY", "dev-secret-key-change-in-production")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret-change-in-production")
+    
 class TestingConfig(Config):
     TESTING = True
     DEVELOPMENT = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv("TEST_DATABASE_URL")
-    SECRET_KEY="dbb60a26cae08641ea6194a5b540c926d55ab9d7"
+    SECRET_KEY = os.getenv("TEST_SECRET_KEY", "test-secret-key")
+    JWT_SECRET_KEY = os.getenv("TEST_JWT_SECRET_KEY", "test-jwt-secret-key")
+    
 class StagingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv("STAGING_DATABASE_URL")
-    SECRET_KEY="28663d35ef0238755fcb2521ec28e8faf0f6f2ae"
+    SECRET_KEY = os.getenv("STAGING_SECRET_KEY")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("PRODUCTION_DATABASE_URL")
-    SECRET_KEY="2e4308e056bb7c0e464199a74f68223eb82097e2"
+    SECRET_KEY = os.getenv("PRODUCTION_SECRET_KEY")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 config = {
     "development": DevelopmentConfig,
     "testing": TestingConfig,
