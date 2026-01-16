@@ -6,7 +6,7 @@ from Models.user import User
 from flask import request
 from Api.database import db
 import jwt, datetime
-from Api.utils import authenticate_admin, authenticate_restful
+from Services.jwt_service import JWTService
 # It will print the name of this module when the main app is running
 logger = logging.getLogger(__name__)
 

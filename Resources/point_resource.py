@@ -1,98 +1,70 @@
 import logging
-from flask_restful import Resource, abort
-from sqlalchemy.orm.exc import NoResultFound
-from Schemas.point_schema import PointSchema 
-from Models.point import Point
+from flask_restful import Resource
 from flask import request
-from sqlalchemy.exc import IntegrityError
-from Api.database import db
+from Schemas.point_schema import PointSchema
+from Services.point_service import PointService
 
 
-logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
+logger = logging.getLogger(__name__)
 
 POINT_ENDPOINT = "/api/point"
 
 class PointResource(Resource):
-
-    def __retrieve_point_by_id(self,id):
-        return Point.query.filter_by(id = id).first()
-        
+    """RESTful resource for Point operations."""
     
     def get(self, id=None):
         """
-        PointResource GET method. Retrieves the information related to the point with the passed id in the request
+        PointResource GET method. Retrieves point(s) by ID or all points.
+        
+        Args:
+            id: Optional point ID
+            
+        Returns:
+            JSON response with point data and 200 status code
         """
-        try:
-            if id:
-                point = self.__retrieve_point_by_id(id)
-                point_json = PointSchema().dump(point)
-                if not point_json:
-                    raise NoResultFound()
-                return point_json,200
-            else:
-                logger.info(f"Retrive all points from db")
-                points = Point.query.all()
-                point_json = [PointSchema().dump(point) for point in points]
-                if len(point_json) == 0:
-                    raise NoResultFound()
-                return point_json, 200
-        except NoResultFound:
-                abort(404, message=f"Point {id} not found in database")
-        except Exception as e:
-            abort(500, message=f"Error:{e}")
+        if id:
+            point = PointService.get_point_by_id(id)
+            return PointSchema().dump(point), 200
+        else:
+            logger.info("Retrieve all points from db")
+            points = PointService.get_all_points()
+            return [PointSchema().dump(point) for point in points], 200
 
     
     def post(self):
         """
         PointResource POST method. Adds a new point to the database.
 
-        :return: Point, 201 HTTP status code.
+        Returns:
+            JSON response with created point and 201 status code
         """
-
-        try:
-            point = PointSchema().load(request.get_json())
-            db.session.add(point)
-            db.session.commit()
-            point = self.__retrieve_point_by_id(point.id)
-            return PointSchema().dump(point), 201
-        
-        except IntegrityError as e:
-            db.session.rollback()
-            logger.error(
-                f"Error: {e}"
-            )
-
-            abort(500, message="Error: {e}")
+        point_data = request.get_json()
+        point = PointService.create_point(point_data)
+        return PointSchema().dump(point), 201
         
     def put(self):
-        try:
-            point = PointSchema().load(request.get_json())
-            db.session.merge(point)
-            db.session.commit()
-            point = self.__retrieve_point_by_id(point.id)
+        """
+        PointResource PUT method. Updates an existing point.
+        
+        Returns:
+            JSON response with updated point and 200 status code
+        """
+        point_data = request.get_json()
+        point = PointService.update_point(point_data)
+        return PointSchema().dump(point), 200
 
-            return PointSchema().dump(point), 201
-
-        except Exception as e:
-            logger.error(
-                f"Error: {e}"
-            )
-            db.session.rollback()
-            abort(500, message="Error: {e}")
-
-    def delete(self,id):
-        try:
-            logger.info(f"Deleting point {id} ")
-
-            point = self.__retrieve_point_by_id(id)
-            db.session.delete(point)
-            db.session.commit()
-            logger.info(f"Item with id {id} successfully deleted")
-            return "Deletion successful", 200
-
-        except Exception as e:
-            db.session.rollback()
-            abort(
-                500, message=f"Error: {e}")
+    def delete(self, id):
+        """
+        PointResource DELETE method. Deletes a point by ID.
+        
+        Args:
+            id: Point ID to delete
+            
+        Returns:
+            Success message and 200 status code
+        """
+        logger.info(f"Deleting point {id}")
+        PointService.delete_point(id)
+        return {"message": "Deletion successful"}, 200
 
         

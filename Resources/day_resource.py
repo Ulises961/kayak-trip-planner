@@ -1,12 +1,13 @@
+from http import HTTPStatus
 import logging
+from typing import cast
 from flask import request
 from Api.database import db
 from flask_restful import Resource, abort
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from Schemas.day_schema import DaySchema
 from Models.day import Day
-from Api.utils import authenticate_restful
+from Services.jwt_service import JWTService
 
 # It will print the name of this module when the main app is running
 logger = logging.getLogger(__name__)
@@ -99,16 +100,18 @@ class DayResource(Resource):
         logger.info(f"Update day {request.get_json()} in db")
 
         try:
-            day = DaySchema().load(request.get_json())
+            day = cast(Day,DaySchema().load(request.get_json()))
+            if not day:
+                abort(HTTPStatus.BAD_REQUEST, description="Day not found")
             db.session.merge(day)
             db.session.commit()
 
-            if id: 
+            if day: 
                 updated_day = self.__retrieve_day_by_id(
                     day.id
                 )
 
-            return DaySchema().dump(updated_day), 201
+                return DaySchema().dump(updated_day), 201
 
         except Exception as e:
             logger.error(
@@ -131,10 +134,12 @@ class DayResource(Resource):
 
                 day_to_delete = self.__retrieve_day_by_key(
                     day_number, date, itinerary_id)
+            
             db.session.delete(day_to_delete)
             db.session.commit()
+
             logger.info(
-                f"Day with id{day_to_delete.id} successfully deleted")
+                f"Day with id {id} successfully deleted")
             return "Deletion successful", 200
 
         except Exception as e:

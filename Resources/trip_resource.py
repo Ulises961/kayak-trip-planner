@@ -1,103 +1,65 @@
 import logging
-from flask_restful import Resource, abort
-from sqlalchemy.orm.exc import NoResultFound
-from Schemas.trip_schema import TripSchema
-from Models.trip import Trip
-from Models.user import User
+from flask_restful import Resource
 from flask import request
-from sqlalchemy.exc import IntegrityError
-from Api.database import db
+from Schemas.trip_schema import TripSchema
+from Services.trip_service import TripService
 
-logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
+logger = logging.getLogger(__name__)
 
 TRIP_ENDPOINT = "/api/trip"
 
 class TripResource(Resource):
-
-    def __retrieve_trip_by_id(self,id):
-        return Trip.query.filter_by(id = id).first()
-
+    """RESTful resource for Trip operations."""
     
     def get(self):
         """
-        TripResource GET method. Retrieves the information related to a trip with the passed id in the request
+        TripResource GET method. Retrieves trip(s) by ID or all trips.
+        
+        Returns:
+            JSON response with trip data and 200 status code
         """
-
-        try:
-            id = request.args.get('id')
-            if id:
-                logger.info(f"Retrieving trip with id {id}")
-                trip = self.__retrieve_trip_by_id(id)
-                trip_json = TripSchema().dump(trip)
-                if not trip_json:
-                    raise NoResultFound()
-                return trip_json, 200
-            else:
-                logger.info(f"retrieving all Trips in db")
-                trips = Trip.query.all()
-                trips_json =  [TripSchema().dump(trip) for trip in trips]
-                if len(trips_json) == 0:
-                    abort(404, message=f"No trips in db")
-                return trips_json, 200
-        except NoResultFound:
-                logger.error(f"Trip with id {id} not found in database")
-                abort(404, message=f"Trip with id {id} not found in database")
-        except Exception as e:
-                abort(500, message=f"Error:{e}")
+        id = request.args.get('id')
+        if id:
+            logger.info(f"Retrieving trip with id {id}")
+            trip = TripService.get_trip_by_id(int(id))
+            return TripSchema().dump(trip), 200
+        else:
+            logger.info("Retrieving all trips in db")
+            trips = TripService.get_all_trips()
+            return [TripSchema().dump(trip) for trip in trips], 200
         
         
     def post(self):
         """
         TripResource POST method. Adds a new trip to the database.
 
-        :return: Trip, 201 HTTP status code.
+        Returns:
+            JSON response with created trip and 201 status code
         """
-
-        try:
-            trip_json = request.get_json()
-            trip = TripSchema().load(trip_json)
-            db.session.add(trip)
-            db.session.commit()
-
-            trip = Trip.query.filter_by(id=trip.id).first()
-            return TripSchema().dump(trip), 201
-
-        except Exception as e:
-            db.session.rollback()
-            logger.error(
-                f"Error: {e}"
-            )
-            abort(500, message=f"{e}")
+        trip_data = request.get_json()
+        trip = TripService.create_trip(trip_data)
+        return TripSchema().dump(trip), 201
 
     def put(self):
-
+        """
+        TripResource PUT method. Updates an existing trip.
+        
+        Returns:
+            JSON response with updated trip and 200 status code
+        """
         logger.info(f"Update trip {request.get_json()} in db")
-        
-        try:
-            updatedTrip = TripSchema().load(request.get_json())
-            db.session.merge(updatedTrip)
-            db.session.commit()
-            trip = Trip.query.filter_by(id=updatedTrip.id).first()
-            return TripSchema().dump(trip), 201
-        
-        except Exception as e:
-            db.session.rollback()
-            logger.error(
-                f"Error: {e}")
-            abort(500, message=e)
+        trip_data = request.get_json()
+        trip = TripService.update_trip(trip_data)
+        return TripSchema().dump(trip), 200
 
     def delete(self):
-        try:
-            id = request.args.get('id')
-            logger.info(f"Deleting day {id} ")
-
-            trip_to_delete = self.__retrieve_trip_by_id(id)
-            db.session.delete(trip_to_delete)
-            db.session.commit()
-            logger.info(f"Trip {id} successfully deleted")
-            return "Deletion successful", 200
+        """
+        TripResource DELETE method. Deletes a trip by ID.
         
-        except Exception as e:
-            db.session.rollback()
-            abort(
-                500, message=f"Error: {e}")
+        Returns:
+            Success message and 200 status code
+        """
+        id = request.args.get('id')
+        logger.info(f"Deleting trip {id}")
+        TripService.delete_trip(int(id))
+        return {"message": "Deletion successful"}, 200
