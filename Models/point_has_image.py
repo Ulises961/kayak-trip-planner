@@ -1,6 +1,6 @@
 from Api.database import db
+from sqlalchemy import Table, Column, Integer, ForeignKey
 
-PointHasImage = db.Table('point_has_image',
-                         db.Column('image_id', db.Integer, db.ForeignKey(
-                             'image.id'), primary_key=True),
-                         db.Column('point_id', db.Integer, db.ForeignKey('point.id'), primary_key=True))
+PointHasImage = Table('point_has_image', db.Model.metadata,
+    Column('image_id', Integer, ForeignKey('image.id'), primary_key=True),
+    Column('point_id', Integer, ForeignKey('point.id'), primary_key=True))

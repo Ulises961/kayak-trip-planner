@@ -1,18 +1,22 @@
 from Api.database import db
 from Models.inventory_items import inventory_items
-from typing import List
-from typing import Optional
-from sqlalchemy.orm import Mapped
-from Models.item import Item
+from sqlalchemy import Integer, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from Models.item import Item
+    from Models.trip import Trip
 
 class Inventory(db.Model):
     def __init__(self,items=[],**kwargs):
         self.items = items
         self.__dict__.update(kwargs)
 
-    id= db.Column('id', db.Integer, primary_key = True, autoincrement = "auto")
-    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
-    items : Mapped[Optional[List[Item]]]= db.relationship( secondary = inventory_items, backref='inventories', cascade='all,delete')
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    trip_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('trip.id'), nullable=True)
     
+    items: Mapped[List["Item"]] = relationship(secondary=inventory_items, cascade='all,delete')
+
     def __repr__(self):
         return f'<Inventory "{self.id}">'

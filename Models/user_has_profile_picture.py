@@ -1,7 +1,8 @@
 from Api.database import db
+from sqlalchemy import Table, Column, Integer, ForeignKey
 
-userHasProfilePicture = db.Table('user_has_profile_picture',
-    db.Column('user_id',db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('image_id ',db.Integer, db.ForeignKey('image.id'))
+userHasProfilePicture = Table('user_has_profile_picture', db.Model.metadata,
+    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
+    Column('image_id ', Integer, ForeignKey('image.id'))
     )
 

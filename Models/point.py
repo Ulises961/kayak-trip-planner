@@ -1,7 +1,13 @@
 from Api.database import db
+from sqlalchemy import Integer, Numeric, Text, Enum, ForeignKey, ForeignKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from Models.point_has_image import PointHasImage
-from typing import Optional,List
+from typing import Optional, List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from Models.image import Image
+    from Models.day import Day
 
 class PointType(enum.Enum):
     STOP = 'stop'
@@ -10,22 +16,18 @@ class PointType(enum.Enum):
 
 class Point (db.Model):
     __table_args__ = (
-        db.ForeignKeyConstraint(['day_id'],['day.id'], name="day_foreign_key_in_point"),
+        ForeignKeyConstraint(['day_id'],['day.id'], name="day_foreign_key_in_point"),
     )
-    id = db.Column(db.Integer, primary_key=True, autoincrement="auto")
-    gps = db.Column(db.Numeric)
-    notes = db.Column(db.Text)
-    type = db.Column(db.Enum(PointType))
-    day_id = db.Column(db.Integer)
-    previous_id= db.Column(db.Integer, db.ForeignKey('point.id')) 
-    next_id= db.Column(db.Integer, db.ForeignKey('point.id')) 
-    reference_id = db.Column(db.Integer, db.ForeignKey('point.id')) 
-    previous : db.Mapped[Optional['Point']]  = db.relationship('Point', foreign_keys=[previous_id], uselist =False, back_populates='next', remote_side=[id])
-    next : db.Mapped[Optional['Point']] = db.relationship('Point', foreign_keys=[next_id], uselist=False, back_populates='previous')
-    reference : db.Mapped[Optional['Point']]  = db.relationship('Point',  foreign_keys=[reference_id], back_populates='nearby', remote_side=[id])
-    nearby : db.Mapped[List[Optional['Point']]] = db.relationship('Point',  foreign_keys=[reference_id])
-    images = db.relationship('Image', secondary=PointHasImage,
-                             lazy="subquery", backref=db.backref('point', lazy=True), cascade='all, delete')
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    latitude: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)
+    longitude: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    type: Mapped[Optional[PointType]] = mapped_column(Enum(PointType), nullable=True)
+    day_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    next_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('point.id'), nullable=True)
+
+    next: Mapped[Optional['Point']] = relationship('Point', foreign_keys=[next_id], remote_side=[id], uselist=False)
+    images: Mapped[List["Image"]] = relationship(secondary=PointHasImage, lazy="subquery", cascade='all, delete')
 
     def __repr__(self):
-        return f'<Point "{self.gps}, type {self.type}">'
+        return f'<Point "({self.latitude}, {self.longitude}), type {self.type}">'

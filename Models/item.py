@@ -1,4 +1,11 @@
 from Api.database import db
+from sqlalchemy import Integer, String, Boolean, Enum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import Optional, List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from Models.inventory import Inventory
+
 import enum
 
 class ItemCategoryType(enum.Enum):
@@ -10,7 +17,8 @@ class ItemCategoryType(enum.Enum):
 
 class Item (db.Model):
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement='auto')
-    category = db.Column(db.Enum(ItemCategoryType)) 
-    checked = db.Column(db.Boolean)
-    name = db.Column(db.String(255))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    category: Mapped[Optional[ItemCategoryType]] = mapped_column(Enum(ItemCategoryType), nullable=True)
+    checked: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    

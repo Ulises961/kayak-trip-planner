@@ -1,4 +1,5 @@
 from Api.database import db
+from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.schema import DropTable
 from sqlalchemy.ext.compiler import compiles
 
@@ -6,6 +7,6 @@ from sqlalchemy.ext.compiler import compiles
 def _compile_drop_table(element, compiler, **kwargs):
     return compiler.visit_drop_table(element) + " CASCADE"
 
-user_endorses_log = db.Table('user_endorses_log',
-    db.Column('log_id',db.Integer, db.ForeignKey('log.id'), primary_key=True),
-    db.Column('endorsers',db.Integer, db.ForeignKey('users.id')))
+user_endorses_log = Table('user_endorses_log', db.Model.metadata,
+    Column('log_id', Integer, ForeignKey('log.id'), primary_key=True),
+    Column('endorsers', Integer, ForeignKey('users.id')))
