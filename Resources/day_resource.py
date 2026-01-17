@@ -1,7 +1,7 @@
 from http import HTTPStatus
 import logging
-from typing import cast
-from flask import request
+from typing import Any, Dict, List, cast
+from flask import Blueprint, jsonify, request
 from Api.database import db
 from flask_restful import Resource, abort
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -13,136 +13,100 @@ from Services.jwt_service import JWTService
 logger = logging.getLogger(__name__)
 
 DAY_ENDPOINT = "/api/day"
+day_api = Blueprint('day', __name__, url_prefix=DAY_ENDPOINT)
+
+@day_api.route("/itinerary/<int:itinerary_id>", methods=['GET'])
+def read_by_itinerary(itinerary_id: int):
+    days = Day.query.filter_by(itinerary_id=itinerary_id)
+    return jsonify([DaySchema().dump(day) for day in days]), 200
+
+@day_api.route("/read_by_ids", methods=['POST'])
+def read_by_ids():
+    body = request.get_json()
+    ids: List[int] = body.get("ids", None)
+    if not ids:
+        abort(HTTPStatus.BAD_REQUEST, description = "Missing day ids")
+    days = Day.query.filter(Day.id.in_(ids))
+    return jsonify([DaySchema().dump(day) for day in days]), 200
+
+@day_api.route("/by-key", methods=['POST'])
+def read_by_key():
+    body = request.get_json()
+    key: Dict[str, Any] = body.get("key", None)
+    if not key:
+        abort(HTTPStatus.BAD_REQUEST, description = "Missing day keys")
+
+    day = Day.query.filter_by(day_number=key['day_number'], date=key['date'], itinerary_id=key['itinerary_id']).first()
+    return jsonify(DaySchema().dump(day)), 200
+
+@day_api.route("/create", methods=["POST"])
+def create_day():
+    """POST /api/day - Create new day"""
+    day = DaySchema().load(request.get_json())
+    db.session.add(day)
+    db.session.commit()
+    return jsonify(DaySchema().dump(day)), 201
+
+@day_api.route("/update", methods=['POST'])
+def update_day():
+    """POST /api/day/update - Update existing day"""
+    try:
+        day_data = request.get_json()
+        
+        if not day_data or 'id' not in day_data:
+            abort(HTTPStatus.BAD_REQUEST, description="Missing day id")
+        
+        day_id = day_data.pop('id')  # Remove id from update data
+        
+        # Get the existing day
+        existing_day = Day.query.filter_by(id=day_id).first()
+        
+        if not existing_day:
+            abort(HTTPStatus.NOT_FOUND, description=f"Day with id {day_id} not found")
+        
+        # Validate with schema (partial=True allows updating subset of fields)
+        schema = DaySchema(partial=True)
+        validated_data:dict = cast(dict,schema.load(day_data))
+        
+        # Update only the provided fields
+        for key, value in validated_data.items():
+            setattr(existing_day, key, value)
+        
+        db.session.commit()
+        db.session.refresh(existing_day)
+        
+        return jsonify(schema.dump(existing_day)), HTTPStatus.OK
+        
+    except IntegrityError as e:
+        logger.error(f"Integrity error updating day: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.CONFLICT, description="Database integrity constraint violated")
+    except Exception as e:
+        logger.error(f"Error updating day: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 
-class DayResource(Resource):
-    
-    def __retrieve_day_by_key(self, day_number, date, itinerary_id):
-        return Day.query.filter_by(
-            day_number=day_number, date=date, itinerary_id=itinerary_id).first()
-
-    def __retrieve_day_by_id(self, id):
-        return Day.query.filter_by(
-            id=id).first()
-
-    def get(self, id=None):
-        """
-        DayResource GET method. Retrieves the information related to the day with the passed id in the request
-        """
-        try:
-
-            day_number = request.args.get('day_number')
-            date = request.args.get('date')
-            itinerary_id = request.args.get('itinerary_id')
-            
-            if id:
-                day = self.__retrieve_day_by_id(id)
-                day_json = DaySchema().dump(day)
-                if not day_json:
-                    raise NoResultFound()
-                return day_json, 200
-
-            elif day_number and date and itinerary_id:
-                logger.info(
-                    f"Retrive day number {day_number} with date {date} from itinerary {itinerary_id}")
-                day = self.__retrieve_day_by_key(
-                    day_number, date, itinerary_id)
-                day_json = DaySchema().dump(day)
-                if not day_json:
-                    print('hello',day_number,itinerary_id,date,Day.query.all())
-                    raise NoResultFound()
-                return day_json, 200
-
-            elif not id and not (day_number and date and itinerary_id):
-                logger.info(f"Retrive all days from db")
-                days = Day.query.all()
-                days_json = [DaySchema().dump(day) for day in days]
-                if len(days_json) == 0:
-                    raise NoResultFound()
-                return days_json, 200
-            else:
-                raise NoResultFound()
-
-        except NoResultFound:
-            abort(404, message=f"Resource not found")
-        except Exception as e:
-            abort(500, message=f"Error:{e}")
-
-    def post(self):
-        """
-        DayResource POST method. Adds a new Day to the database.
-
-        :return: Day, 201 HTTP status code.
-        """
-
-        logger.info(f"Insert day {request.get_json()} in db")
-
-        try:
-            day_json = request.get_json()
-            day = DaySchema().load(day_json)
-            db.session.add(day)
-            db.session.commit()
-
-            day = Day.query.filter_by(
-                day_number=day_json['day_number'],
-                date=day_json['date'],
-                itinerary_id=day_json['itinerary_id']
-            ).first()
-            return DaySchema().dump(day), 201
-        except Exception as e:
-            logger.error(
-                f"Error: {e}")
-            db.session.rollback()
-            abort(500, message=f"{e}")
-
-    def put(self):
-
-        logger.info(f"Update day {request.get_json()} in db")
-
-        try:
-            day = cast(Day,DaySchema().load(request.get_json()))
-            if not day:
-                abort(HTTPStatus.BAD_REQUEST, description="Day not found")
-            db.session.merge(day)
-            db.session.commit()
-
-            if day: 
-                updated_day = self.__retrieve_day_by_id(
-                    day.id
-                )
-
-                return DaySchema().dump(updated_day), 201
-
-        except Exception as e:
-            logger.error(
-                f"Error: {e}")
-            db.session.rollback()
-            abort(500, message=f"Error:{e}")
-
-    def delete(self,id=None):
-        try:
-            day_to_delete = None
-            if id: 
-                day_to_delete = self.__retrieve_day_by_id(
-                id)
-            else:
-                day_number = request.args.get('day_number')
-                date = request.args.get('date')
-                itinerary_id = request.args.get('itinerary_id')
-
-                logger.info(f"Deleting day {day_number, date, itinerary_id} ")
-
-                day_to_delete = self.__retrieve_day_by_key(
-                    day_number, date, itinerary_id)
-            
-            db.session.delete(day_to_delete)
-            db.session.commit()
-
-            logger.info(
-                f"Day with id {id} successfully deleted")
-            return "Deletion successful", 200
-
-        except Exception as e:
-            db.session.rollback()
-            abort(
-                500, message=f"Error: {e}")
+@day_api.route("/delete/<int:id>", methods=["DELETE"])
+def delete_day(id: int):
+    """DELETE /api/day/delete/<id> - Delete day by ID"""
+    try:
+        day_to_delete = Day.query.get(id)
+        
+        if not day_to_delete:
+            abort(HTTPStatus.NOT_FOUND, description=f"Day with id {id} not found")
+        
+        db.session.delete(day_to_delete)
+        db.session.commit()
+        
+        logger.info(f"Day with id {id} successfully deleted")
+        return jsonify({"message": "Deletion successful"}), HTTPStatus.OK
+        
+    except IntegrityError as e:
+        logger.error(f"Integrity error deleting day: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.CONFLICT, description="Cannot delete day due to existing references")
+    except Exception as e:
+        logger.error(f"Error deleting day: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
