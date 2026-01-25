@@ -14,6 +14,7 @@ class ItinerarySchema(Schema):
     expected_total_miles=fields.Float(allow_none=True)
     days=fields.List(fields.Nested(DaySchema), allow_none=True, metadata={"exclude":['itinerary_id']})
     trip_id=fields.Integer(allow_none=False)
+    user_id=fields.Integer(allow_none=True)
 
     @post_load
     def make_itinerary(self, data, **kwargs):
