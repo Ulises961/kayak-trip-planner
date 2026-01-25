@@ -16,3 +16,4 @@ class Trip (db.Model):
     inventory: Mapped[Optional["Inventory"]] = relationship(foreign_keys="Inventory.trip_id", uselist=False, cascade='all, delete,save-update')
     itinerary: Mapped[Optional["Itinerary"]] = relationship(foreign_keys="Itinerary.trip_id", uselist=False, cascade='all, delete,save-update')
     travellers: Mapped[List["User"]] = relationship(secondary='user_has_trip', back_populates='trips')
+    pending_travellers: Mapped[List["User"]] = relationship(secondary='user_has_invitation', back_populates='invitations')
