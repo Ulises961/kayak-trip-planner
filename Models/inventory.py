@@ -15,7 +15,7 @@ class Inventory(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     trip_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('trip.id'), nullable=True)
-    
+    user_id:Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable= False)
     items: Mapped[List["Item"]] = relationship(secondary=inventory_items, cascade='all,delete')
 
     def __repr__(self):
