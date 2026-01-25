@@ -15,25 +15,18 @@ from dotenv import load_dotenv
 from flask_migrate import Migrate
 
 
-from Resources.image_resource import ImageResource, IMAGE_ENDPOINT
-from Resources.user_resource import UserResource, USER_ENDPOINT
-from Resources.trip_resource import TripResource, TRIP_ENDPOINT
-from Resources.itinerary_resource import ItineraryResource, ITINERARY_ENDPOINT
+from Resources.image_resource import image_api
+from Resources.user_resource import user_api, USER_ENDPOINT
+from Resources.trip_resource import trip_api, TRIP_ENDPOINT
+from Resources.itinerary_resource import itinerary_api
 
 from Resources.day_resource import day_api
-from Resources.point_resource import PointResource, POINT_ENDPOINT
+from Resources.point_resource import point_api
 
-from Resources.inventory_resource import InventoryResource, INVENTORY_ENDPOINT
-from Resources.item_resource import ItemResource, ITEM_ENDPOINT
+from Resources.inventory_resource import inventory_api
+from Resources.item_resource import item_api
 
-from Resources.sea_resource import SeaResource, SEA_ENDPOINT
-# from Resources.sea_state_resource import SeaStateResource, SEA_STATE_ENDPOINT
-
-from Resources.weather_resource import WeatherResource, WEATHER_ENDPOINT
-# from Resources.weather_state_resource import WeatherStateResource, WEATHER_STATE_ENDPOINT
-
-
-from Resources.log_resource import LogResource, LOG_ENDPOINT
+from Resources.log_resource import log_api
 
 from Resources.authentication_resource import api as authApi
 
@@ -52,6 +45,14 @@ def createApp(config_mode:str):
     app.config.from_object(config[config_mode])
     app.register_blueprint(authApi)
     app.register_blueprint(day_api)
+    app.register_blueprint(image_api)
+    app.register_blueprint(inventory_api)
+    app.register_blueprint(item_api)
+    app.register_blueprint(itinerary_api)
+    app.register_blueprint(log_api)
+    app.register_blueprint(trip_api)
+    app.register_blueprint(point_api)
+    app.register_blueprint(user_api)
     
     db.init_app(app)
     with app.app_context():
@@ -66,20 +67,6 @@ def createApp(config_mode:str):
     # Register error handlers
     register_error_handlers(app)
 
-    api = Api(app)
-    # api.add_resource(DayResource, DAY_ENDPOINT, f"{DAY_ENDPOINT}/<id>")
-    api.add_resource(ImageResource, IMAGE_ENDPOINT,f"{IMAGE_ENDPOINT}/<id>")
-    api.add_resource(InventoryResource, INVENTORY_ENDPOINT,f"{INVENTORY_ENDPOINT}/<id>")
-    api.add_resource(ItemResource, ITEM_ENDPOINT,f"{ITEM_ENDPOINT}/<id>")
-    api.add_resource(ItineraryResource, ITINERARY_ENDPOINT, f"{ITINERARY_ENDPOINT}/<id>")
-    api.add_resource(LogResource, LOG_ENDPOINT,f"{LOG_ENDPOINT}/<id>")
-    api.add_resource(PointResource, POINT_ENDPOINT, f"{POINT_ENDPOINT}/<id>")
-    api.add_resource(SeaResource, SEA_ENDPOINT, f"{SEA_ENDPOINT}/<day_id>")
-    # api.add_resource(SeaStateResource, SEA_STATE_ENDPOINT, f"{SEA_STATE_ENDPOINT}/<day_id>")
-    api.add_resource(TripResource, TRIP_ENDPOINT, f"{TRIP_ENDPOINT}/<id>")
-    api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<id>")
-    api.add_resource(WeatherResource, WEATHER_ENDPOINT, f"{WEATHER_ENDPOINT}/<day_id>")
-    # api.add_resource(WeatherStateResource, WEATHER_STATE_ENDPOINT, f"{WEATHER_STATE_ENDPOINT}/<day_id>")
     return app
 
 
