@@ -1,5 +1,5 @@
 from Api.database import db
-from sqlalchemy import Integer, String, Boolean, Enum
+from sqlalchemy import ForeignKey, Integer, String, Boolean, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List, TYPE_CHECKING
 
@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 import enum
 
+
 class ItemCategoryType(enum.Enum):
     FIRST_AID = "first_aid"
     CAMPING = "camping"
@@ -15,10 +16,13 @@ class ItemCategoryType(enum.Enum):
     TRAVEL = "travel"
     GENERIC = "generic"
 
-class Item (db.Model):
+
+class Item(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    category: Mapped[Optional[ItemCategoryType]] = mapped_column(Enum(ItemCategoryType), nullable=True)
+    category: Mapped[Optional[ItemCategoryType]] = mapped_column(
+        Enum(ItemCategoryType), nullable=True
+    )
     checked: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'),nullable=False)

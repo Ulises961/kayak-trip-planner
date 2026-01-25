@@ -1,11 +1,14 @@
+from http import HTTPStatus
 import logging
-from flask_restful import Resource, abort
-from sqlalchemy.orm.exc import NoResultFound
+from typing import cast
+from flask import Blueprint, g, jsonify, request, abort
+from werkzeug.exceptions import HTTPException
+from sqlalchemy.exc import IntegrityError
 from Schemas.item_schema import ItemSchema
 from Models.item import Item
-from flask import request
-from sqlalchemy.exc import IntegrityError
 from Api.database import db
+from Services.Middleware.auth_middleware import JWTService
+from Services.Middleware.privileges_middleware import require_owner
 
 
 # It will print the name of this module when the main app is running
@@ -13,75 +16,125 @@ logger = logging.getLogger(__name__)
 
 ITEM_ENDPOINT = "/api/item"
 
+item_api = Blueprint('item', __name__, url_prefix=ITEM_ENDPOINT)
 
-class ItemResource(Resource):
+def __retrieve_item_by_id(id):
+    return db.session.get(Item,id)
 
-    def __retrieve_item_by_id(self,id):
-        return Item.query.filter_by(id=id).first()
-
-    def get(self):
-        """
-        ItemResource GET method. Retrieves the information related to the image with the passed id in the request
-        """
-        try:
-            id = request.args.get("id")
-            if id:
-                item = self.__retrieve_item_by_id(id)
-                item_json = ItemSchema().dump(item)
-                if not item_json:
-                    raise NoResultFound()
-                return item_json, 200
-        except NoResultFound:
-            abort(404, message=f"Image with id {id} not found in database")
-
-    def post(self):
-        """
-        ItemResource POST method. Adds a new item to the database.
-
-        :return: Item, 201 HTTP status code.
-        """
-        try:
-            item = ItemSchema().load(request.get_json())
-            db.session.add(item)
-            db.session.commit()
-            item = self.__retrieve_item_by_id(item.id)
-            return ItemSchema().dump(item), 201
-
+@item_api.route("/all", methods=["GET"])
+@JWTService.authenticate_restful
+@require_owner('item')
+def get_all_items():
+    """GET /api/item - Retrieve all items"""
+    try:
+        logger.info("Retrieve all items from db")
+        items = db.session.query(Item, user_id=g.current_user_id)
+        return jsonify([ItemSchema().dump(item) for item in items]), HTTPStatus.OK
         
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"Error: {e}")
-            abort(500, message="Unexpected Error!")
-            
+    except Exception as e:
+        logger.error(f"Error retrieving items: {e}")
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-    def put(self):
-        try:
-            logger.info(f"Update item {request.get_json()} in db")
-            item = ItemSchema().load(request.get_json())
-            db.session.merge(item)
-            db.session.commit()
-            item = self.__retrieve_item_by_id(item.id)
-            return ItemSchema().dump(item), 201
 
-        except Exception as e:
-            logger.error(
-                f"Error: {e}"
-            )
-            db.session.rollback()
-            abort(500, message="Error: {e}")
+@item_api.route("/<int:id>", methods=["GET"])
+@JWTService.authenticate_restful
+@require_owner('item')
+def get_item(id:int):
+    """GET /api/item/<id> - Retrieve item"""
+    item = __retrieve_item_by_id(id)
+    if not item:
+        abort(HTTPStatus.NOT_FOUND, message=f"Item with id {id} not found in database")
 
-    def delete(self):
-        try:
-            item_id = request.args.get('id')
-            logger.info(f"Deleting item {item_id} ")
+    return jsonify(ItemSchema().dump(item)), HTTPStatus.OK
 
-            item = self.__retrieve_item_by_id(item_id)
-            db.session.delete(item)
-            db.session.commit()
-            logger.info(f"Item with id {item_id} successfully deleted")
-            return "Deletion successful", 200
 
-        except Exception as e:
-            db.session.rollback()
-            abort(
-                500, message=f"Error: {e}")
+@item_api.route("/create", methods=["POST"])
+@JWTService.authenticate_restful
+@require_owner('item')
+def create_item():
+    """
+    ItemResource POST method. Adds a new item to the database.
+
+    :return: Item, 201 HTTP status code.
+    """
+    try:
+        item = cast(Item, ItemSchema().load(request.get_json()))
+        db.session.add(item)
+        db.session.commit()
+        item = __retrieve_item_by_id(item.id)
+        return jsonify(ItemSchema().dump(item)), HTTPStatus.CREATED
+
+    
+    except HTTPException:
+            raise
+    except IntegrityError as e:
+        logger.error(f"Integrity error creating item: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.CONFLICT, description="Database integrity constraint violated")
+    except Exception as e:
+        logger.error(f"Error creating item: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
+
+@item_api.route("/<int:id>/update", methods=["POST"])
+@JWTService.authenticate_restful
+@require_owner('item')
+def update_item(id: int):
+    """POST /api/item/<id>/update - Update existing item"""
+    try:
+        logger.info(f"Update item {id} in db")
+        
+        existing_item = db.session.get(Item, id)
+        
+        if not existing_item:
+            abort(HTTPStatus.NOT_FOUND, description=f"Item with id {id} not found")
+        
+        item_data = request.get_json()
+        updated_item = ItemSchema().load(item_data)
+        
+        db.session.merge(updated_item)
+        db.session.commit()
+        db.session.refresh(updated_item)
+        
+        return jsonify(ItemSchema().dump(updated_item)), HTTPStatus.OK
+        
+    except HTTPException:
+        raise
+    except IntegrityError as e:
+        logger.error(f"Integrity error updating item: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.CONFLICT, description="Database integrity constraint violated")
+    except Exception as e:
+        logger.error(f"Error updating item: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
+
+@item_api.route("/<int:id>", methods=["DELETE"])
+@JWTService.authenticate_restful
+@require_owner('item')
+def delete_item(id: int):
+    """DELETE /api/item/<id> - Delete item by ID"""
+    try:
+        logger.info(f"Deleting item {id}")
+        
+        item = db.session.get(Item, id)
+        
+        if not item:
+            abort(HTTPStatus.NOT_FOUND, description=f"Item with id {id} not found")
+        
+        db.session.delete(item)
+        db.session.commit()
+        
+        logger.info(f"Item with id {id} successfully deleted")
+        return jsonify({"message": "Deletion successful"}), HTTPStatus.OK
+        
+    except HTTPException:
+        raise
+    except IntegrityError as e:
+        logger.error(f"Integrity error deleting item: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.CONFLICT, description="Cannot delete item due to existing references")
+    except Exception as e:
+        logger.error(f"Error deleting item: {e}")
+        db.session.rollback()
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
