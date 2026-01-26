@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from Schemas.user_schema import UserSchema
 from Api.database import db
 
-from Services.jwt_service import JWTService
+from Services.Middleware.auth_middleware import JWTService
 
 # It will print the name of this module when the main app is running
 
