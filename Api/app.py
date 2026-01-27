@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_restful import Api
 import os
 import sys
 
@@ -16,8 +15,8 @@ from flask_migrate import Migrate
 
 
 from Resources.image_resource import image_api
-from Resources.user_resource import user_api, USER_ENDPOINT
-from Resources.trip_resource import trip_api, TRIP_ENDPOINT
+from Resources.user_resource import user_api
+from Resources.trip_resource import trip_api
 from Resources.itinerary_resource import itinerary_api
 
 from Resources.day_resource import day_api

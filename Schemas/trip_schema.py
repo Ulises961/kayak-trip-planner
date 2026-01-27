@@ -2,6 +2,7 @@ from marshmallow import Schema, fields, post_load
 from Models.trip import Trip
 from Schemas.itinerary_shema import ItinerarySchema
 from Schemas.inventory_schema import InventorySchema
+from Schemas.user_schema import UserSchema
 
 
 class TripSchema(Schema):
@@ -12,8 +13,10 @@ class TripSchema(Schema):
     id   = fields.Integer(allow_none=True)
     inventory = fields.Nested(InventorySchema(exclude=['trip_id']))
     itinerary = fields.Nested(ItinerarySchema(exclude=['trip_id']))
-
-
+    pending_travellers = fields.Nested(UserSchema(exclude=['id', 'pwd']))
+    travellers = fields.Nested(UserSchema(exclude=['id', 'pwd']))
+    is_draft = fields.Boolean()
+    
     @post_load
     def make_trip(self, data, **kwargs):
         return Trip(**data)

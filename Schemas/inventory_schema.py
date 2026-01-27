@@ -9,9 +9,9 @@ class InventorySchema(Schema):
     """
 
     id = fields.Integer(allow_none=True)
-    trip_id =fields.Integer(allow_none=False)
-    items=fields.List(fields.Nested(ItemSchema),allow_none=True)
-
+    trip_id =fields.Integer(allow_none=True)
+    items=fields.List(fields.Nested(ItemSchema), allow_none=True)
+    user_id=fields.Integer(allow_none=False)
 
     @post_load
     def make_inventory(self, data, **kwargs):

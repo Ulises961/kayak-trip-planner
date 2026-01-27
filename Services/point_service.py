@@ -2,9 +2,13 @@
 Point Service - Business logic for point operations.
 """
 import logging
-from typing import List, Optional
+from sqlite3 import IntegrityError
+from typing import List, Optional, cast
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import selectinload
 
+from Models.day import Day
+from Models.itinerary import Itinerary
 from Models.point import Point
 from Schemas.point_schema import PointSchema
 from Api.database import db
@@ -29,24 +33,37 @@ class PointService:
         Raises:
             NoResultFound: If point doesn't exist
         """
-        point = Point.query.filter_by(id=point_id).first()
+
+        point = db.session.get(Point, point_id)
         if not point:
             logger.warning(f"Point with id {point_id} not found")
             raise NoResultFound(f"Point {point_id} not found in database")
         return point
     
     @staticmethod
-    def get_all_points() -> List[Point]:
+    def get_all_points(itinerary_id:int) -> List[Point]:
         """
         Retrieve all points from the database.
         
+        Params:
+            itinerary_id(int) the id of the itinerary containing the points
+
         Returns:
             List of all Point objects
             
         Raises:
             NoResultFound: If no points exist
         """
-        points = Point.query.all()
+        itinerary = db.session.query(Itinerary)\
+            .options(selectinload(Itinerary.days).selectinload(Day.points))\
+            .filter_by(id=itinerary_id)\
+            .first()
+        
+        if not itinerary:
+            raise NoResultFound(f"Itinerary {itinerary_id} not found in database")
+        
+        points = [point for day in itinerary.days if day.points is not None for point in day.points]
+
         if not points:
             logger.warning("No points found in database")
             raise NoResultFound("No points found in database")
@@ -68,7 +85,7 @@ class PointService:
             IntegrityError: If database constraints are violated
         """
         logger.info(f"Creating new point")
-        point: Point = PointSchema().load(point_data)  # type: ignore
+        point: Point = cast(Point,PointSchema().load(point_data))
         db.session.add(point)
         db.session.commit()
         
@@ -137,6 +154,10 @@ class PointService:
         Returns:
             List of Point objects for that day
         """
-        points = Point.query.filter_by(day_id=day_id).all()
+        points = db.session.query(Point).filter_by(day_id=day_id).all()
         logger.info(f"Found {len(points)} points for day {day_id}")
         return points
+
+    @staticmethod
+    def get_points_in_range(range:float,long: float, lat:float)-> List[Point]:
+        return []

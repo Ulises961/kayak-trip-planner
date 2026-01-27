@@ -7,7 +7,7 @@ from flask import current_app
 from http import HTTPStatus
 
 from Models.user import User
-from Services.jwt_service import JWTService
+from Services.Middleware.auth_middleware import JWTService
 from Api.database import db
 
 

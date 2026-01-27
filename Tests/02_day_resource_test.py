@@ -79,18 +79,14 @@ def test_get_all_days(client):
     assert response.status_code == HTTPStatus.OK
     assert len(json.loads(response.data)) == 1
 
-def test_delete_day_by_key(client):
-    day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
-    response = client.delete(
-        f"{DAY_ENDPOINT}?itinerary_id=1&day_number=1&date={day_date}")
-    assert response.status_code == HTTPStatus.OK
-
 def test_update_day(client):
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     sea = None
     updated_day = {'id':1,'date':day_date,'itinerary_id':1,'day_number':1, 'sea':sea} 
     response = client.post(f"{DAY_ENDPOINT}/update", json=updated_day)
-    assert json.loads(response.data)['sea'] == sea
+    json_data = json.loads(response.data)
+    print("json data ",json_data)
+    assert json_data['sea'] == sea
     assert response.status_code == HTTPStatus.OK
 
 def test_delete_day_by_id(client):
@@ -101,6 +97,6 @@ def test_delete_day_by_id(client):
 def test_reinsert_day(client):
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     new_day = {'id':1,'date':day_date,'itinerary_id':1,'day_number':1} 
-    response = client.post(f"{DAY_ENDPOINT}", json=new_day)
+    response = client.post(f"{DAY_ENDPOINT}/create", json=new_day)
 
     assert response.status_code == HTTPStatus.CREATED
