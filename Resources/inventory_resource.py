@@ -2,14 +2,13 @@ from http import HTTPStatus
 import logging
 from flask import Blueprint, jsonify, request, abort, g
 from werkzeug.exceptions import HTTPException
-from sqlalchemy.exc import IntegrityError
-from Models.trip import Trip
-from Models.user import User
+from sqlalchemy.exc import IntegrityError, NoResultFound
+
 from Schemas.inventory_schema import InventorySchema
-from Models.inventory import Inventory
-from Api.database import db
+from Services.inventory_service import InventoryService
 from Services.Middleware.auth_middleware import JWTService
 from Services.Middleware.privileges_middleware import require_owner
+
 logger = logging.getLogger(__name__)
 
 INVENTORY_ENDPOINT = "/api/inventory"
@@ -17,14 +16,16 @@ inventory_api = Blueprint('inventory', __name__, url_prefix=INVENTORY_ENDPOINT)
 
 @inventory_api.route("/all", methods=["GET"])
 @JWTService.authenticate_restful
-@require_owner('inventory')
 def get_all_inventories():
-    """GET /api/inventory - Retrieve all inventories"""
+    """GET /api/inventory/all - Retrieve all inventories for current user"""
     try:
         logger.info("Retrieve all inventories from db")
-        inventories = db.session.query(Inventory, user_id=g.current_user_id)
+        user_id = g.current_user_id
+        inventories = InventoryService.get_inventories_by_user(user_id)
         return jsonify([InventorySchema().dump(inventory) for inventory in inventories]), HTTPStatus.OK
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error retrieving inventories: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
@@ -34,74 +35,56 @@ def get_all_inventories():
 @require_owner('inventory')
 def get_inventory(id: int):
     """GET /api/inventory/<id> - Retrieve inventory by ID"""
-    logger.info(f"Retrieve inventory with id {id}")
+    try:
+        logger.info(f"Retrieve inventory with id {id}")
+        inventory = InventoryService.get_inventory_by_id(id)
+        return jsonify(InventorySchema().dump(inventory)), HTTPStatus.OK
     
-    inventory = db.session.get(Inventory, id)
-    
-    if not inventory:
+    except HTTPException:
+        raise
+    except NoResultFound:
         abort(HTTPStatus.NOT_FOUND, description=f"Inventory with id {id} not found")
-    
-    return jsonify(InventorySchema().dump(inventory)), HTTPStatus.OK
+    except Exception as e:
+        logger.error(f"Error retrieving inventory: {e}")
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @inventory_api.route("/create", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner('inventory')
+@require_owner('inventory', parent_resource=('trip', 'trip_id'), from_body=True)
 def create_inventory():
-    """POST /api/inventory - Create new inventory"""
+    """POST /api/inventory/create - Create new inventory"""
     try:
-        inventory = InventorySchema().load(request.get_json())
-        db.session.add(inventory)
-        db.session.commit()
-        
+        inventory_data = request.get_json()
+        inventory = InventoryService.create_inventory(inventory_data)
         return jsonify(InventorySchema().dump(inventory)), HTTPStatus.CREATED
         
     except HTTPException:
         raise
-    except IntegrityError as e:
-        logger.error(f"Integrity error creating inventory: {e}")
-        db.session.rollback()
+    except IntegrityError:
         abort(HTTPStatus.CONFLICT, description="Database integrity constraint violated")
     except Exception as e:
         logger.error(f"Error creating inventory: {e}")
-        db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @inventory_api.route("/<int:id>/update", methods=["POST"])
 @JWTService.authenticate_restful
 @require_owner('inventory')
 def update_inventory(id: int):
-    """POST /api/inventory/<id> - Update existing inventory"""
+    """POST /api/inventory/<id>/update - Update existing inventory"""
     try:
         logger.info(f"Update inventory {id} in db")
-        
-        existing_inventory = db.session.get(Inventory, id)
-        
-        if not existing_inventory:
-            abort(HTTPStatus.NOT_FOUND, description=f"Inventory with id {id} not found")
-        
         inventory_data = request.get_json()
-
-        if "items" in inventory_data:
-            if items:= inventory_data.get("items", []):
-                existing_inventory.items = items
-
-        updated_inventory = InventorySchema().load(inventory_data)
-        
-        db.session.merge(updated_inventory)
-        db.session.commit()
-        db.session.refresh(updated_inventory)
-        
-        return jsonify(InventorySchema().dump(updated_inventory)), HTTPStatus.OK
+        inventory = InventoryService.update_inventory(id, inventory_data)
+        return jsonify(InventorySchema().dump(inventory)), HTTPStatus.OK
         
     except HTTPException:
         raise
-    except IntegrityError as e:
-        logger.error(f"Integrity error updating inventory: {e}")
-        db.session.rollback()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND, description=f"Inventory with id {id} not found")
+    except IntegrityError:
         abort(HTTPStatus.CONFLICT, description="Database integrity constraint violated")
     except Exception as e:
         logger.error(f"Error updating inventory: {e}")
-        db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @inventory_api.route("/<int:id>", methods=["DELETE"])
@@ -111,25 +94,15 @@ def delete_inventory(id: int):
     """DELETE /api/inventory/<id> - Delete inventory by ID"""
     try:
         logger.info(f"Deleting inventory {id}")
-        
-        inventory = db.session.get(Inventory, id)
-        
-        if not inventory:
-            abort(HTTPStatus.NOT_FOUND, description=f"Inventory with id {id} not found")
-        
-        db.session.delete(inventory)
-        db.session.commit()
-        
-        logger.info(f"Inventory with id {id} successfully deleted")
+        InventoryService.delete_inventory(id)
         return jsonify({"message": "Deletion successful"}), HTTPStatus.OK
         
     except HTTPException:
         raise
-    except IntegrityError as e:
-        logger.error(f"Integrity error deleting inventory: {e}")
-        db.session.rollback()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND, description=f"Inventory with id {id} not found")
+    except IntegrityError:
         abort(HTTPStatus.CONFLICT, description="Cannot delete inventory due to existing references")
     except Exception as e:
         logger.error(f"Error deleting inventory: {e}")
-        db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
