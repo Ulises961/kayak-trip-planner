@@ -2,23 +2,19 @@ from http import HTTPStatus
 import logging
 from flask import Blueprint, g, jsonify, request, abort
 from werkzeug.exceptions import HTTPException
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from Schemas.itinerary_shema import ItinerarySchema
 from Models.itinerary import Itinerary
 from Api.database import db
 from Services.Middleware.auth_middleware import JWTService
 from Services.Middleware.privileges_middleware import require_owner
+from Services.itinerary_service import ItineraryService
 
 # It will print the name of this module when the main app is running
 logger = logging.getLogger(__name__)
 
 ITINERARY_ENDPOINT = "/api/itinerary"
 itinerary_api = Blueprint("itinerary", __name__, url_prefix=ITINERARY_ENDPOINT)
-
-
-def __retrieve_itinerary_by_id(id: int):
-    return Itinerary.query.filter_by(id=id).first()
-
 
 @itinerary_api.route("/all", methods=["GET"])
 @JWTService.authenticate_restful
@@ -27,7 +23,7 @@ def get_all_itineraries():
     """GET /api/itinerary - Retrieve all itineraries"""
     try:
         logger.info("Retrieve all itineraries from db")
-        itineraries = db.session.query(Itinerary, user_id=g.current_user_id)
+        itineraries = ItineraryService.get_itineraries_by_user(g.current_user_id)
 
         return jsonify([ItinerarySchema().dump(itinerary) for itinerary in itineraries]), HTTPStatus.OK
         
@@ -36,17 +32,17 @@ def get_all_itineraries():
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 
-@itinerary_api.route("/<int:id>", methods=["GET"])
+@itinerary_api.route("/<string:public_id>", methods=["GET"])
 @JWTService.authenticate_restful
 @require_owner('itinerary')
-def get_itinerary(id: int):
+def get_itinerary(public_id: str):
     """GET /api/itinerary/<id> - Retrieve itinerary by ID"""
-    logger.info(f"Retrieve itinerary with id {id}")
+    logger.info(f"Retrieve itinerary with id {public_id}")
     
-    itinerary = db.session.get(Itinerary, id)
+    itinerary = ItineraryService.get_itinerary_by_id(public_id)
     
     if not itinerary:
-        abort(HTTPStatus.NOT_FOUND, description=f"Itinerary with id {id} not found")
+        abort(HTTPStatus.NOT_FOUND, description=f"Itinerary with id {public_id} not found")
     
     return jsonify(ItinerarySchema().dump(itinerary)), HTTPStatus.OK
 
@@ -97,6 +93,8 @@ def update_itinerary(id: int):
         
     except HTTPException:
         raise
+    except NoResultFound as e:
+        abort(HTTPStatus.NOT_FOUND, description=str(e))
     except IntegrityError as e:
         logger.error(f"Integrity error updating itinerary: {e}")
         db.session.rollback()
@@ -106,27 +104,20 @@ def update_itinerary(id: int):
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@itinerary_api.route("/<int:id>", methods=["DELETE"])
+@itinerary_api.route("/<string:public_id>", methods=["DELETE"])
 @JWTService.authenticate_restful
 @require_owner('itinerary')
-def delete_itinerary(id: int):
+def delete_itinerary(public_id: str):
     """DELETE /api/itinerary/<id> - Delete itinerary by ID"""
     try:
-        logger.info(f"Deleting itinerary {id}")
-        
-        itinerary = db.session.get(Itinerary, id)
-        
-        if not itinerary:
-            abort(HTTPStatus.NOT_FOUND, description=f"Itinerary with id {id} not found")
-        
-        db.session.delete(itinerary)
-        db.session.commit()
-        
-        logger.info(f"Itinerary with id {id} successfully deleted")
+        logger.info(f"Deleting itinerary {public_id}")
+        ItineraryService.delete_itinerary(public_id)
         return jsonify({"message": "Deletion successful"}), HTTPStatus.OK
         
     except HTTPException:
         raise
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND, description=f"Itinerary with id {public_id} not found")
     except IntegrityError as e:
         logger.error(f"Integrity error deleting itinerary: {e}")
         db.session.rollback()
