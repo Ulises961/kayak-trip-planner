@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields, post_load, validates, ValidationError
 from Models.user import User
 from Schemas.log_schema import LogSchema
-from Schemas.trip_schema import TripSchema
 from Schemas.image_schema import ImageSchema
 import re
 
@@ -19,7 +18,10 @@ class UserSchema(Schema):
     username = fields.String(allow_none=True)  
     name = fields.String(allow_none=True)  
     surname = fields.String(allow_none=True)  
-    trip = fields.Nested(TripSchema, allow_none=True)  
+    trips = fields.List(fields.Nested('TripSchema', allow_none=True))  
+    itineraries = fields.List(fields.Nested('ItinerarySchema', allow_none=True))  
+    inventories = fields.List(fields.Nested('InventorySchema', allow_none=True))  
+    items = fields.List(fields.Nested('ItemSchema', allow_none=True))  
     endorsed_logs = fields.List(fields.Nested(LogSchema), allow_none=True)  
     logs = fields.List(fields.Nested(LogSchema), allow_none=True )
     image = fields.Nested(ImageSchema, allow_none=True)

@@ -12,6 +12,7 @@ class ItemSchema(Schema):
     category = fields.Enum(ItemCategoryType, by_value=True)
     checked = fields.Boolean(allow_none=True)
     name = fields.String(allow_none=False)
+    user_id = fields.Integer(allow_none=False)
 
     @post_load
     def make_item(self, data, **kwargs):
