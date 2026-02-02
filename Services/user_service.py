@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 class UserService:
 
     @staticmethod
-    def get_user_by_id(id: int) -> User:
-        user: Optional[User] = db.session.query(User).filter_by(id=id).first()
+    def get_user_by_id(id: str) -> User:
+        user: Optional[User] = db.session.query(User).filter_by(public_id=id).first()
         if not user:
             raise NoResultFound(f"User with id {id} not found in db")
         return user
     
     @staticmethod
-    def update_user(id: int, user_json: Dict[str, Any]) -> User:
+    def update_user(id: str, user_json: Dict[str, Any]) -> User:
         """
         Update an existing user.
         
@@ -34,26 +34,40 @@ class UserService:
             IntegrityError: If database constraints are violated
         """
         # Verify user exists
-        saved_user = db.session.query(User).filter_by(id=id).first()
+        saved_user = db.session.query(User).filter_by(public_id=id).first()
         if not saved_user:
             raise NoResultFound(f"User with id {id} not found in db")
         
         try:
-            # Load and merge the updated data
-            updated_user = UserSchema().load(user_json)
-            merged_user = cast(User, db.session.merge(updated_user))
+            # Update fields directly on the existing user object
+            if 'mail' in user_json:
+                saved_user.mail = user_json['mail']
+            if 'name' in user_json:
+                saved_user.name = user_json['name']
+            if 'surname' in user_json:
+                saved_user.surname = user_json['surname']
+            if 'phone' in user_json:
+                saved_user.phone = user_json['phone']
+            if 'username' in user_json:
+                saved_user.username = user_json['username']
+            if 'pwd' in user_json:
+                from flask_bcrypt import generate_password_hash
+                saved_user.pwd = generate_password_hash(user_json['pwd']).decode("UTF-8")
+            if 'admin' in user_json:
+                saved_user.admin = user_json['admin']
+                
             db.session.commit()
             
             # Refresh to get latest state from database
-            db.session.refresh(merged_user)
-            return merged_user
+            db.session.refresh(saved_user)
+            return saved_user
             
         except IntegrityError as e:
             db.session.rollback()
             raise IntegrityError(f"Error while updating user with id {id}: {str(e)}", params=None, orig=e)
         
     @staticmethod
-    def delete_user(id: int) -> None:
+    def delete_user(id: str) -> None:
         """
         Delete a user by ID.
         
@@ -64,7 +78,7 @@ class UserService:
             NoResultFound: If user doesn't exist
             IntegrityError: If user has foreign key references that prevent deletion
         """
-        saved_user = db.session.query(User).filter_by(id=id).first()
+        saved_user = db.session.query(User).filter_by(public_id=id).first()
         if not saved_user:
             raise NoResultFound(f"User with id {id} not found")
         
