@@ -25,4 +25,4 @@ class Item(db.Model):
     )
     checked: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'),nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'),nullable=False)

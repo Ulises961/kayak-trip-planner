@@ -5,7 +5,6 @@ from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from Models.day import Day
-    from Models.trip import Trip
 
 
 class Itinerary (db.Model):
@@ -15,7 +14,7 @@ class Itinerary (db.Model):
     total_miles: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)
     expected_total_miles: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)
     trip_id: Mapped[int] = mapped_column(Integer, ForeignKey('trip.id'), nullable=False)
-    user_id:Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable= True)
+    user_id:Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable= True)
     days: Mapped[List["Day"]] = relationship(lazy='select', cascade='all, delete,save-update')
 
 
