@@ -48,14 +48,11 @@ def get_itinerary(public_id: str):
 
 @itinerary_api.route("/create", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner('itinerary')
+@require_owner('itinerary', parent_resource=('trip', 'trip_id'), from_body=True)
 def create_itinerary():
     """POST /api/itinerary/create - Create new itinerary"""
     try:
-        itinerary = ItinerarySchema().load(request.get_json())
-        db.session.add(itinerary)
-        db.session.commit()
-        
+        itinerary = ItineraryService.create_itinerary(request.get_json())
         return jsonify(ItinerarySchema().dump(itinerary)), HTTPStatus.CREATED
         
     except HTTPException:

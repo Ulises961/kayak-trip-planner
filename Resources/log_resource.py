@@ -18,7 +18,6 @@ log_api = Blueprint('log', __name__, url_prefix=LOG_ENDPOINT)
 
 @log_api.route("/all", methods=["GET"])
 @JWTService.authenticate_restful
-@require_owner('log')
 def get_logs():
     """
     LogResource GET method. Retrieves all the logs associated to a user
