@@ -40,9 +40,9 @@ def get_trip(id: int):
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 
-@trip_api.route("/<int:user_id>/all", methods=["GET"])
+@trip_api.route("/<string:user_id>/all", methods=["GET"])
 @JWTService.authenticate_restful
-def get_all_user_trips(user_id: int):
+def get_all_user_trips(user_id: str):
     """
     TripResource GET method. Retrieves trip(s) by ID or all trips.
 
@@ -50,7 +50,7 @@ def get_all_user_trips(user_id: int):
         JSON response with trip data and 200 status code
     """
     try:
-        logger.info(f"Retrieving trip with id {id}")
+        logger.info(f"Retrieving all trips for user with id {user_id}")
         trips = TripService.get_trips_by_user(user_id)
         return jsonify([TripSchema().dump(trip) for trip in trips]), HTTPStatus.OK
 
