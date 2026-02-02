@@ -1,5 +1,11 @@
 from Api.database import db
 from flask_bcrypt import generate_password_hash
+from Models.inventory import Inventory
+from Models.item import Item
+from Models.itinerary import Itinerary
+from Models.user_has_itinerary import user_has_itinerary
+from Models.user_has_inventory import user_has_inventory
+from Models.user_has_items import user_has_items
 from Models.user_has_invitation import user_has_invitation
 from Models.user_has_trip import user_has_trip
 from Models.user_endorses_log import user_endorses_log
@@ -41,7 +47,9 @@ class User(db.Model):
     trips: Mapped[List["Trip"]] = relationship(
         secondary=user_has_trip, back_populates="travellers"
     )
-    invitations: Mapped[List["Trip"]] = relationship(secondary=user_has_invitation, back_populates="pending_travellers")
+    invitations: Mapped[List["Trip"]] = relationship(
+        secondary=user_has_invitation, back_populates="pending_travellers"
+    )
     endorsed_logs: Mapped[List["Log"]] = relationship(
         secondary=user_endorses_log, back_populates="user_endorsed_logs"
     )
@@ -51,6 +59,9 @@ class User(db.Model):
         uselist=False,
         cascade="all, delete,save-update",
     )
+    itineraries: Mapped[List["Itinerary"]] = relationship(secondary=user_has_itinerary)
+    inventories: Mapped[List["Inventory"]] = relationship(secondary=user_has_inventory)
+    items: Mapped[List["Item"]] = relationship(secondary=user_has_items)
 
     def __repr__(self):
         return (
