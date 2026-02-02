@@ -7,6 +7,7 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from Models.image import Image
 from Models.point import Point
+from Models.point_has_image import PointHasImage
 from Schemas.image_schema import ImageSchema
 from Api.database import db
 
@@ -17,7 +18,7 @@ class ImageService:
     """Service class for Image-related business logic."""
 
     @staticmethod
-    def get_image_by_id(image_id: int) -> Image:
+    def get_image_by_id(image_id: str) -> Image:
         """
         Retrieve an image by its ID.
 
@@ -30,7 +31,7 @@ class ImageService:
         Raises:
             NoResultFound: If image doesn't exist
         """
-        image = db.session.get(Image, image_id)
+        image = db.session.query(Image).filter_by(public_id=image_id).first()
         if not image:
             logger.warning(f"Image with id {image_id} not found")
             raise NoResultFound(f"Image {image_id} not found in database")
@@ -47,7 +48,6 @@ class ImageService:
         Returns:
             List of Image objects
         """
-        from Models.point_has_image import PointHasImage
 
         images = (
             db.session.query(Image)
@@ -83,7 +83,7 @@ class ImageService:
         return image
 
     @staticmethod
-    def update_image(image_id: int, image_data: dict) -> Image:
+    def update_image(public_id: str, image_data: dict) -> Image:
         """
         Update an existing image.
 
@@ -100,10 +100,10 @@ class ImageService:
             IntegrityError: If database constraints are violated
         """
         # Verify image exists
-        existing_image = ImageService.get_image_by_id(image_id)
+        existing_image = ImageService.get_image_by_id(public_id)
         if not existing_image:
-            raise NoResultFound(f"Image with id {image_id} not found")
-        logger.info(f"Updating image {image_id}")
+            raise NoResultFound(f"Image with id {public_id} not found")
+        logger.info(f"Updating image {public_id}")
 
         updated_image = ImageSchema().load(image_data)
 
@@ -112,16 +112,16 @@ class ImageService:
             db.session.commit()
             db.session.refresh(merged_image)
 
-            logger.info(f"Image {image_id} updated successfully")
+            logger.info(f"Image {public_id} updated successfully")
             return merged_image
 
         except IntegrityError as e:
             db.session.rollback()
-            logger.error(f"Integrity error updating image {image_id}: {e}")
+            logger.error(f"Integrity error updating image {public_id}: {e}")
             raise
 
     @staticmethod
-    def delete_image(image_id: int) -> None:
+    def delete_image(public_id: str) -> None:
         """
         Delete an image by its ID.
 
@@ -132,25 +132,25 @@ class ImageService:
             NoResultFound: If image doesn't exist
             IntegrityError: If image has references that prevent deletion
         """
-        image = ImageService.get_image_by_id(image_id)
-
+        image = ImageService.get_image_by_id(public_id)
+        
         try:
-            logger.info(f"Deleting image {image_id}")
+            logger.info(f"Deleting image {public_id}")
             db.session.delete(image)
             db.session.commit()
-            logger.info(f"Image {image_id} deleted successfully")
+            logger.info(f"Image {public_id} deleted successfully")
 
         except IntegrityError as e:
             db.session.rollback()
-            logger.error(f"Integrity error deleting image {image_id}: {e}")
+            logger.error(f"Integrity error deleting image {public_id}: {e}")
             raise IntegrityError(
-                f"Cannot delete image {image_id} due to existing references",
+                f"Cannot delete image {public_id} due to existing references",
                 params=None,
                 orig=e
             )
 
     @staticmethod
-    def attach_image_to_point(image_id: int, point_id: int) -> None:
+    def attach_image_to_point(public_id: str, point_id: int) -> None:
         """
         Attach an image to a point.
 
@@ -162,7 +162,7 @@ class ImageService:
             NoResultFound: If image or point doesn't exist
         """
 
-        image = ImageService.get_image_by_id(image_id)
+        image = ImageService.get_image_by_id(public_id)
         point = db.session.get(Point, point_id)
 
         if not point:
@@ -171,12 +171,12 @@ class ImageService:
         if image not in point.images:
             point.images.append(image)
             db.session.commit()
-            logger.info(f"Image {image_id} attached to point {point_id}")
+            logger.info(f"Image {public_id} attached to point {point_id}")
         else:
-            logger.info(f"Image {image_id} already attached to point {point_id}")
+            logger.info(f"Image {public_id} already attached to point {point_id}")
 
     @staticmethod
-    def detach_image_from_point(image_id: int, point_id: int) -> None:
+    def detach_image_from_point(public_id: str, point_id: int) -> None:
         """
         Detach an image from a point.
 
@@ -188,7 +188,7 @@ class ImageService:
             NoResultFound: If image or point doesn't exist
         """
 
-        image = ImageService.get_image_by_id(image_id)
+        image = ImageService.get_image_by_id(public_id)
         point = db.session.get(Point, point_id)
 
         if not point:
@@ -197,6 +197,6 @@ class ImageService:
         if image in point.images:
             point.images.remove(image)
             db.session.commit()
-            logger.info(f"Image {image_id} detached from point {point_id}")
+            logger.info(f"Image {public_id} detached from point {point_id}")
         else:
-            logger.info(f"Image {image_id} not attached to point {point_id}")
+            logger.info(f"Image {public_id} not attached to point {point_id}")

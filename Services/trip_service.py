@@ -7,6 +7,7 @@ from datetime import date
 from typing import List, Optional, cast
 from flask import g
 from sqlalchemy.exc import NoResultFound
+import uuid
 
 from Models.user_has_trip import user_has_trip
 from Models.trip import Trip
@@ -43,7 +44,7 @@ class TripService:
         return trip
 
     @staticmethod
-    def get_trips_by_user(user_id: int) -> List[Trip]:
+    def get_trips_by_user(user_id: str) -> List[Trip]:
         """
         Retrieve all trips from the database.
 
@@ -54,17 +55,15 @@ class TripService:
             NoResultFound: If no trips exist
         """
         user = (
-            User,
             db.session.query(User)
             .options(selectinload(User.trips))
             .filter_by(public_id=user_id)
-            .first(),
+            .first()
         )
 
         if not user:
             raise NoResultFound(f"User with id {user_id} not found")
-
-        user = cast(User, user)
+        
         trips = user.trips
         logger.info(f"Found {len(trips)} trips for user {user_id}")
 
@@ -84,9 +83,32 @@ class TripService:
         Raises:
             ValidationError: If data is invalid
             IntegrityError: If database constraints are violated
-        """
+        """        
         logger.info(f"Creating new trip")
+        
+        # Generate public_id if not provided
+        if 'public_id' not in trip_data:
+            trip_data['public_id'] = str(uuid.uuid4())
+        
+        # Get the integer user ID from the public_id in g.current_user_id
+        current_user = User.query.filter_by(public_id=g.current_user_id).first()
+        if current_user:
+            current_user_id = current_user.id
+            
+            # Set user_id for inventory and items if present
+            if 'inventory' in trip_data and trip_data['inventory'] is not None:
+                trip_data['inventory']['user_id'] = current_user_id
+                if 'items' in trip_data['inventory']:
+                    for item in trip_data['inventory']['items']:
+                        if 'user_id' not in item:
+                            item['user_id'] = current_user_id
+        
         trip: Trip = TripSchema().load(trip_data)  # type: ignore
+        
+        # Add the creator as a traveller
+        if current_user:
+            trip.travellers.append(current_user)
+        
         db.session.add(trip)
         db.session.commit()
 

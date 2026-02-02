@@ -1,5 +1,5 @@
 from Api.database import db
-from sqlalchemy import Boolean, Integer
+from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List, TYPE_CHECKING
 
@@ -18,3 +18,4 @@ class Trip (db.Model):
     travellers: Mapped[List["User"]] = relationship(secondary='user_has_trip', back_populates='trips')
     pending_travellers: Mapped[List["User"]] = relationship(secondary='user_has_invitation', back_populates='invitations')
     is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
+    public_id: Mapped[str] = mapped_column(String(255), nullable=False)

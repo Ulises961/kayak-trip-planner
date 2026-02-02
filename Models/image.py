@@ -12,6 +12,7 @@ class Image (db.Model):
     size: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)
     name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-  
+    public_id: Mapped[str] = mapped_column(String(255), nullable=False)
+
     def __repr__(self):
         return f'<Image "name {self.name}, path {self.location}, size {self.size}">'
