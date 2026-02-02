@@ -1,15 +1,13 @@
 from http import HTTPStatus
 from http.client import HTTPException
 import logging
-from typing import cast
 from flask import Blueprint, abort, g, jsonify, request
-from sqlalchemy.exc import NoResultFound, IntegrityError
-from Models.user import User
+from sqlalchemy.exc import IntegrityError
 from Schemas.log_schema import LogSchema 
-from Models.log import Log
 from Api.database import db
 from Services.Middleware.auth_middleware import JWTService
 from Services.Middleware.privileges_middleware import require_owner
+from Services.log_service import LogService
 
 
 logger = logging.getLogger(__name__) # It will print the name of this module when the main app is running
@@ -17,8 +15,6 @@ logger = logging.getLogger(__name__) # It will print the name of this module whe
 LOG_ENDPOINT = "/api/log"
 log_api = Blueprint('log', __name__, url_prefix=LOG_ENDPOINT)
 
-def retrieveLogById(id: int):
-    return db.session.query(Log, id=id).first()
 
 @log_api.route("/all", methods=["GET"])
 @JWTService.authenticate_restful
@@ -28,7 +24,7 @@ def get_logs():
     LogResource GET method. Retrieves all the logs associated to a user
     """
     try:        
-        logs = db.session.query(Log, user_id=g.current_user_id)
+        logs = LogService.get_logs_by_user(g.current_user_id)
         return jsonify([LogSchema().dump(log) for log in logs]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"Error retrieving logs: {e}")
@@ -43,8 +39,8 @@ def get_endorsed_logs():
     LogResource GET method. Retrieves all the logs associated to a user
     """
     try:        
-        user = cast(User, db.session.query(User, id=g.user_current_id).join(User.endorsed_logs))
-        logs = user.endorsed_logs 
+        
+        logs = LogService.get_endorsed_logs(g.current_user_id) 
         return jsonify([LogSchema().dump(log) for log in logs]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"Error retrieving logs: {e}")
@@ -62,9 +58,7 @@ def post():
     """
     try:
         log_json = request.get_json()
-        log = LogSchema().load(log_json)
-        db.session.add(log)
-        db.session.commit()
+        log = LogService.create_log(log_json)
         return jsonify(LogSchema().dump(log)), HTTPStatus.CREATED
     except HTTPException:
         raise
@@ -73,30 +67,21 @@ def post():
             f"Integrity Error, this log is already in the database. Error: {e}"
         )
         db.session.rollback()
-        abort(HTTPStatus.CONFLICT, message="Database integrity violated")
+        abort(HTTPStatus.CONFLICT, description="Database integrity violated")
 
     except Exception as e:
         logger.error(f"Error creating log: {e}")
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@log_api.route("/<int:id>/update", methods=["POST"])
+@log_api.route("/<string:public_id>/update", methods=["POST"])
 @JWTService.authenticate_restful
 @require_owner('log')
-def update_log(id: int):
+def update_log(public_id: str):
     try:
-        existing_log = db.session.query(Log, id=id)
+        updated_log = LogService.update_log(public_id, request.get_json())
 
-        if not existing_log:
-            abort(HTTPStatus.NOT_FOUND, description="Log with id {id} not found")
-
-        updated_log = LogSchema().load(request.get_json())
-        
-        db.session.merge(update_log)
-        db.session.commit()
-        db.session.refresh(updated_log)
-
-        return LogSchema().dump(update_log), HTTPStatus.OK
+        return jsonify(LogSchema().dump(updated_log)), HTTPStatus.OK
     
     except HTTPException:
         raise
@@ -105,23 +90,23 @@ def update_log(id: int):
             f"Integrity Error, this log is already in the database. Error: {e}"
         )
         db.session.rollback()
-        abort(HTTPStatus.CONFLICT, message="Database integrity violated")
+        abort(HTTPStatus.CONFLICT, description="Database integrity violated")
 
     except Exception as e:
         logger.error(f"Error creating log: {e}")
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@log_api.route("/<int:id>", methods=["DELETE"])
+@log_api.route("/<string:public_id>", methods=["DELETE"])
 @JWTService.authenticate_restful
 @require_owner('log')
-def delete_log(id: int):
+def delete_log(public_id: str):
     try:
-        logger.info(f"Deleting log with id {id} ")
+        logger.info(f"Deleting log with id {public_id} ")
 
-        log = retrieveLogById(id)
+        log = LogService.delete_log(public_id)
         if not log:
-            abort(HTTPStatus.NOT_FOUND, description=f"Log with id {id} not found")
+            abort(HTTPStatus.NOT_FOUND, description=f"Log with id {public_id} not found")
 
         db.session.delete(log)
         db.session.commit()
