@@ -24,7 +24,6 @@ from Models.item import Item
 from Models.point import Point
 from Models.log import Log
 from Models.image import Image
-from Services.Middleware.privileges_middleware import check_resource_ownership
 
 logger = logging.getLogger(__name__)
 
