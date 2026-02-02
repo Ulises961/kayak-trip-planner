@@ -46,9 +46,9 @@ def test_update_user(client, auth_headers, public_id):
     assert data['mail'] == "ulises.sosa@gmail.com"
     assert data['public_id'] == originalUser["public_id"]
 
-def test_delete_user(client, auth_headers, public_id):
+def test_delete_user(client, auth_headers, public_id_1):
     response = client.delete(
-        f"{USER_ENDPOINT}/{public_id}",
+        f"{USER_ENDPOINT}/{public_id_1}",
         headers=auth_headers)
     assert response.status_code == 200
 

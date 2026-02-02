@@ -1,10 +1,11 @@
-import uuid
 import pytest
 import os
 import sys
 
-from sqlalchemy import cast
 from sqlalchemy.exc import NoResultFound
+
+from Models.user import User
+from Services.Middleware.auth_middleware import JWTService
 
  # directory reach - add parent directory to path
 directory = os.path.dirname(os.path.abspath(__file__))
@@ -40,9 +41,7 @@ def client(app):
 
 @pytest.fixture(scope='session')
 def public_id(app):
-    """Create first test user and return their public_id."""
-    from Models.user import User
-    
+    """Create first test user and return their public_id."""   
     client = app.test_client()
     user1 = {
         "mail": "test.user@gmail.com",
@@ -63,13 +62,11 @@ def public_id(app):
 
 @pytest.fixture(scope='session')
 def public_id_1(app):
-    """Create second test user and return their public_id."""
-    from Models.user import User
-    
+    """Create second test user and return their public_id."""    
     client = app.test_client()
     user2 = {
         "mail": "test1.user@gmail.com",
-        "pwd": "pwd",
+        "pwd": "pwdTest2",
         "phone": "+391234567899",
         "name": "Don",
         "surname": "charles",
@@ -86,9 +83,7 @@ def public_id_1(app):
 
 @pytest.fixture(scope='function')
 def user_id(app, public_id):
-    """Get integer user ID for the test user."""
-    from Models.user import User
-    
+    """Get integer user ID for the test user."""    
     user = User.query.filter_by(public_id=public_id).first()
     if not user:
         raise NoResultFound()
@@ -97,8 +92,6 @@ def user_id(app, public_id):
 @pytest.fixture(scope='function')
 def auth_token(app, public_id):
     """Get JWT token for the test user."""
-    from Services.Middleware.auth_middleware import JWTService
-    from Models.user import User
     
     user = User.query.filter_by(public_id=public_id).first()
     if not user:
