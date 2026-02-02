@@ -119,13 +119,19 @@ class JWTService:
             if not auth_header:
                     abort(HTTPStatus.FORBIDDEN, description="Valid token missing") 
             try:
-                    data = JWTService.verify_token(auth_header)
+                    # Extract token from "Bearer <token>" format
+                    if auth_header.startswith("Bearer "):
+                        token = auth_header.split(" ")[1]
+                    else:
+                        token = auth_header
+                    
+                    data = JWTService.verify_token(token)
                     if not data:
                         abort(401, description="Invalid token")
                     
                     user = User.query.filter_by(public_id=data["user_id"]).first()
                 
-                    if not user or not user.active:
+                    if not user:
                         return abort(HTTPStatus.UNAUTHORIZED)
 
                     g.current_user_id = user.public_id
