@@ -1,0 +1,30 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="kayak-trip-planner",
+    version="0.1",
+    packages=find_packages(include=['Api', 'Models', 'Resources', 'Schemas', 'Services', 'Tests']),
+    install_requires=[
+        'path',
+        'flake8',
+        'pytest',
+        'flask',
+        'marshmallow',
+        'marshmallow-sqlalchemy',
+        'flask-sqlalchemy>=3.1.0',
+        'sqlalchemy>=2.0.0',
+        'psycopg2-binary',
+        'flask-bcrypt',
+        'python-dotenv',
+        'pyjwt',
+        'flask-migrate',
+        'alembic',
+        'geoalchemy',
+        'openmeteo-requests',
+        'requests-cache', 
+        'retry-requests', 
+    ],
+    author="Ulises E. Sosa",
+    description="Kayak planner backend",
+    python_requires=">=3.12",
+)

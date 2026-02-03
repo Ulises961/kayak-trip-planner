@@ -1,16 +1,8 @@
 import pytest
-import os
-import sys
-
 from sqlalchemy.exc import NoResultFound
 
 from Models.user import User
 from Services.Middleware.auth_middleware import JWTService
-
- # directory reach - add parent directory to path
-directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(directory))
-
 from Api.app import createApp
 from Api.database import db as _db
 

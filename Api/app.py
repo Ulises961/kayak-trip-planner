@@ -1,10 +1,5 @@
 from flask import Flask
 import os
-import sys
-
- # directory reach
-directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(directory))
 
 from Api.config import config
 from Api.database import db
