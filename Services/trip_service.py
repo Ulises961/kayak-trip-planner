@@ -93,7 +93,7 @@ class TripService:
         # Get the integer user ID from the public_id in g.current_user_id
         current_user = User.query.filter_by(public_id=g.current_user_id).first()
         if current_user:
-            current_user_id = current_user.id
+            current_user_id = current_user.public_id
             
             # Set user_id for inventory and items if present
             if 'inventory' in trip_data and trip_data['inventory'] is not None:

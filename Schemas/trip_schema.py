@@ -20,3 +20,4 @@ class TripSchema(Schema):
     @post_load
     def make_trip(self, data, **kwargs):
         return Trip(**data)
+    

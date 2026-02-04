@@ -23,10 +23,11 @@ class ItemSchema(Schema):
     @pre_load
     def load_user_id(self, data, **kwargs):
         """Convert public_id to internal user.id before loading"""
-        user = db.session.query(User).filter_by(public_id=data['user_id']).first()
-        if not user:
-            raise NoResultFound(f"User with public_id {data['user_id']} not found")
-        data['user_id'] = user.id
+        if 'user_id' in data:
+            user = db.session.query(User).filter_by(public_id=data['user_id']).first()
+            if not user:
+                raise NoResultFound(f"User with public_id {data['user_id']} not found")
+            data['user_id'] = user.id
         return data
     
       

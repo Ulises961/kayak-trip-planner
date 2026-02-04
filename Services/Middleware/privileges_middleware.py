@@ -24,92 +24,114 @@ from Models.item import Item
 from Models.point import Point
 from Models.log import Log
 from Models.image import Image
+from Models.user_has_trip import user_has_trip
+from Models.user_has_inventory import user_has_inventory
 
 logger = logging.getLogger(__name__)
 
 
-def require_owner(resource_type, *, id_param='id', from_body=False, parent_resource=None):
+def require_owner(
+    resource_type, *, id_param="id", from_body=False, parent_resource=None
+):
     """
     Decorator to ensure user owns the resource or has access to it.
-    
+
     This decorator verifies that the authenticated user has permission to access
     the requested resource by checking the ownership chain in the database.
-    
+
     Args:
-        resource_type: Type of resource ('trip', 'itinerary', 'day', 'sea', 'weather', 
+        resource_type: Type of resource ('trip', 'itinerary', 'day', 'sea', 'weather',
                         'inventory', 'item', 'point', 'log', 'image')
         id_param: Name of the parameter containing the resource ID (default: 'id')
         from_body: If True, extract id_param from request body instead of URL (default: False)
         parent_resource: Tuple of (parent_type, parent_id_param) to check parent ownership
                          for create operations. E.g., ('itinerary', 'itinerary_id')
-    
+
     Examples:
         # GET /api/day/<id> - Check day ownership from URL
         @require_owner('day')
-        
+
         # POST /api/day/create with {"itinerary_id": 5} - Check itinerary ownership from body
         @require_owner('day', parent_resource=('itinerary', 'itinerary_id'), from_body=True)
-        
+
         # PUT /api/day/<id>/update with body - Check day ownership from URL
         @require_owner('day', id_param='id')
     """
+
     def decorator(f):
         @wraps(f)
         def decorator_function(*args, **kwargs):
             # Get current user from g (set by authenticate_restful)
-            user_id = g.get('current_user_id')
+            user_id = g.get("current_user_id")
             if not user_id:
                 abort(HTTPStatus.UNAUTHORIZED, description="Authentication required")
-            
+
             # Determine which resource to check
             if parent_resource:
                 # For create operations, check parent resource ownership
                 parent_type, parent_id_field = parent_resource
-                
+
                 if from_body:
                     data = request.get_json()
                     if not data:
-                        abort(HTTPStatus.BAD_REQUEST, description="Request body required")
+                        abort(
+                            HTTPStatus.BAD_REQUEST, description="Request body required"
+                        )
                     resource_id = data.get(parent_id_field)
                 else:
                     resource_id = kwargs.get(parent_id_field)
-                
+
                 if not resource_id:
-                    abort(HTTPStatus.BAD_REQUEST, description=f"{parent_id_field} required")
-                
+                    abort(
+                        HTTPStatus.BAD_REQUEST,
+                        description=f"{parent_id_field} required",
+                    )
+
                 check_type = parent_type
             else:
                 # For read/update/delete operations, check the resource itself
                 if from_body:
                     data = request.get_json()
                     if not data:
-                        abort(HTTPStatus.BAD_REQUEST, description="Request body required")
+                        abort(
+                            HTTPStatus.BAD_REQUEST, description="Request body required"
+                        )
                     resource_id = data.get(id_param)
                 else:
                     resource_id = kwargs.get(id_param)
-                
+
                 if not resource_id:
-                    abort(HTTPStatus.BAD_REQUEST, description=f"Resource ID ({id_param}) required")
-                
+                    abort(
+                        HTTPStatus.BAD_REQUEST,
+                        description=f"Resource ID ({id_param}) required",
+                    )
+
                 check_type = resource_type
-            
+
             # Check if user owns or has access to the resource
             has_access = check_resource_ownership(
-                user_id=user_id,
-                resource_type=check_type,
-                resource_id=resource_id
+                user_id=user_id, resource_type=check_type, resource_id=resource_id
             )
-            
-            if not has_access:
-                abort(HTTPStatus.FORBIDDEN, description=f"Access denied to {check_type} {resource_id}")
-            
+
+            if has_access is None:
+                # Resource doesn't exist - let endpoint handle it (will return 404)
+                return f(*args, **kwargs)
+            elif not has_access:
+                abort(
+                    HTTPStatus.FORBIDDEN,
+                    description=f"Access denied to {check_type} {resource_id}",
+                )
+
             return f(*args, **kwargs)
+
         return decorator_function
+
     return decorator
+
 
 def check_resource_ownership(
     user_id: str, resource_type: str, resource_id: int
-) -> bool:
+) -> Optional[bool]:
     """
     Check if a user has ownership or access rights to a specific resource.
 
@@ -122,7 +144,7 @@ def check_resource_ownership(
         resource_id: The ID of the resource
 
     Returns:
-        True if user has access, False otherwise
+        True if user has access, False if user lacks permission, None if resource doesn't exist
     """
     try:
         # Verify user exists
@@ -171,11 +193,16 @@ def check_resource_ownership(
         return False
 
 
-def _check_trip_ownership(user_id: int, trip_id: int) -> bool:
+def _check_trip_ownership(user_id: int, trip_id: int) -> Optional[bool]:
     """Check if user owns or is a companion on the trip."""
     from Models.user_has_trip import user_has_trip
 
-    # Single query to check if user is associated with trip
+    # First check if trip exists
+    trip = db.session.query(Trip).filter_by(id=trip_id).first()
+    if not trip:
+        return None  # Trip doesn't exist
+
+    # Check if user is associated with trip
     result = (
         db.session.query(Trip)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
@@ -186,9 +213,13 @@ def _check_trip_ownership(user_id: int, trip_id: int) -> bool:
     return result is not None
 
 
-def _check_itinerary_ownership(user_id: int, itinerary_id: int) -> bool:
+def _check_itinerary_ownership(user_id: int, itinerary_id: int) -> Optional[bool]:
     """Check if user owns the itinerary through trip ownership."""
-    from Models.user_has_trip import user_has_trip
+
+    # First check if itinerary exists
+    itinerary = db.session.query(Itinerary).filter_by(id=itinerary_id).first()
+    if not itinerary:
+        return None  # Itinerary doesn't exist
 
     result = (
         db.session.query(Itinerary)
@@ -201,9 +232,14 @@ def _check_itinerary_ownership(user_id: int, itinerary_id: int) -> bool:
     return result is not None
 
 
-def _check_day_ownership(user_id: int, day_id: int) -> bool:
+def _check_day_ownership(user_id: int, day_id: int) -> Optional[bool]:
     """Check if user owns the day through itinerary/trip ownership."""
     from Models.user_has_trip import user_has_trip
+
+    # First check if day exists
+    day = db.session.query(Day).filter_by(id=day_id).first()
+    if not day:
+        return None  # Day doesn't exist
 
     result = (
         db.session.query(Day)
@@ -217,10 +253,13 @@ def _check_day_ownership(user_id: int, day_id: int) -> bool:
     return result is not None
 
 
-def _check_sea_ownership(user_id: int, sea_id: int) -> bool:
+def _check_sea_ownership(user_id: int, sea_id: int) -> Optional[bool]:
     """Check if user owns the sea through day/itinerary/trip ownership."""
-    # Optimized: Single query with joins instead of multiple queries
-    from Models.user_has_trip import user_has_trip
+
+    # First check if sea exists
+    sea = db.session.query(Sea).filter_by(id=sea_id).first()
+    if not sea:
+        return None  # Sea doesn't exist
 
     result = (
         db.session.query(Sea)
@@ -235,9 +274,14 @@ def _check_sea_ownership(user_id: int, sea_id: int) -> bool:
     return result is not None
 
 
-def _check_weather_ownership(user_id: int, weather_id: int) -> bool:
+def _check_weather_ownership(user_id: int, weather_id: int) -> Optional[bool]:
     """Check if user owns the weather through day/itinerary/trip ownership."""
     from Models.user_has_trip import user_has_trip
+
+    # First check if weather exists
+    weather = db.session.query(Weather).filter_by(id=weather_id).first()
+    if not weather:
+        return None  # Weather doesn't exist
 
     result = (
         db.session.query(Weather)
@@ -252,24 +296,40 @@ def _check_weather_ownership(user_id: int, weather_id: int) -> bool:
     return result is not None
 
 
-def _check_inventory_ownership(user_id: int, inventory_id: int) -> bool:
-    """Check if user owns the inventory through trip ownership."""
-    from Models.user_has_trip import user_has_trip
-
+def _check_inventory_ownership(user_id: int, inventory_id: int) -> Optional[bool]:
+    """Check if user owns the inventory directly, through user_has_inventory, or through trip ownership."""
+    
+    # First check if inventory exists
+    inventory = db.session.query(Inventory).filter_by(id=inventory_id).first()
+    if not inventory:
+        return None  # Inventory doesn't exist
+    
+    # Check direct ownership via inventory.user_id FK
+    if inventory.user_id == user_id:
+        return True
+      
     result = (
         db.session.query(Inventory)
         .join(Trip, Inventory.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Inventory.id == inventory_id, user_has_trip.c.user_id == user_id)
+        .filter(
+            Inventory.id == inventory_id,
+            user_has_trip.c.user_id == user_id
+        )
         .first()
     )
-
+    
     return result is not None
 
 
-def _check_item_ownership(user_id: int, item_id: int) -> bool:
+def _check_item_ownership(user_id: int, item_id: int) -> Optional[bool]:
     """Check if user owns the item through inventory/trip ownership."""
     from Models.user_has_trip import user_has_trip
+
+    # First check if item exists
+    item = db.session.query(Item).filter_by(id=item_id).first()
+    if not item:
+        return None  # Item doesn't exist
 
     result = (
         db.session.query(Item)
@@ -287,9 +347,14 @@ def _check_item_ownership(user_id: int, item_id: int) -> bool:
     return result is not None
 
 
-def _check_point_ownership(user_id: int, point_id: int) -> bool:
+def _check_point_ownership(user_id: int, point_id: int) -> Optional[bool]:
     """Check if user owns the point through day/itinerary/trip ownership."""
     from Models.user_has_trip import user_has_trip
+
+    # First check if point exists
+    point = db.session.query(Point).filter_by(id=point_id).first()
+    if not point:
+        return None  # Point doesn't exist
 
     result = (
         db.session.query(Point)
@@ -304,11 +369,11 @@ def _check_point_ownership(user_id: int, point_id: int) -> bool:
     return result is not None
 
 
-def _check_log_ownership(user_id: int, log_id: int) -> bool:
+def _check_log_ownership(user_id: int, log_id: int) -> Optional[bool]:
     """Check if user owns or has access to the log."""
     log = db.session.query(Log).filter_by(id=log_id).first()
     if not log:
-        return False
+        return None  # Log doesn't exist
 
     # Check if user is the log author
     # Assuming there's a user_has_log relationship
@@ -321,11 +386,11 @@ def _check_log_ownership(user_id: int, log_id: int) -> bool:
     )
 
 
-def _check_image_ownership(user_id: int, image_id: int) -> bool:
+def _check_image_ownership(user_id: int, image_id: int) -> Optional[bool]:
     """Check if user owns the image through point or user ownership."""
     image = db.session.query(Image).filter_by(id=image_id).first()
     if not image:
-        return False
+        return None  # Image doesn't exist
 
     # Check if image belongs to user's point or is user's profile picture
     # This depends on your specific image relationships
@@ -339,5 +404,3 @@ def _check_image_ownership(user_id: int, image_id: int) -> bool:
             return True
 
     return False
-
-

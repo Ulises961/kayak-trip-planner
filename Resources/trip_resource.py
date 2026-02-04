@@ -102,6 +102,7 @@ def post():
     except IntegrityError as e:
         abort(HTTPStatus.CONFLICT, description="Database integrity constraint violated")
     except Exception as e:
+        logger.exception(f"Error creating trip: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @trip_api.route("/<int:id>/update", methods=["POST"])
