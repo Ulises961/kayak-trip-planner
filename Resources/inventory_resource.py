@@ -50,7 +50,6 @@ def get_inventory(id: int):
 
 @inventory_api.route("/create", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner('inventory', parent_resource=('trip', 'trip_id'), from_body=True)
 def create_inventory():
     """POST /api/inventory/create - Create new inventory"""
     try:
@@ -84,7 +83,7 @@ def update_inventory(id: int):
     except IntegrityError:
         abort(HTTPStatus.CONFLICT, description="Database integrity constraint violated")
     except Exception as e:
-        logger.error(f"Error updating inventory: {e}")
+        logger.exception(f"Error updating inventory: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @inventory_api.route("/<int:id>", methods=["DELETE"])

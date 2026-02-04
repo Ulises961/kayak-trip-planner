@@ -4,11 +4,15 @@ Inventory Service - Business logic for inventory operations.
 
 import logging
 from typing import List, Optional, cast
+from flask import g
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from Models.inventory import Inventory
+from Models.item import Item
+from Models.user import User
 from Schemas.inventory_schema import InventorySchema
 from Api.database import db
+from Schemas.item_schema import ItemSchema
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +41,7 @@ class InventoryService:
         return inventory
 
     @staticmethod
-    def get_inventories_by_user(user_id: int) -> List[Inventory]:
+    def get_inventories_by_user(user_id: str) -> List[Inventory]:
         """
         Retrieve all inventories for a user.
 
@@ -50,7 +54,12 @@ class InventoryService:
         Raises:
             NoResultFound: If no inventories exist
         """
-        inventories = db.session.query(Inventory).filter_by(user_id=user_id).all()
+        inventories = (
+            db.session.query(Inventory)
+            .join(User)
+            .filter(Inventory.user_id == User.id, User.public_id == user_id)
+            .all()
+        )
         logger.info(f"Found {len(inventories)} inventories for user {user_id}")
         return inventories
 
@@ -71,6 +80,7 @@ class InventoryService:
         """
         logger.info("Creating new inventory")
         inventory = cast(Inventory, InventorySchema().load(inventory_data))
+
         db.session.add(inventory)
         db.session.commit()
 
@@ -103,11 +113,13 @@ class InventoryService:
 
         # Handle items separately if present
         if "items" in inventory_data:
-            if items := inventory_data.get("items", []):
-                existing_inventory.items = items
+            if items_json := inventory_data.get("items", []):
+                items = []
+                for item_dict in items_json:
+                    item_dict.setdefault('user_id', g.current_user_id)
 
         updated_inventory = InventorySchema().load(inventory_data)
-            
+
         try:
             merged_inventory = cast(Inventory, db.session.merge(updated_inventory))
             db.session.commit()
@@ -118,9 +130,9 @@ class InventoryService:
 
         except IntegrityError as e:
             db.session.rollback()
-            logger.error(f"Integrity error updating inventory {inventory_id}: {e}")
+            logger.exception(f"Integrity error updating inventory {inventory_id}: {e}")
             raise
-
+    
     @staticmethod
     def delete_inventory(inventory_id: int) -> None:
         """
