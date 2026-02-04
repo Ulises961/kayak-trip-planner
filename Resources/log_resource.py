@@ -48,7 +48,6 @@ def get_endorsed_logs():
 
 @log_api.route("/create", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner('log')
 def post():
     """
     LogResource POST method. Adds a new log to the database.
@@ -75,7 +74,7 @@ def post():
 
 @log_api.route("/<string:public_id>/update", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner('log')
+@require_owner('log', id_param='public_id')
 def update_log(public_id: str):
     try:
         updated_log = LogService.update_log(public_id, request.get_json())
@@ -98,7 +97,7 @@ def update_log(public_id: str):
 
 @log_api.route("/<string:public_id>", methods=["DELETE"])
 @JWTService.authenticate_restful
-@require_owner('log')
+@require_owner('log', id_param='public_id')
 def delete_log(public_id: str):
     try:
         logger.info(f"Deleting log with id {public_id} ")

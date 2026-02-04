@@ -141,7 +141,7 @@ def check_resource_ownership(
     Args:
         user_id: The public_id of the user
         resource_type: Type of resource ('trip', 'itinerary', 'day', 'sea', 'weather', etc.)
-        resource_id: The ID of the resource
+        resource_id: The ID of the resource (can be int or string for resources using public_id)
 
     Returns:
         True if user has access, False if user lacks permission, None if resource doesn't exist
@@ -179,7 +179,7 @@ def check_resource_ownership(
             return _check_point_ownership(user.id, resource_id)
 
         elif resource_type == "log":
-            return _check_log_ownership(user.id, resource_id)
+            return _check_log_ownership(user.id, str(resource_id))
 
         elif resource_type == "image":
             return _check_image_ownership(user.id, resource_id)
@@ -331,6 +331,11 @@ def _check_item_ownership(user_id: int, item_id: int) -> Optional[bool]:
     if not item:
         return None  # Item doesn't exist
 
+    # Second check user owns item
+    if item.user_id:
+        return item.user_id == user_id
+    
+    # Third check trip inventory has item
     result = (
         db.session.query(Item)
         .join(inventory_items, Item.id == inventory_items.c.item_id)
@@ -369,18 +374,18 @@ def _check_point_ownership(user_id: int, point_id: int) -> Optional[bool]:
     return result is not None
 
 
-def _check_log_ownership(user_id: int, log_id: int) -> Optional[bool]:
+def _check_log_ownership(user_id: int, log_id: str) -> Optional[bool]:
     """Check if user owns or has access to the log."""
-    log = db.session.query(Log).filter_by(id=log_id).first()
+    # log_id is actually a public_id (string)
+    log = db.session.query(Log).filter_by(public_id=log_id).first()
     if not log:
         return None  # Log doesn't exist
 
     # Check if user is the log author
-    # Assuming there's a user_has_log relationship
     return (
         db.session.query(User)
         .join(User.logs)
-        .filter(User.id == user_id, Log.id == log_id)
+        .filter(User.id == user_id, Log.public_id == log_id)
         .first()
         is not None
     )
