@@ -79,8 +79,6 @@ def register_user():
         raise IntegrityError(statement="User already present", params= None, orig=Exception())
     
     else:
-        # add new user to db
-        user_json["public_id"] = str(uuid.uuid4())
         user = UserSchema().load(user_json)
         
         db.session.add(user)

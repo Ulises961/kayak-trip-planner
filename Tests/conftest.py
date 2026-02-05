@@ -33,7 +33,7 @@ def user_1(app):
     client = app.test_client()
     user1 = {
         "mail": "test.user@gmail.com",
-        "pwd": "testPassword",
+        "pwd": "testPassword6$",
         "phone": "+390123456789",
         "name": "Test User",
         "username": "test",
@@ -54,7 +54,7 @@ def user_2(app):
     client = app.test_client()
     user2 = {
         "mail": "test1.user@gmail.com",
-        "pwd": "pwdTest2",
+        "pwd": "pwdTest2$",
         "phone": "+391234567899",
         "name": "Don",
         "surname": "charles",

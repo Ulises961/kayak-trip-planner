@@ -1,3 +1,4 @@
+import uuid
 from Api.database import db
 from flask_bcrypt import generate_password_hash
 from Models.inventory import Inventory
@@ -23,7 +24,13 @@ if TYPE_CHECKING:
 class User(db.Model):
     __tablename__ = "users"
 
-    def __init__(self, pwd=None, endorsed_logs=[], logs=[], **kwargs):
+    def __init__(self, pwd=None, endorsed_logs=[], logs=[], public_id=None, **kwargs):
+        # Generate public_id if not provided
+        if not public_id:
+            self.public_id = str(uuid.uuid4())
+        else:
+            self.public_id = public_id
+            
         if pwd:
             self.pwd = generate_password_hash(pwd).decode("UTF-8")
 
