@@ -19,3 +19,4 @@ retry-requests
 numpy 
 pandas
 setuptools
+bleach

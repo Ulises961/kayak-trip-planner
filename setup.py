@@ -23,6 +23,7 @@ setup(
         'openmeteo-requests',
         'requests-cache', 
         'retry-requests', 
+        'bleach',
     ],
     author="Ulises E. Sosa",
     description="Kayak planner backend",
