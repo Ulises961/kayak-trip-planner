@@ -1,21 +1,47 @@
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields, post_load, validates, ValidationError
 from Models.day import Day
 from Schemas.point_schema import PointSchema
 from Schemas.sea_schema import SeaSchema
 from Schemas.weather_schema import WeatherSchema
+from datetime import datetime, timedelta
 
 class DaySchema(Schema):
     """ 
     Day Schema
     used for loading/dumping Day entities
     """
-    id = fields.Integer(allow_none=False)
-    day_number = fields.Integer(allow_none=False)
-    itinerary_id = fields.Integer(allow_none=False)
-    date=fields.Date('%Y-%m-%d',allow_none=False)
-    points=fields.List(fields.Nested(PointSchema), allow_none = True)
-    sea=fields.Nested(SeaSchema, allow_none = True)
-    weather=fields.Nested(WeatherSchema, allow_none = True)
+    id = fields.Integer(allow_none=True, dump_only=True)
+    day_number = fields.Integer(allow_none=False, required=True, validate=lambda x: 1 <= x <= 365)
+    itinerary_id = fields.Integer()
+    date = fields.Date('%Y-%m-%d', allow_none=False, required=True)
+    points = fields.List(fields.Nested(PointSchema), allow_none=True, validate=lambda x: x is None or len(x) <= 100)
+    sea = fields.Nested(SeaSchema, allow_none=True)
+    weather = fields.Nested(WeatherSchema, allow_none=True)
+
+    @validates('day_number')
+    def validate_day_number(self, value,  **kwargs):
+        """Validate day number is within reasonable range."""
+        if value < 1:
+            raise ValidationError("Day number must be at least 1")
+        if value > 365:
+            raise ValidationError("Day number cannot exceed 365")
+    
+    @validates('date')
+    def validate_date(self, value,  **kwargs):
+        """Validate date is not too far in the past or future."""
+        if value:
+            min_date = datetime.now().date() - timedelta(days=365*10)  # 10 years ago
+            max_date = datetime.now().date() + timedelta(days=365*10)  # 10 years ahead
+            if value < min_date:
+                raise ValidationError("Date cannot be more than 10 years in the past")
+            if value > max_date:
+                raise ValidationError("Date cannot be more than 10 years in the future")
+    
+    @validates('points')
+    def validate_points(self, value,  **kwargs):
+        """Validate points list doesn't exceed reasonable limits."""
+        if value is not None and len(value) > 100:
+            raise ValidationError("A day cannot have more than 100 points")
 
     @post_load
     def make_day(self, data, **kwargs): 

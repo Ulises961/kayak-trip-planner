@@ -17,19 +17,19 @@ TRIP_ENDPOINT = "/api/trip"
 trip_api = Blueprint("trip", __name__, url_prefix=TRIP_ENDPOINT)
 
 
-@trip_api.route("/<int:id>", methods=["GET"])
+@trip_api.route("/<string:id>", methods=["GET"])
 @JWTService.authenticate_restful
 @require_owner("trip")
-def get_trip(id: int):
+def get_trip(id: str):
     """
-    TripResource GET method. Retrieves trip(s) by ID or all trips.
+    TripResource GET method. Retrieves trip by public_id.
 
     Returns:
         JSON response with trip data and 200 status code
     """
     try:
-        logger.info(f"Retrieving trip with id {id}")
-        trip = TripService.get_trip_by_id(int(id))
+        logger.info(f"Retrieving trip with public_id {id}")
+        trip = TripService.get_trip_by_public_id(id)
         return jsonify(TripSchema().dump(trip)), HTTPStatus.OK
 
     except HTTPException:
@@ -105,9 +105,9 @@ def post():
         logger.exception(f"Error creating trip: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@trip_api.route("/<int:id>/update", methods=["POST"])
+@trip_api.route("/<string:id>/update", methods=["POST"])
 @JWTService.authenticate_restful
-def put(id:int):
+def put(id: str):
     """
     TripResource PUT method. Updates an existing trip.
 
@@ -126,11 +126,11 @@ def put(id:int):
     except Exception as e:
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@trip_api.route("/<int:id>", methods=["DELETE"])
+@trip_api.route("/<string:id>", methods=["DELETE"])
 @JWTService.authenticate_restful
-def delete(id: int):
+def delete(id: str):
     """
-    TripResource DELETE method. Deletes a trip by ID.
+    TripResource DELETE method. Deletes a trip by public_id.
 
     Returns:
         Success message and 200 status code
@@ -139,7 +139,7 @@ def delete(id: int):
         delete_to_all_participants = request.args.get("for_everyone",False, type=bool)
         
         logger.info(f"Deleting trip {id}")
-        TripService.delete_trip(int(id), delete_to_all_participants)
+        TripService.delete_trip(id, delete_to_all_participants)
         return {"message": "Deletion successful"}, HTTPStatus.OK
     except NoResultFound as e:
         abort(HTTPStatus.NOT_FOUND, description=str(e))
