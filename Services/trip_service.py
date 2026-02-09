@@ -44,6 +44,26 @@ class TripService:
         return trip
 
     @staticmethod
+    def get_trip_by_public_id(public_id: str) -> Optional[Trip]:
+        """
+        Retrieve a trip by its public_id (UUID).
+
+        Args:
+            public_id: The public_id of the trip to retrieve
+
+        Returns:
+            Trip object if found
+
+        Raises:
+            NoResultFound: If trip doesn't exist
+        """
+        trip = db.session.query(Trip).filter_by(public_id=public_id).first()
+        if not trip:
+            logger.warning(f"Trip with public_id {public_id} not found")
+            raise NoResultFound(f"Trip {public_id} not found in database")
+        return trip
+
+    @staticmethod
     def get_trips_by_user(user_id: str) -> List[Trip]:
         """
         Retrieve all trips from the database.
@@ -86,14 +106,10 @@ class TripService:
         """        
         logger.info(f"Creating new trip")
         
-        # Generate public_id if not provided
-        if 'public_id' not in trip_data:
-            trip_data['public_id'] = str(uuid.uuid4())
-        
-        # Get the integer user ID from the public_id in g.current_user_id
-        current_user = User.query.filter_by(public_id=g.current_user_id).first()
+        # Get the integer user ID from the public_id in g.current_user_public_id
+        current_user = User.query.filter_by(id=g.current_user_id).first()
         if current_user:
-            current_user_id = current_user.public_id
+            current_user_id = current_user.id
             
             # Set user_id for inventory and items if present
             if 'inventory' in trip_data and trip_data['inventory'] is not None:
@@ -102,7 +118,16 @@ class TripService:
                     for item in trip_data['inventory']['items']:
                         if 'user_id' not in item:
                             item['user_id'] = current_user_id
+            
+            if 'itinerary' in trip_data and trip_data['itinerary'] is not None:
+                trip_data['itinerary']['user_id'] = current_user_id
+                if 'days' in trip_data['itinerary']:
+                    for day in trip_data['itinerary']['days']:
+                        if 'user_id' not in day:
+                            day['user_id'] = current_user_id
         
+
+
         trip: Trip = TripSchema().load(trip_data)  # type: ignore
         
         # Add the creator as a traveller
@@ -150,7 +175,7 @@ class TripService:
         return updated_trip
 
     @staticmethod
-    def delete_trip(trip_id: int, for_everyone: bool) -> None:
+    def delete_trip(trip_id: str, for_everyone: bool) -> None:
         """
         Delete a trip by its ID.
 
@@ -161,7 +186,7 @@ class TripService:
         Raises:
             NoResultFound: If trip doesn't exist
         """
-        trip = db.session.query(Trip).filter_by(id=trip_id).first()
+        trip = db.session.query(Trip).filter_by(public_id=trip_id).first()
 
         if not trip:
             raise NoResultFound(f"Trip with id {trip_id} not found")
@@ -174,7 +199,7 @@ class TripService:
             logger.info(f"Trip {trip_id} deleted successfully")
         else:
             # Only remove the current user's association with the trip
-            user_id = g.current_user_id
+            user_id = g.current_user_public_id
 
             user = (
                 db.session.query(User)
@@ -252,7 +277,7 @@ class TripService:
         Raises:
             NoResultFound: If invitation doesn't exist or has expired
         """
-        user_id = g.current_user_id
+        user_id = g.current_user_public_id
         
         # Query user with the specific invitation (filters by expiration in the join)
         user = (

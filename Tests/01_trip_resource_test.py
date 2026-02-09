@@ -2,7 +2,7 @@ from Resources.trip_resource import TRIP_ENDPOINT
 import json
 
 def test_insert_trip_w_itinerary_and_inventory(client, auth_headers):
-    itinerary = {"is_public": True, "total_miles": 25,"days":[ ]}
+    itinerary = {"is_public": True, "total_miles": 25,"days":[]}
     inventory = {"items":
                  [{"category": 'travel', "name": 'compass'}, {"category": "first_aid", "name": 'scissors'}]}
     trip = {"inventory":inventory, "itinerary":itinerary}

@@ -7,10 +7,10 @@ import json
 def inventory_with_items(client, auth_headers, public_id):
     """Create an inventory with items for testing"""
     inventory_items = [
-        {"category": 'travel', "name": 'compass', "user_id": public_id}, 
-        {"category": "first_aid", "name": 'scissors', 'user_id': public_id}
+        {"category": 'travel', "name": 'compass'}, 
+        {"category": "first_aid", "name": 'scissors'}
     ]
-    inventory = {"user_id": public_id, "items": inventory_items}
+    inventory = {"items": inventory_items}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
     assert response.status_code == 201
     inventory_data = json.loads(response.data)
@@ -27,7 +27,7 @@ def inventory_with_items(client, auth_headers, public_id):
 @pytest.fixture
 def empty_inventory(client, auth_headers, public_id):
     """Create an empty inventory for testing"""
-    inventory = {"user_id": public_id, "items": []}
+    inventory = {"items": []}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
     assert response.status_code == 201
     inventory_data = json.loads(response.data)
@@ -41,13 +41,13 @@ def empty_inventory(client, auth_headers, public_id):
         pass
 
 
-def test_create_inventory_with_items(client, auth_headers, public_id, inventory_with_items):
+def test_create_inventory_with_items(client, auth_headers, public_id):
     """Test creating an inventory with items"""
     inventory_items = [
-        {"category": 'travel', "name": 'compass', 'user_id': public_id}, 
-        {"category": "first_aid", "name": 'scissors', 'user_id': public_id}
+        {"category": 'travel', "name": 'compass'}, 
+        {"category": "first_aid", "name": 'scissors'}
     ]
-    inventory = {"user_id": public_id, "items": inventory_items}
+    inventory = {"items": inventory_items}
 
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
     assert response.status_code == 201
@@ -64,7 +64,7 @@ def test_create_inventory_with_items(client, auth_headers, public_id, inventory_
     
 def test_create_inventory_empty(client, auth_headers, public_id):
     """Test creating an empty inventory"""
-    inventory = {"user_id": public_id, "items": []}
+    inventory = {"items": []}
 
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
     assert response.status_code == 201
@@ -121,7 +121,7 @@ def test_update_inventory(client, auth_headers, inventory_with_items):
 def test_delete_inventory(client, auth_headers, public_id):
     """Test deleting an inventory"""
     # Create an inventory to delete
-    inventory = {"user_id": public_id, "items": []}
+    inventory = {"items": []}
     create_response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
     inventory_id = json.loads(create_response.data)['id']
     
