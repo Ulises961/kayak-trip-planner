@@ -23,7 +23,7 @@ def get_logs():
     LogResource GET method. Retrieves all the logs associated to a user
     """
     try:        
-        logs = LogService.get_logs_by_user(g.current_user_id)
+        logs = LogService.get_logs_by_user(g.current_user_public_id)
         return jsonify([LogSchema().dump(log) for log in logs]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"Error retrieving logs: {e}")
@@ -39,7 +39,7 @@ def get_endorsed_logs():
     """
     try:        
         
-        logs = LogService.get_endorsed_logs(g.current_user_id) 
+        logs = LogService.get_endorsed_logs(g.current_user_public_id) 
         return jsonify([LogSchema().dump(log) for log in logs]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"Error retrieving logs: {e}")
@@ -102,12 +102,7 @@ def delete_log(public_id: str):
     try:
         logger.info(f"Deleting log with id {public_id} ")
 
-        log = LogService.delete_log(public_id)
-        if not log:
-            abort(HTTPStatus.NOT_FOUND, description=f"Log with id {public_id} not found")
-
-        db.session.delete(log)
-        db.session.commit()
+        LogService.delete_log(public_id)
         return jsonify({"message": "Deletion successful"}), HTTPStatus.OK
     
     except HTTPException:

@@ -25,12 +25,6 @@ class User(db.Model):
     __tablename__ = "users"
 
     def __init__(self, pwd=None, endorsed_logs=[], logs=[], public_id=None, **kwargs):
-        # Generate public_id if not provided
-        if not public_id:
-            self.public_id = str(uuid.uuid4())
-        else:
-            self.public_id = public_id
-            
         if pwd:
             self.pwd = generate_password_hash(pwd).decode("UTF-8")
 
@@ -41,7 +35,7 @@ class User(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     public_id: Mapped[Optional[str]] = mapped_column(
-        String(255), unique=True, nullable=True
+        String(255), unique=True, nullable=True, default=lambda: str(uuid.uuid4())
     )
     mail: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     pwd: Mapped[str] = mapped_column(String(255), nullable=False)

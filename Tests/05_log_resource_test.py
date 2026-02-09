@@ -15,24 +15,24 @@ def test_log(client, auth_headers, public_id):
     
     # Cleanup: try to delete the log
     try:
-        client.delete(f"{LOG_ENDPOINT}/{log_data['public_id']}", headers=auth_headers)
+        client.delete(f"{LOG_ENDPOINT}/{log_data['id']}", headers=auth_headers)
     except:
         pass
 
 
-def test_create_log(client, auth_headers, public_id):
+def test_create_log(client, auth_headers):
     """Test creating a new log"""
-    log = {"hours": 10, "avg_sea": 3, "user_id": public_id}
+    log = {"hours": 10, "avg_sea": 3}
     response = client.post(f"{LOG_ENDPOINT}/create", headers=auth_headers, json=log)
     assert response.status_code == 201
     
     data = json.loads(response.data)
     assert data['hours'] == 10
     assert data['avg_sea'] == 3
-    assert 'public_id' in data
+    assert 'id' in data
     
     # Cleanup
-    client.delete(f"{LOG_ENDPOINT}/{data['public_id']}", headers=auth_headers)
+    client.delete(f"{LOG_ENDPOINT}/{data['id']}", headers=auth_headers)
 
 
 def test_get_all_logs(client, auth_headers, test_log):
@@ -54,12 +54,12 @@ def test_get_endorsed_logs(client, auth_headers):
     assert isinstance(data, list)
 
 
-def test_update_log(client, auth_headers, test_log, public_id):
+def test_update_log(client, auth_headers, test_log):
     """Test updating an existing log"""
-    log_public_id = test_log['public_id']
-    updated_data = {"hours": 15, "avg_sea": 8, "user_id": public_id}
+    log_id = test_log['id']
+    updated_data = {"hours": 15, "avg_sea": 8}
     
-    response = client.post(f"{LOG_ENDPOINT}/{log_public_id}/update", headers=auth_headers, json=updated_data)
+    response = client.post(f"{LOG_ENDPOINT}/{log_id}/update", headers=auth_headers, json=updated_data)
     assert response.status_code == 200
     
     data = json.loads(response.data)
@@ -67,19 +67,19 @@ def test_update_log(client, auth_headers, test_log, public_id):
     assert data['avg_sea'] == 8
 
 
-def test_delete_log(client, auth_headers, public_id):
+def test_delete_log(client, auth_headers, ):
     """Test deleting a log"""
     # Create a log to delete
-    log = {"hours": 5, "avg_sea": 2, "user_id": public_id}
+    log = {"hours": 5, "avg_sea": 2}
     create_response = client.post(f"{LOG_ENDPOINT}/create", headers=auth_headers, json=log)
-    log_public_id = json.loads(create_response.data)['public_id']
+    log_id = json.loads(create_response.data)['id']
     
     # Delete it
-    response = client.delete(f"{LOG_ENDPOINT}/{log_public_id}", headers=auth_headers)
+    response = client.delete(f"{LOG_ENDPOINT}/{log_id}", headers=auth_headers)
     assert response.status_code == 200
     
     # Verify deletion by checking all logs
     get_response = client.get(f"{LOG_ENDPOINT}/all", headers=auth_headers)
     data = json.loads(get_response.data)
-    log_ids = [log['public_id'] for log in data]
-    assert log_public_id not in log_ids
+    log_ids = [log['id'] for log in data]
+    assert log_id not in log_ids

@@ -3,6 +3,7 @@ Log Service - Business logic for log operations.
 """
 import logging
 from typing import List, Optional, cast
+from flask import g
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.orm import selectinload
 
@@ -70,6 +71,7 @@ class LogService:
             IntegrityError: If database constraints are violated
         """
         logger.info("Creating new log")
+        log_data.setdefault("user_id", g.current_user_id)
         log = cast(Log, LogSchema().load(log_data))
         db.session.add(log)
         db.session.commit()

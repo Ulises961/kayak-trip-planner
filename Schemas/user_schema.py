@@ -2,10 +2,8 @@ from marshmallow import Schema, fields, post_load, post_dump, validates, Validat
 from Models.user import User
 from Schemas.log_schema import LogSchema
 from Schemas.image_schema import ImageSchema
-from Api.database import db
 import re
 import bleach
-import uuid
 
 class UserSchema(Schema):
     """ 
@@ -115,16 +113,6 @@ class UserSchema(Schema):
             if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
                 raise ValidationError("Password must contain at least one special character")
 
-
-    @post_dump
-    def rename_public_id_to_id(self, data, **kwargs):
-        """Expose public_id as 'id' in API responses, hide internal database id."""
-        if 'public_id' in data:
-            data['id'] = data.pop('public_id')  # Rename public_id → id
-        if '_id' in data:
-            data.pop('_id', None)  # Remove internal database ID from response
-        return data
-    
     @post_load
     def make_user(self, data, **kwargs):
         return User(**data)
