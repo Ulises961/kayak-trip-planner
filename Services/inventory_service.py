@@ -79,6 +79,11 @@ class InventoryService:
             IntegrityError: If database constraints are violated
         """
         logger.info("Creating new inventory")
+        user_id = g.current_user_id
+        inventory_data.setdefault("user_id", user_id)
+        if (items := inventory_data.get("items", None)) is not None:
+            for item in items:
+                item.setdefault("user_id", user_id)
         inventory = cast(Inventory, InventorySchema().load(inventory_data))
 
         db.session.add(inventory)
@@ -111,16 +116,17 @@ class InventoryService:
             raise NoResultFound(f"Inventory with id {inventory_id} not found")
         logger.info(f"Updating inventory {inventory_id}")
 
-        # Handle items separately if present
-        if "items" in inventory_data:
-            if items_json := inventory_data.get("items", []):
-                items = []
-                for item_dict in items_json:
-                    item_dict.setdefault('user_id', g.current_user_id)
-
-        updated_inventory = InventorySchema().load(inventory_data)
-
         try:
+            # Handle items separately if present
+            user_id = g.current_user_id
+            if "items" in inventory_data:
+                if items_json := inventory_data.get("items", []):
+                    for item_dict in items_json:
+                        item_dict.setdefault('user_id', user_id)
+            inventory_data.setdefault("user_id", user_id)
+
+            updated_inventory = InventorySchema().load(inventory_data)
+
             merged_inventory = cast(Inventory, db.session.merge(updated_inventory))
             db.session.commit()
             db.session.refresh(merged_inventory)
@@ -132,7 +138,9 @@ class InventoryService:
             db.session.rollback()
             logger.exception(f"Integrity error updating inventory {inventory_id}: {e}")
             raise
-    
+        except Exception as e:
+            logger.exception(f"Error updating inventory: {e}")
+            raise
     @staticmethod
     def delete_inventory(inventory_id: int) -> None:
         """

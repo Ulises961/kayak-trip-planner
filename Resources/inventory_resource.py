@@ -20,7 +20,7 @@ def get_all_inventories():
     """GET /api/inventory/all - Retrieve all inventories for current user"""
     try:
         logger.info("Retrieve all inventories from db")
-        user_id = g.current_user_id
+        user_id = g.current_user_public_id
         inventories = InventoryService.get_inventories_by_user(user_id)
         return jsonify([InventorySchema().dump(inventory) for inventory in inventories]), HTTPStatus.OK
         

@@ -134,8 +134,9 @@ class JWTService:
                     if not user:
                         return abort(HTTPStatus.UNAUTHORIZED)
 
-                    g.current_user_id = user.public_id
+                    g.current_user_public_id = user.public_id
                     g.current_user_mail = user.mail
+                    g.current_user_id = user.id
 
             except:
                 raise ValueError("Invalid token")
