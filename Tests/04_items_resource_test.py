@@ -2,7 +2,7 @@ from Resources.item_resource import ITEM_ENDPOINT
 import json 
 
 
-def test_update_item(client, auth_headers, user_id, inventory_with_items):
+def test_update_item(client, auth_headers, inventory_with_items):
     # Create item first
     item = {"category": 'generic', "checked": False, "name": 'generic_item'}
     item_id =  inventory_with_items['items'][0]['id']

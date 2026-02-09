@@ -3,6 +3,7 @@ Item Service - Business logic for item operations.
 """
 import logging
 from typing import cast
+from flask import g
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from Models.item import Item
@@ -79,10 +80,11 @@ class ItemService:
         # Verify item exists
         existing_item = ItemService.get_item_by_id(item_id)
         if not existing_item:
-            raise NoResultFound(f"Item with id {id} not found")
+            raise NoResultFound(f"Item with id {item_id} not found")
         
         logger.info(f"Updating item {item_id}")
-
+        user_id = g.current_user_id
+        item_data.setdefault("user_id", user_id)
         updated_item = cast(Item, ItemSchema().load(item_data))
 
         try:

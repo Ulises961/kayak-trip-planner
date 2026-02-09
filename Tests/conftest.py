@@ -85,10 +85,6 @@ def public_id_1(user_2):
   
     return user_2.public_id
 
-@pytest.fixture(scope='function')
-def user_id(app, user_1):
-    """Get integer user ID for the test user."""    
-    return user_1.id
 
 @pytest.fixture(scope='function')
 def auth_token(app, user_1):
@@ -106,10 +102,10 @@ def auth_headers(auth_token):
 def inventory_with_items(client, auth_headers, public_id):
     """Create an inventory with items for testing"""
     inventory_items = [
-        {"category": 'travel', "name": 'compass', "user_id": public_id}, 
-        {"category": "first_aid", "name": 'scissors', 'user_id': public_id}
+        {"category": 'travel', "name": 'compass'}, 
+        {"category": "first_aid", "name": 'scissors'}
     ]
-    inventory = {"user_id": public_id, "items": inventory_items}
+    inventory = {"items": inventory_items}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
     assert response.status_code == 201
     inventory_data = json.loads(response.data)
@@ -126,7 +122,7 @@ def inventory_with_items(client, auth_headers, public_id):
 @pytest.fixture(scope='function')
 def empty_inventory(client, auth_headers, public_id):
     """Create an empty inventory for testing"""
-    inventory = {"user_id": public_id, "items": []}
+    inventory = {"items": []}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
     assert response.status_code == 201
     inventory_data = json.loads(response.data)

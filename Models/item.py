@@ -15,7 +15,7 @@ class ItemCategoryType(enum.Enum):
     REPAIR = "repair"
     TRAVEL = "travel"
     GENERIC = "generic"
-
+    FOOD = "food"
 
 class Item(db.Model):
 

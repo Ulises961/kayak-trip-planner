@@ -6,7 +6,6 @@ from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from Models.item import Item
-    from Models.trip import Trip
 
 class Inventory(db.Model):
     def __init__(self,items=[],**kwargs):
