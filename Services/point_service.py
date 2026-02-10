@@ -34,7 +34,7 @@ class PointService:
             NoResultFound: If point doesn't exist
         """
 
-        point = db.session.get(Point, point_id)
+        point = db.session.query(Point).filter_by(id=point_id).first()
         if not point:
             logger.warning(f"Point with id {point_id} not found")
             raise NoResultFound(f"Point {point_id} not found in database")
@@ -95,11 +95,12 @@ class PointService:
         return point
     
     @staticmethod
-    def update_point(point_data: dict) -> Point:
+    def update_point(point_id: int, point_data: dict) -> Point:
         """
         Update an existing point.
         
         Args:
+            id: Integer ID of the updated point
             point_data: Dictionary containing point information with ID
             
         Returns:
@@ -109,6 +110,7 @@ class PointService:
             ValidationError: If data is invalid
             NoResultFound: If point doesn't exist
         """
+        point_data.setdefault("id", point_id)
         point: Point = PointSchema().load(point_data)  # type: ignore
         
         # Verify point exists
@@ -119,12 +121,9 @@ class PointService:
         logger.info(f"Updating point {point.id}")
         db.session.merge(point)
         db.session.commit()
-        
-        updated_point = PointService.get_point_by_id(point.id)
-        if not updated_point:
-            raise NoResultFound(f"Point {point.id} not found after update")
-        logger.info(f"Point {point.id} updated successfully")
-        return updated_point
+        db.session.refresh(existing_point)      
+  
+        return point
     
     @staticmethod
     def delete_point(point_id: int) -> None:

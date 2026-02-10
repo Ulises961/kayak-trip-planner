@@ -18,6 +18,7 @@ class Point (db.Model):
     __table_args__ = (
         ForeignKeyConstraint(['day_id'],['day.id'], name="day_foreign_key_in_point"),
     )
+    
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     latitude: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)
     longitude: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)

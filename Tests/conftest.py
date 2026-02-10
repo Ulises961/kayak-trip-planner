@@ -1,9 +1,12 @@
+from datetime import date
 import json
 import pytest
 from sqlalchemy.exc import NoResultFound
 
 from Models.user import User
 from Resources.inventory_resource import INVENTORY_ENDPOINT
+from Resources.itinerary_resource import ITINERARY_ENDPOINT
+from Resources.trip_resource import TRIP_ENDPOINT
 from Services.Middleware.auth_middleware import JWTService
 from Api.app import createApp
 from Api.database import db as _db
@@ -134,3 +137,51 @@ def empty_inventory(client, auth_headers, public_id):
         client.delete(f"{INVENTORY_ENDPOINT}/{inventory_data['id']}", headers=auth_headers)
     except:
         pass
+
+@pytest.fixture(scope="function")
+def trip_w_o_itinerary(client, auth_headers):
+    inventory = {"items":
+                 [{"category": 'travel', "name": 'compass'}, {"category": "first_aid", "name": 'scissors'}]}
+    trip = {"inventory":inventory}
+    response = client.post(f"{TRIP_ENDPOINT}/create", json=trip, headers=auth_headers)
+    assert response.status_code == 201
+    trip_data = json.loads(response.data)
+    
+    yield trip_data
+
+     # Cleanup: try to delete the inventory
+    try:
+        client.delete(f"{TRIP_ENDPOINT}/{trip_data['id']}", headers=auth_headers)
+    except:
+        pass
+
+@pytest.fixture(scope="function")
+def itinerary(client, auth_headers, trip_w_o_itinerary):
+    days = [
+        {
+            "day_number": 1,
+            "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
+            "points": [],
+        },
+        {
+            "day_number": 2,
+            "date": date.fromisoformat('2020-01-01').strftime("%Y-%m-%d"),
+            "points": [],
+            "itinerary_id":1,
+        }
+    ]
+
+    itinerary = {"days": days, "trip_id": trip_w_o_itinerary["id"]}
+    response = client.post(f"{ITINERARY_ENDPOINT}/create", json=itinerary, headers=auth_headers)
+    assert response.status_code == 201
+
+    itinerary_data = json.loads(response.data)
+
+    yield itinerary_data
+
+     # Cleanup: try to delete the itinerary
+    try:
+        client.delete(f"{ITINERARY_ENDPOINT}/{itinerary_data['id']}", headers=auth_headers)
+    except:
+        pass
+

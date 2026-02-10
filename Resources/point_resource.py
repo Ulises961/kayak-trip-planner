@@ -57,13 +57,13 @@ def create_point():
             raise
     except IntegrityError as e:
         logger.error(
-            f"Integrity Error, this log is already in the database. Error: {e}"
+            f"Integrity Error, this point is already in the database. Error: {e}"
         )
         db.session.rollback()
         abort(HTTPStatus.CONFLICT, message="Database integrity violated")
 
     except Exception as e:
-        logger.error(f"Error creating log: {e}")
+        logger.error(f"Error creating point: {e}")
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
@@ -78,7 +78,7 @@ def update_point(id: int):
     """
     try:
         point_data = request.get_json()
-        point = PointService.update_point(point_data)
+        point = PointService.update_point(id, point_data)
         return jsonify(PointSchema().dump(point)), HTTPStatus.OK
 
     except HTTPException:
@@ -89,6 +89,29 @@ def update_point(id: int):
     except Exception as e:
         logger.error(f"Error creating point: {e}")
         db.session.rollback()
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
+
+@point_api.route("/<int:id>", methods=["GET"])
+@JWTService.authenticate_restful
+def get_point(id: int):
+    """
+    PointResource GET method. Retrieves a single point by ID.
+    
+    Args:
+        id: Point ID to retrieve
+        
+    Returns:
+        JSON response with point data and 200 status code
+    """
+    try:
+        point = PointService.get_point_by_id(id)
+        return jsonify(PointSchema().dump(point)), HTTPStatus.OK
+    
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND, description=f"Point with id {id} not found")
+    
+    except Exception as e:
+        logger.error(f"Error retrieving point: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @point_api.route("/<int:id>", methods=["DELETE"])
