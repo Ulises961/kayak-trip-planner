@@ -35,7 +35,7 @@ class User(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     public_id: Mapped[Optional[str]] = mapped_column(
-        String(255), unique=True, nullable=True, default=lambda: str(uuid.uuid4())
+        String(255), unique=True, index=True, nullable=True, default=lambda: str(uuid.uuid4())
     )
     mail: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     pwd: Mapped[str] = mapped_column(String(255), nullable=False)

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Trip (db.Model):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    public_id: Mapped[str] = mapped_column(String(255), nullable=False, default=lambda: str(uuid.uuid4()))
+    public_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True, default=lambda: str(uuid.uuid4()))
     
     inventory: Mapped[Optional["Inventory"]] = relationship(foreign_keys="Inventory.trip_id", uselist=False, cascade='all, delete,save-update')
     itinerary: Mapped[Optional["Itinerary"]] = relationship(foreign_keys="Itinerary.trip_id", uselist=False, cascade='all, delete,save-update')
