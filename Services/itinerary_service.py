@@ -18,12 +18,12 @@ class ItineraryService:
     """Service class for Itinerary-related business logic."""
 
     @staticmethod
-    def get_itinerary_by_id(public_id: str) -> Itinerary:
+    def get_itinerary_by_id(itinerary_id: str) -> Itinerary:
         """
-        Retrieve an itinerary by its ID.
+        Retrieve an itinerary by its public ID.
 
         Args:
-            itinerary_id: The ID of the itinerary to retrieve
+            itinerary_id: The public ID of the itinerary to retrieve
 
         Returns:
             Itinerary object if found
@@ -31,10 +31,10 @@ class ItineraryService:
         Raises:
             NoResultFound: If itinerary doesn't exist
         """
-        itinerary = db.session.query(Itinerary).filter_by(public_id=public_id).first()
+        itinerary = db.session.query(Itinerary).options(selectinload(Itinerary.days)).filter_by(public_id=itinerary_id).first()
         if not itinerary:
-            logger.warning(f"Itinerary with id {public_id} not found")
-            raise NoResultFound(f"Itinerary {public_id} not found in database")
+            logger.warning(f"Itinerary with id {itinerary_id} not found")
+            raise NoResultFound(f"Itinerary {itinerary_id} not found in database")
         return itinerary
 
     @staticmethod
@@ -99,19 +99,38 @@ class ItineraryService:
         """
         # Verify itinerary exists
         existing_itinerary = ItineraryService.get_itinerary_by_id(public_id)
+        
         if not existing_itinerary:
             raise NoResultFound(f"Itinerary with id {public_id} not found")
+        
         logger.info(f"Updating itinerary {public_id}")
 
-        updated_itinerary = ItinerarySchema().load(itinerary_data)
-
         try:
-            merged_itinerary = cast(Itinerary, db.session.merge(updated_itinerary))
+            # Load and validate the new data (schema will resolve public_id to db id)
+            updated_itinerary = cast(Itinerary, ItinerarySchema().load(itinerary_data))
+
+            # Update scalar fields
+            existing_itinerary.is_public = updated_itinerary.is_public
+            existing_itinerary.total_miles = updated_itinerary.total_miles
+            existing_itinerary.expected_total_miles = updated_itinerary.expected_total_miles
+            
+            # Delete old days and expunge them from session to avoid conflicts
+            for day in list(existing_itinerary.days):
+                db.session.delete(day)
+            db.session.flush()
+            
+           # Add new days
+            logger.info(f"Adding {len(updated_itinerary.days)} new days")
+            for day in updated_itinerary.days:
+                logger.info(f"Adding day {day.day_number} with date {day.date}")
+                day.itinerary_id = existing_itinerary.id
+                existing_itinerary.days.append(day)
+            
             db.session.commit()
-            db.session.refresh(merged_itinerary)
+            db.session.refresh(existing_itinerary)
 
             logger.info(f"Itinerary {public_id} updated successfully")
-            return merged_itinerary
+            return existing_itinerary
 
         except IntegrityError as e:
             db.session.rollback()

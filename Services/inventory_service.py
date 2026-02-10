@@ -138,9 +138,7 @@ class InventoryService:
             db.session.rollback()
             logger.exception(f"Integrity error updating inventory {inventory_id}: {e}")
             raise
-        except Exception as e:
-            logger.exception(f"Error updating inventory: {e}")
-            raise
+
     @staticmethod
     def delete_inventory(inventory_id: int) -> None:
         """

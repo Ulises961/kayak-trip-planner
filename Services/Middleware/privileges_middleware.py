@@ -147,10 +147,10 @@ def check_resource_ownership(resource_type: str, resource_id: int) -> Optional[b
     try:
         # Check ownership based on resource type
         if resource_type == "trip":
-            return _check_trip_ownership(g.current_user_id, resource_id)
+            return _check_trip_ownership(g.current_user_id, str(resource_id))
 
         elif resource_type == "itinerary":
-            return _check_itinerary_ownership(g.current_user_id, resource_id)
+            return _check_itinerary_ownership(g.current_user_id, str(resource_id))
 
         elif resource_type == "day":
             return _check_day_ownership(g.current_user_id, resource_id)
@@ -185,11 +185,11 @@ def check_resource_ownership(resource_type: str, resource_id: int) -> Optional[b
         return False
 
 
-def _check_trip_ownership(user_id: int, trip_id: int) -> Optional[bool]:
+def _check_trip_ownership(user_id: int, trip_id: str) -> Optional[bool]:
     """Check if user owns or is a companion on the trip."""
 
-    # First check if trip exists
-    trip = db.session.query(Trip).filter_by(id=trip_id).first()
+    # First check if trip exists by public_id
+    trip = db.session.query(Trip).filter_by(public_id=trip_id).first()
     if not trip:
         return None  # Trip doesn't exist
 
@@ -197,18 +197,18 @@ def _check_trip_ownership(user_id: int, trip_id: int) -> Optional[bool]:
     result = (
         db.session.query(Trip)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Trip.id == trip_id, user_has_trip.c.user_id == user_id)
+        .filter(Trip.id == trip.id, user_has_trip.c.user_id == user_id)
         .first()
     )
 
     return result is not None
 
 
-def _check_itinerary_ownership(user_id: int, itinerary_id: int) -> Optional[bool]:
+def _check_itinerary_ownership(user_id: int, itinerary_id: str) -> Optional[bool]:
     """Check if user owns the itinerary through trip ownership."""
 
     # First check if itinerary exists
-    itinerary = db.session.query(Itinerary).filter_by(id=itinerary_id).first()
+    itinerary = db.session.query(Itinerary).filter_by(public_id=itinerary_id).first()
     if not itinerary:
         return None  # Itinerary doesn't exist
 
@@ -216,7 +216,7 @@ def _check_itinerary_ownership(user_id: int, itinerary_id: int) -> Optional[bool
         db.session.query(Itinerary)
         .join(Trip, Itinerary.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Itinerary.id == itinerary_id, user_has_trip.c.user_id == user_id)
+        .filter(Itinerary.id == itinerary.id, user_has_trip.c.user_id == user_id)
         .first()
     )
 
