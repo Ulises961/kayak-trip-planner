@@ -1,5 +1,6 @@
 from typing import Optional, Dict, Any, List
 from Models.day import Day
+from Models.itinerary import Itinerary
 from Models.sea import Sea
 from Models.weather import Weather
 from Api.database import db
@@ -31,7 +32,7 @@ class DayService:
                 selectinload(Day.sea),
                 selectinload(Sea.sea_states),
                 selectinload(Day.weather),
-                selectinload(Weather.weather_states)
+                selectinload(Weather.weather_states),
             )
             .filter_by(id=day_id)
             .first()
@@ -43,7 +44,7 @@ class DayService:
         return day
 
     @staticmethod
-    def get_by_itinerary(itinerary_id: int) -> List[Day]:
+    def get_by_itinerary(itinerary_id: str) -> List[Day]:
         """
         Retrieve all days for a specific itinerary.
 
@@ -52,7 +53,12 @@ class DayService:
         Returns:
             List of days belonging to the itinerary
         """
-        days = db.session.query(Day).filter_by(itinerary_id=itinerary_id).all()
+        days = (
+            db.session.query(Day)
+            .join(Itinerary, Day.itinerary_id == Itinerary.id)
+            .filter(Itinerary.public_id == itinerary_id)
+            .all()
+        )
         return days
 
     @staticmethod
@@ -80,11 +86,11 @@ class DayService:
         Returns:
             The day if found, None otherwise
         """
-        day = db.session.query(Day).filter_by(
-            day_number=day_number,
-            date=day_date,
-            itinerary_id=itinerary_id
-        ).first()
+        day = (
+            db.session.query(Day)
+            .filter_by(day_number=day_number, date=day_date, itinerary_id=itinerary_id)
+            .first()
+        )
         return day
 
     @staticmethod
@@ -118,39 +124,39 @@ class DayService:
         """
         # Get the existing day
         existing_day = db.session.get(Day, day_id)
-        
+
         if not existing_day:
             raise NoResultFound(f"Day with id {day_id} not found")
-        
+
         # Check if nested objects are present in the request (even if None)
-        has_weather_key = 'weather' in day_data
-        has_sea_key = 'sea' in day_data
-        
+        has_weather_key = "weather" in day_data
+        has_sea_key = "sea" in day_data
+
         # Extract nested objects
-        weather_data = day_data.pop('weather', None) if has_weather_key else None
-        sea_data = day_data.pop('sea', None) if has_sea_key else None
-        
+        weather_data = day_data.pop("weather", None) if has_weather_key else None
+        sea_data = day_data.pop("sea", None) if has_sea_key else None
+
         # Update simple fields directly from day_data (skip id)
         for key, value in day_data.items():
-            if key == 'id':
+            if key == "id" or key == "itinerary_id":
                 continue
             if hasattr(existing_day, key):
                 # Convert date string to date object if needed
-                if key == 'date' and isinstance(value, str):
+                if key == "date" and isinstance(value, str):
                     value = date.fromisoformat(value)
                 setattr(existing_day, key, value)
-        
+
         # Handle weather update/creation
         if has_weather_key:
             DayService._update_weather(existing_day, weather_data)
-        
+
         # Handle sea update/creation
         if has_sea_key:
             DayService._update_sea(existing_day, sea_data)
-        
+
         db.session.commit()
         db.session.refresh(existing_day)
-        
+
         return existing_day
 
     @staticmethod
@@ -166,7 +172,7 @@ class DayService:
             if day.weather:
                 # Update existing weather
                 for key, value in weather_data.items():
-                    if key == 'day_id':
+                    if key == "day_id":
                         continue
                     if hasattr(day.weather, key):
                         setattr(day.weather, key, value)
@@ -192,20 +198,20 @@ class DayService:
             if day.sea:
                 # Update existing sea
                 for key, value in sea_data.items():
-                    if key == 'day_id':
+                    if key == "day_id":
                         continue
                     if hasattr(day.sea, key):
                         # Convert time string to time object if needed
-                        if key in ('high_tide', 'low_tide') and isinstance(value, str):
+                        if key in ("high_tide", "low_tide") and isinstance(value, str):
                             value = time.fromisoformat(value)
                         setattr(day.sea, key, value)
             else:
                 # Create new sea
                 # Convert time strings if present
-                if 'high_tide' in sea_data and isinstance(sea_data['high_tide'], str):
-                    sea_data['high_tide'] = time.fromisoformat(sea_data['high_tide'])
-                if 'low_tide' in sea_data and isinstance(sea_data['low_tide'], str):
-                    sea_data['low_tide'] = time.fromisoformat(sea_data['low_tide'])
+                if "high_tide" in sea_data and isinstance(sea_data["high_tide"], str):
+                    sea_data["high_tide"] = time.fromisoformat(sea_data["high_tide"])
+                if "low_tide" in sea_data and isinstance(sea_data["low_tide"], str):
+                    sea_data["low_tide"] = time.fromisoformat(sea_data["low_tide"])
                 sea = Sea(**sea_data)
                 day.sea = sea
         else:  # Null sea data - remove association
@@ -225,11 +231,10 @@ class DayService:
             IntegrityError: If deletion violates database constraints
         """
         day_to_delete = db.session.get(Day, day_id)
-        
+
         if not day_to_delete:
             raise NoResultFound(f"Day with id {day_id} not found")
-        
+
         db.session.delete(day_to_delete)
         db.session.commit()
         logger.info(f"Day with id {day_id} successfully deleted")
-    

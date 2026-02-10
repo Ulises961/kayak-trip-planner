@@ -10,9 +10,9 @@ class DaySchema(Schema):
     Day Schema
     used for loading/dumping Day entities
     """
-    id = fields.Integer(allow_none=True, dump_only=True)
+    id = fields.Integer(allow_none=True)
     day_number = fields.Integer(allow_none=False, required=True, validate=lambda x: 1 <= x <= 365)
-    itinerary_id = fields.Integer()
+    itinerary_id = fields.Integer(allow_none=True)
     date = fields.Date('%Y-%m-%d', allow_none=False, required=True)
     points = fields.List(fields.Nested(PointSchema), allow_none=True, validate=lambda x: x is None or len(x) <= 100)
     sea = fields.Nested(SeaSchema, allow_none=True)

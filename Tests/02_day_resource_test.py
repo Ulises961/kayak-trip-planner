@@ -32,10 +32,22 @@ def test_itinerary_with_day(client, auth_headers, test_trip):
         "days": daysList,
         "trip_id": test_trip
     }
+
     response = client.post(f"{ITINERARY_ENDPOINT}/create", json=itinerary, headers=auth_headers)
+    
     assert response.status_code == 201
-    response_data = json.loads(response.data)
-    return {'itinerary_id': response_data['id'], 'day_id': response_data['days'][0]['id']}
+    itinerary_data = json.loads(response.data)
+
+    yield itinerary_data
+
+     # Cleanup: try to delete the itinerary
+    try:
+        client.delete(f"{ITINERARY_ENDPOINT}/{itinerary_data['id']}", headers=auth_headers)
+    except:
+        pass
+
+
+
 
 def test_insert_itinerary_with_day(client, auth_headers, test_trip):
     daysList = [
@@ -54,7 +66,7 @@ def test_insert_itinerary_with_day(client, auth_headers, test_trip):
 
 
 def test_insert_weather_to_day(client, auth_headers, test_itinerary_with_day):
-    day_id = test_itinerary_with_day['day_id']
+    day_id = test_itinerary_with_day["days"][0]['id']
     weather = {
         "weather_states": [],
         "day_id": day_id,
@@ -70,8 +82,8 @@ def test_insert_weather_to_day(client, auth_headers, test_itinerary_with_day):
 
 
 def test_insert_sea_to_day(client, auth_headers, test_itinerary_with_day):
-    day_id = test_itinerary_with_day['day_id']
-    itinerary_id = test_itinerary_with_day['itinerary_id']
+    day_id = test_itinerary_with_day["days"][0]['id']
+    itinerary_id = test_itinerary_with_day['id']
     sea = {
         "sea_states": [],
         "day_id": day_id,
@@ -89,7 +101,7 @@ def test_insert_sea_to_day(client, auth_headers, test_itinerary_with_day):
 
 
 def test_get_day_by_key(client, auth_headers, test_itinerary_with_day):
-    itinerary_id = test_itinerary_with_day['itinerary_id']
+    itinerary_id = test_itinerary_with_day['id']
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     json_data = {
         "itinerary_id": itinerary_id,
@@ -103,15 +115,15 @@ def test_get_day_by_key(client, auth_headers, test_itinerary_with_day):
 
 
 def test_get_all_days(client, auth_headers, test_itinerary_with_day):
-    itinerary_id = test_itinerary_with_day['itinerary_id']
+    itinerary_id = test_itinerary_with_day['id']
     response = client.get(
         f"{DAY_ENDPOINT}/itinerary/{itinerary_id}", headers=auth_headers)
     assert response.status_code == HTTPStatus.OK
     assert len(json.loads(response.data)) == 1
 
 def test_update_day(client, auth_headers, test_itinerary_with_day):
-    day_id = test_itinerary_with_day['day_id']
-    itinerary_id = test_itinerary_with_day['itinerary_id']
+    day_id = test_itinerary_with_day["days"][0]['id']
+    itinerary_id = test_itinerary_with_day['id']
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     sea = None
     updated_day = {'id': day_id, 'date': day_date, 'itinerary_id': itinerary_id, 'day_number': 1, 'sea': sea} 
@@ -122,7 +134,7 @@ def test_update_day(client, auth_headers, test_itinerary_with_day):
     assert response.status_code == HTTPStatus.OK
 
 def test_delete_day_by_id(client, auth_headers, test_itinerary_with_day):
-    day_id = test_itinerary_with_day['day_id']
+    day_id = test_itinerary_with_day["days"][0]['id']
     response = client.delete(
         f"{DAY_ENDPOINT}/{day_id}", headers=auth_headers)
     assert response.status_code == HTTPStatus.OK

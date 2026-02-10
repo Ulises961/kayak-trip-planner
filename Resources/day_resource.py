@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 DAY_ENDPOINT = "/api/day"
 day_api = Blueprint('day', __name__, url_prefix=DAY_ENDPOINT)
 
-@day_api.route("/itinerary/<int:itinerary_id>", methods=['GET'])
+@day_api.route("/itinerary/<string:itinerary_id>", methods=['GET'])
 @JWTService.authenticate_restful
 @require_owner('day', parent_resource=('itinerary', 'itinerary_id'))
-def read_by_itinerary(itinerary_id: int):
+def read_by_itinerary(itinerary_id: str):
     days = DayService.get_by_itinerary(itinerary_id)
     return jsonify([DaySchema().dump(day) for day in days]), HTTPStatus.OK
 
