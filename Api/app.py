@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 from flask_migrate import Migrate
 
 
-from Resources.image_resource import image_api
 from Resources.user_resource import user_api
 from Resources.trip_resource import trip_api
 from Resources.itinerary_resource import itinerary_api
@@ -39,7 +38,6 @@ def createApp(config_mode:str):
     app.config.from_object(config[config_mode])
     app.register_blueprint(authApi)
     app.register_blueprint(day_api)
-    app.register_blueprint(image_api)
     app.register_blueprint(inventory_api)
     app.register_blueprint(item_api)
     app.register_blueprint(itinerary_api)

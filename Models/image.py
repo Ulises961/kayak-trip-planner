@@ -1,3 +1,4 @@
+import uuid
 from Api.database import db
 from sqlalchemy import Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -12,7 +13,8 @@ class Image (db.Model):
     size: Mapped[Optional[Numeric]] = mapped_column(Numeric, nullable=True)
     name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    public_id: Mapped[str] = mapped_column(String(255), nullable=False)
-
+    public_id: Mapped[Optional[str]] = mapped_column(
+        String(255), unique=True, index=True, nullable=True, default=lambda: str(uuid.uuid4())
+    )
     def __repr__(self):
         return f'<Image "name {self.name}, path {self.location}, size {self.size}">'

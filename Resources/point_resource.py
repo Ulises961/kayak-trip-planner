@@ -7,6 +7,7 @@ from flask import Blueprint, abort, jsonify, request
 from Models.point import Point
 from Schemas.point_schema import PointSchema
 from Services.Middleware.auth_middleware import JWTService
+from Services.Middleware.privileges_middleware import require_owner
 from Services.point_service import PointService
 from Api.database import db
 from sqlalchemy.exc import NoResultFound
@@ -19,6 +20,7 @@ point_api = Blueprint('point', __name__, url_prefix=POINT_ENDPOINT)
 
 ## TODO: PoI points need to run as a separate microservice that can be cached and served
 ## TODO:  When a PoI is created then is shared to kafka or MQrabbit and saved into the db
+## TODO: Check permissions to create or modify points from parent entity itinerary
 @point_api.route("/pois", methods=["GET"])
 @JWTService.authenticate_restful
 def get_poi():
@@ -41,6 +43,7 @@ def get_poi():
 
 @point_api.route("/create", methods=["POST"])
 @JWTService.authenticate_restful
+@require_owner("point", parent_resource={"trip", "trip_id"}, from_body=True)
 def create_point():
     """
     PointResource POST method. Adds a new point to the database.
@@ -68,7 +71,8 @@ def create_point():
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @point_api.route("/<int:id>/update", methods=["POST"])
-@JWTService.authenticate_restful             
+@JWTService.authenticate_restful
+@require_owner("point", parent_resource={"itinerary", "itinerary_id"}, from_body=True)
 def update_point(id: int):
     """
     PointResource PUT method. Updates an existing point.
@@ -93,6 +97,7 @@ def update_point(id: int):
 
 @point_api.route("/<int:id>", methods=["GET"])
 @JWTService.authenticate_restful
+@require_owner("point", parent_resource={"itinerary", "itinerary_id"}, from_body=True)
 def get_point(id: int):
     """
     PointResource GET method. Retrieves a single point by ID.
@@ -115,7 +120,8 @@ def get_point(id: int):
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 @point_api.route("/<int:id>", methods=["DELETE"])
-@JWTService.authenticate_restful      
+@JWTService.authenticate_restful     
+@require_owner("point") 
 def delete(id:int):
     """
     PointResource DELETE method. Deletes a point by ID.
@@ -144,3 +150,4 @@ def delete(id:int):
         logger.error(f"Error deleting point: {e}")
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
+

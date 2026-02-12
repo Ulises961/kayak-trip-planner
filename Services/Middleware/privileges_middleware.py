@@ -174,7 +174,7 @@ def check_resource_ownership(resource_type: str, resource_id: int) -> Optional[b
             return _check_log_ownership(g.current_user_id, str(resource_id))
 
         elif resource_type == "image":
-            return _check_image_ownership(g.current_user_id, resource_id)
+            return _check_image_ownership(g.current_user_id, str(resource_id))
 
         else:
             logger.error(f"Unknown resource type: {resource_type}")
@@ -211,7 +211,10 @@ def _check_itinerary_ownership(user_id: int, itinerary_id: str) -> Optional[bool
     itinerary = db.session.query(Itinerary).filter_by(public_id=itinerary_id).first()
     if not itinerary:
         return None  # Itinerary doesn't exist
-
+    
+    if itinerary.is_public:
+        return True
+    
     result = (
         db.session.query(Itinerary)
         .join(Trip, Itinerary.trip_id == Trip.id)
@@ -340,6 +343,19 @@ def _check_point_ownership(user_id: int, point_id: int) -> Optional[bool]:
     if not point:
         return None  # Point doesn't exist
 
+    # Check user owns draft itinerary
+    result = (
+            db.session.query(Point)
+            .join(Day, Point.day_id == Day.id)
+            .join(Itinerary, Day.itinerary_id == Itinerary.id)
+            .filter(Point.id == point_id, Itinerary.user_id == user_id)
+            .first()
+        )
+    
+    if result:
+        return True
+    
+    # Check user belongs to trip with such itinerary
     result = (
         db.session.query(Point)
         .join(Day, Point.day_id == Day.id)
@@ -370,9 +386,9 @@ def _check_log_ownership(user_id: int, log_id: str) -> Optional[bool]:
     )
 
 
-def _check_image_ownership(user_id: int, image_id: int) -> Optional[bool]:
+def _check_image_ownership(user_id: int, image_id: str) -> Optional[bool]:
     """Check if user owns the image through point or user ownership."""
-    image = db.session.query(Image).filter_by(id=image_id).first()
+    image = db.session.query(Image).filter_by(public_id=image_id).first()
     if not image:
         return None  # Image doesn't exist
 

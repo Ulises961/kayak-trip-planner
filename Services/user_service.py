@@ -1,10 +1,12 @@
 from typing import Any, Dict, Optional, cast
+from Models.image import Image
 from Models.user import User
 from Api.database import db
 from sqlalchemy.exc import NoResultFound, IntegrityError
-
-from Schemas.user_schema import UserSchema
+from flask_bcrypt import generate_password_hash
 import logging
+
+from Schemas.image_schema import ImageSchema
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +53,15 @@ class UserService:
             if 'username' in user_json:
                 saved_user.username = user_json['username']
             if 'pwd' in user_json:
-                from flask_bcrypt import generate_password_hash
                 saved_user.pwd = generate_password_hash(user_json['pwd']).decode("UTF-8")
             if 'admin' in user_json:
                 saved_user.admin = user_json['admin']
-                
+            if 'image' in user_json:
+                if image:= user_json.get("image", None) is None:
+                    saved_user.image = None
+                else:
+                    image = cast(Image, ImageSchema().load(user_json['image']))
+                    saved_user.image = image
             db.session.commit()
             
             # Refresh to get latest state from database
