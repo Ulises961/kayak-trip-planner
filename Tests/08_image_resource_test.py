@@ -133,6 +133,7 @@ def point_with_day(client, auth_headers, itinerary):
         "latitude": 45.4642,
         "longitude": 9.1900,
         "notes": "Beautiful scenic point"
+
     }
     response = client.post(
         f"{POINT_ENDPOINT}/create",
@@ -156,7 +157,6 @@ def test_add_single_image_to_point(client, auth_headers, point_with_day, itinera
     point_id = point_with_day['id']
     
     update_data = {
-        "itinerary_id": itinerary['id'],
         "images": [
             {
                 "size": 5.2,
@@ -184,7 +184,6 @@ def test_add_multiple_images_to_point(client, auth_headers, point_with_day, itin
     point_id = point_with_day['id']
     
     update_data = {
-        "itinerary_id": itinerary['id'],
         "images": [
             {
                 "size": 3.1,
@@ -225,7 +224,6 @@ def test_update_point_images(client, auth_headers, point_with_day, itinerary):
     
     # First add some images
     initial_data = {
-        "itinerary_id": itinerary['id'],
         "images": [
             {
                 "size": 2.0,
@@ -238,7 +236,6 @@ def test_update_point_images(client, auth_headers, point_with_day, itinerary):
     
     # Update with new images
     updated_data = {
-        "itinerary_id": itinerary['id'],
         "images": [
             {
                 "size": 5.5,
@@ -274,7 +271,6 @@ def test_get_point_with_images(client, auth_headers, point_with_day, itinerary):
     
     # First add images
     update_data = {
-        "itinerary_id": itinerary['id'],
         "images": [
             {
                 "size": 6.7,
@@ -301,7 +297,6 @@ def test_remove_all_images_from_point(client, auth_headers, point_with_day, itin
     
     # First add images
     initial_data = {
-        "itinerary_id": itinerary['id'],
         "images": [
             {
                 "size": 4.0,
@@ -314,7 +309,6 @@ def test_remove_all_images_from_point(client, auth_headers, point_with_day, itin
     
     # Remove all images
     updated_data = {
-        "itinerary_id": itinerary['id'],
         "images": []
     }
     

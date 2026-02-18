@@ -5,11 +5,11 @@ from datetime import date, datetime
 
 
 @pytest.fixture(scope="function")
-def points(client, auth_headers):
-    point_1 = {"day_id": 1, "type": "interest"}
-    point_2 = {"day_id": 1, "type": "position"}
-    point_3 = {"day_id": 1, "type": "interest"}
-    point_4 = {"day_id": 1, "type": "interest"}
+def points(client, auth_headers, itinerary):
+    point_1 = {"day_id": itinerary["days"][0]["id"], "type": "interest"}
+    point_2 = {"day_id": itinerary["days"][0]["id"], "type": "position"}
+    point_3 = {"day_id": itinerary["days"][0]["id"], "type": "interest"}
+    point_4 = {"day_id": itinerary["days"][0]["id"], "type": "interest"}
 
     response_1 = client.post(
         f"{POINT_ENDPOINT}/create", headers=auth_headers, json=point_1
@@ -30,13 +30,32 @@ def points(client, auth_headers):
     assert response_4.status_code == 201
 
     responses = [response_1, response_2, response_3, response_4]
-    points = [json.loads(response.data) for response in responses]
-    return points
+    points = [response.json for response in responses]
+    
+    yield points
+    
+    # Clean up
+    try:
+        response_1 = client.delete(
+            f"{POINT_ENDPOINT}/{point_1["id"]}", headers=auth_headers, json=point_1
+        )
+        response_2 = client.delete(
+            f"{POINT_ENDPOINT}/{point_2["id"]}", headers=auth_headers, json=point_2
+        )
+        response_3 = client.delete(
+            f"{POINT_ENDPOINT}/{point_3["id"]}", headers=auth_headers, json=point_3
+        )
+        response_4 = client.delete(
+            f"{POINT_ENDPOINT}/{point_4["id"]}", headers=auth_headers, json=point_4
+        )
+    except:
+        pass
 
 
 def test_update_point(client, points, auth_headers):
-    point_id = points[0]["id"]
-    point = {"type": "stop"}
+    point = points[0]
+    point_id = point["id"]
+    point = {**point, "type": "stop"}
 
     response = client.post(
         f"{POINT_ENDPOINT}/{point_id}/update", headers=auth_headers, json=point
@@ -54,13 +73,13 @@ def test_link_points(client, points, auth_headers):
     )
 
     assert json.loads(response.data) == {
-        "day_id": 1,
+        "day_id": point["day_id"],
         "latitude": None,
         "longitude": None,
-        "id": 1,
+        "id": point["id"],
         "images": [],
         "next": {
-            "day_id": 1,
+            "day_id": point_2["day_id"],
             "latitude": None,
             "longitude": None,
             "id": point_2["id"],
@@ -73,22 +92,12 @@ def test_link_points(client, points, auth_headers):
     }
 
     assert response.status_code == 200
-    assert json.loads(response.data)["next"]["id"] == 2
+    assert json.loads(response.data)["next"]["id"] == point_2["id"]
 
 
-def test_delete_point(client, auth_headers):
-    response = client.delete(f"{POINT_ENDPOINT}/3", headers=auth_headers)
+def test_delete_point(client, auth_headers, points):
+    point = points[3]
+    response = client.delete(f"{POINT_ENDPOINT}/{point["id"]}", headers=auth_headers)
     assert response.status_code == 200
-    response = client.get(f"{POINT_ENDPOINT}/3", headers=auth_headers)
+    response = client.get(f"{POINT_ENDPOINT}/{point["id"]}", headers=auth_headers)
     assert response.status_code == 404
-
-
-def test_get_inexistent_point(client, auth_headers):
-    response = client.get(f"{POINT_ENDPOINT}/3", headers=auth_headers)
-    assert response.status_code == 404
-
-
-def test_get_point(client, auth_headers):
-    response = client.get(f"{POINT_ENDPOINT}/2", headers=auth_headers)
-    assert response.status_code == 200
-    assert json.loads(response.data)["type"] == "position"

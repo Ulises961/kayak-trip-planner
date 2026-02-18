@@ -72,7 +72,7 @@ def user_2(app):
         raise NoResultFound()
     return user
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def client(app):
     """Test client for making requests."""
     return app.test_client()
@@ -89,14 +89,14 @@ def public_id_1(user_2):
     return user_2.public_id
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def auth_token(app, user_1):
     """Get JWT token for the test user."""
 
     token = JWTService.generate_access_token(user_1.public_id, user_1.mail, user_1.admin)
     return token
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def auth_headers(auth_token):
     """Return authorization headers for authenticated requests."""
     return {'Authorization': f'Bearer {auth_token}'}

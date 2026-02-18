@@ -45,8 +45,6 @@ def test_remove_days_from_itinerary(client, auth_headers, itinerary):
     assert updated_itinerary['trip_id'] == itinerary['trip_id']
     assert response.status_code == 200
 
-
-
 def test_delete_itinerary(client, auth_headers, itinerary):
     response = client.delete(f"{ITINERARY_ENDPOINT}/{itinerary['id']}", headers=auth_headers)
     assert response.status_code == 200

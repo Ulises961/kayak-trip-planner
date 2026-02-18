@@ -85,7 +85,7 @@ class PointService:
             IntegrityError: If database constraints are violated
         """
         logger.info(f"Creating new point")
-        point: Point = cast(Point,PointSchema().load(point_data))
+        point: Point = cast(Point, PointSchema().load(point_data))
         db.session.add(point)
         db.session.commit()
         
@@ -110,20 +110,58 @@ class PointService:
             ValidationError: If data is invalid
             NoResultFound: If point doesn't exist
         """
-        point_data.setdefault("id", point_id)
-        point: Point = PointSchema().load(point_data)  # type: ignore
-        
         # Verify point exists
-        existing_point = PointService.get_point_by_id(point.id)
+        existing_point = PointService.get_point_by_id(point_id)
         if not existing_point:
-            raise NoResultFound(f"Point {point.id} not found")
+            raise NoResultFound(f"Point {point_id} not found")
         
-        logger.info(f"Updating point {point.id}")
-        db.session.merge(point)
+        logger.info(f"Updating point {point_id}")
+        
+        # Update scalar fields if provided
+        if 'type' in point_data:
+            from Models.point import PointType
+            # Convert string to enum if needed
+            if isinstance(point_data['type'], str):
+                existing_point.type = PointType(point_data['type'])
+            else:
+                existing_point.type = point_data['type']
+        if 'latitude' in point_data:
+            existing_point.latitude = point_data['latitude']
+        if 'longitude' in point_data:
+            existing_point.longitude = point_data['longitude']
+        if 'notes' in point_data:
+            existing_point.notes = point_data['notes']
+        if 'day_id' in point_data:
+            existing_point.day_id = point_data['day_id']
+        if 'next_id' in point_data:
+            existing_point.next_id = point_data['next_id']
+        if 'next' in point_data:
+            # Handle nested next point object
+            if point_data['next'] is None:
+                existing_point.next_id = None
+            elif isinstance(point_data['next'], dict):
+                existing_point.next_id = point_data['next'].get('id')
+            else:
+                existing_point.next_id = point_data['next']
+            
+        # Handle images relationship
+        if 'images' in point_data:
+            from Models.image import Image
+            from Schemas.image_schema import ImageSchema
+            
+            # Clear existing images
+            existing_point.images = []
+            
+            # Add new images
+            if point_data['images']:
+                for image_data in point_data['images']:
+                    image = cast(Image, ImageSchema().load(image_data))
+                    existing_point.images.append(image)
+        
         db.session.commit()
         db.session.refresh(existing_point)      
   
-        return point
+        return existing_point
     
     @staticmethod
     def delete_point(point_id: int) -> None:

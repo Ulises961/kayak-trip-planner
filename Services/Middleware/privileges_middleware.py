@@ -233,6 +233,17 @@ def _check_day_ownership(user_id: int, day_id: int) -> Optional[bool]:
     if not day:
         return None  # Day doesn't exist
 
+    # Check on draft itinerary
+    result = (
+        db.session.query(Day)
+        .join(Itinerary, Day.itinerary_id == Itinerary.id)
+        .filter(Day.id == day_id, Itinerary.user_id == user_id)
+        .first()
+    )
+    if result is not None:
+        return True
+    
+    # Check on trip itinerary 
     result = (
         db.session.query(Day)
         .join(Itinerary, Day.itinerary_id == Itinerary.id)
