@@ -1,5 +1,5 @@
 from Api.database import db
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import UUID, Table, Column, ForeignKey
 from sqlalchemy.schema import DropTable
 from sqlalchemy.ext.compiler import compiles
 
@@ -10,7 +10,7 @@ def _compile_drop_table(element, compiler, **kwargs):
 user_endorses_log = Table(
     'user_endorses_log',
     db.Model.metadata,
-    Column('log_id', Integer, ForeignKey('log.id'), primary_key=True),
-    Column('endorsers', Integer, ForeignKey('users.id')),
+    Column('log_id', UUID, ForeignKey('log.id'), primary_key=True),
+    Column('endorsers', UUID, ForeignKey('users.id')),
     extend_existing=True
 )

@@ -135,7 +135,7 @@ def downgrade() -> None:
     )
     op.create_table('users',
     sa.Column('id', sa.INTEGER(), server_default=sa.text("nextval('users_id_seq'::regclass)"), autoincrement=True, nullable=False),
-    sa.Column('public_id', sa.VARCHAR(length=255), autoincrement=False, nullable=True),
+    sa.Column('id', sa.VARCHAR(length=255), autoincrement=False, nullable=True),
     sa.Column('mail', sa.VARCHAR(length=255), autoincrement=False, nullable=False),
     sa.Column('pwd', sa.VARCHAR(length=255), autoincrement=False, nullable=False),
     sa.Column('phone', sa.VARCHAR(length=255), autoincrement=False, nullable=False),
@@ -146,7 +146,7 @@ def downgrade() -> None:
     sa.PrimaryKeyConstraint('id', name='users_pkey'),
     sa.UniqueConstraint('mail', name='users_mail_key'),
     sa.UniqueConstraint('phone', name='users_phone_key'),
-    sa.UniqueConstraint('public_id', name='users_public_id_key'),
+    sa.UniqueConstraint('id', name='users_id_key'),
     postgresql_ignore_search_path=False
     )
     op.create_table('point_has_image',

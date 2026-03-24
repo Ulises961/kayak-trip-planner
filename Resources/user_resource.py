@@ -14,29 +14,29 @@ logger = logging.getLogger(__name__)
 USER_ENDPOINT = "/api/user"
 user_api = Blueprint('user', __name__, url_prefix=USER_ENDPOINT)
 
-@user_api.route("/<string:public_id>", methods=["GET"])
+@user_api.route("/<string:id>", methods=["GET"])
 @JWTService.authenticate_restful
-def get(public_id:str):
+def get(id:str):
     """
     UserResource GET method. Retrieves the information related to the user with the passed id in the request
     """
     try:
         logger.info(
-            f"Retrieving user with id {public_id}")
+            f"Retrieving user with id {id}")
                     
-        user = UserService.get_user_by_id(public_id)
+        user = UserService.get_user_by_id(id)
         return jsonify(UserSchema().dump(user)), HTTPStatus.OK
     
     except HTTPException:
         raise
     except NoResultFound:
-        abort(HTTPStatus.NOT_FOUND, description=f"User with id {public_id} not found in database")
+        abort(HTTPStatus.NOT_FOUND, description=f"User with id {id} not found in database")
     except Exception as e:
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@user_api.route("/<string:public_id>/update", methods=["POST", "PUT"])
+@user_api.route("/<string:id>/update", methods=["POST", "PUT"])
 @JWTService.authenticate_restful
-def update_user(public_id: str):
+def update_user(id: str):
     """
     UserResource POST/PUT method. Updates an existing user.
 
@@ -44,26 +44,26 @@ def update_user(public_id: str):
     """
 
     try:
-        user = UserService.update_user(public_id, request.get_json())
+        user = UserService.update_user(id, request.get_json())
         return jsonify(UserSchema().dump(user)), HTTPStatus.OK
     
     except HTTPException:
         raise
     except IntegrityError:
-        abort(HTTPStatus.CONFLICT, description=f"Error updating user with id {public_id}")
+        abort(HTTPStatus.CONFLICT, description=f"Error updating user with id {id}")
     except Exception as e:
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=f"Error:{e}")
 
-@user_api.route("/<string:public_id>", methods=["DELETE"])
+@user_api.route("/<string:id>", methods=["DELETE"])
 @JWTService.authenticate_restful
-def delete(public_id: str):
+def delete(id: str):
     try:
-        UserService.delete_user(public_id)       
+        UserService.delete_user(id)       
         return "Deletion successful", 200
     
     except HTTPException:
         raise
     except ValueError:
-        abort(HTTPStatus.CONFLICT, description=f"Error deleting user with id {public_id}")
+        abort(HTTPStatus.CONFLICT, description=f"Error deleting user with id {id}")
     except Exception as e:
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=f"Error:{e}")

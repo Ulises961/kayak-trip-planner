@@ -1,19 +1,16 @@
 from marshmallow import Schema, fields, post_load, post_dump, validates, ValidationError, pre_load
 from Models.user import User
+from Schemas.base_schema import BaseSchema
 from Schemas.log_schema import LogSchema
 from Schemas.image_schema import ImageSchema
 import re
 import bleach
 
-class UserSchema(Schema):
+class UserSchema(BaseSchema):
     """ 
     User Schema
     used for loading/dumping User entities
     """
-
-    # Internal DB id - never exposed in API
-    # public_id exposed as 'id' in API via data_key
-    public_id = fields.String(data_key='id', dump_only=True)
     mail = fields.Email(required=True, validate=lambda x: len(x) <= 255)
     pwd = fields.String(required=True, load_only=True, validate=lambda x: len(x) >= 8)
     phone = fields.String(required=True, validate=lambda x: len(x) <= 20)  
@@ -28,13 +25,6 @@ class UserSchema(Schema):
     logs = fields.List(fields.Nested(LogSchema), allow_none=True )
     image = fields.Nested(ImageSchema, allow_none=True)
     admin = fields.Bool(allow_none=True)
-
-    @pre_load
-    def handle_id_input(self, data, **kwargs):
-        """Convert 'id' from API to 'public_id' for model."""
-        if 'id' in data:
-            data['public_id'] = data.pop('id')
-        return data
 
     @validates('username')
     def validate_username(self, value, **kwargs):

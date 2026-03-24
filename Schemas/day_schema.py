@@ -1,29 +1,22 @@
 from marshmallow import Schema, fields, post_load, pre_load, validates, ValidationError
 from Models.day import Day
+from Schemas.base_schema import BaseSchema
 from Schemas.point_schema import PointSchema
 from Schemas.sea_schema import SeaSchema
 from Schemas.weather_schema import WeatherSchema
 from datetime import datetime, timedelta
 
-class DaySchema(Schema):
+class DaySchema(BaseSchema):
     """ 
     Day Schema
     used for loading/dumping Day entities
     """
-    id = fields.Integer(dump_only=True)  # ID is auto-generated, not loaded
     day_number = fields.Integer(allow_none=False, required=True, validate=lambda x: 1 <= x <= 365)
-    itinerary_id = fields.Integer(allow_none=True)
+    itinerary_id = fields.UUID(allow_none=True)
     date = fields.Date('%Y-%m-%d', allow_none=False, required=True)
     points = fields.List(fields.Nested(PointSchema), allow_none=True, validate=lambda x: x is None or len(x) <= 100)
     sea = fields.Nested(SeaSchema, allow_none=True)
     weather = fields.Nested(WeatherSchema, allow_none=True)
-
-    @pre_load
-    def remove_id(self, data, **kwargs):
-        """Remove id field if present - it's auto-generated."""
-        if 'id' in data:
-            data.pop('id')
-        return data
 
     @validates('day_number')
     def validate_day_number(self, value,  **kwargs):

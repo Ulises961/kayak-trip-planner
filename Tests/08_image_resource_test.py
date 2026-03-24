@@ -15,7 +15,7 @@ import json
 # User Profile Picture Tests
 # ============================================================================
 
-def test_add_profile_picture_to_user(client, auth_headers, public_id):
+def test_add_profile_picture_to_user(client, auth_headers, id):
     """Test adding a profile picture to a user through user endpoint."""
     user_data = {
         "image": {
@@ -26,7 +26,7 @@ def test_add_profile_picture_to_user(client, auth_headers, public_id):
     }
     
     response = client.post(
-        f"{USER_ENDPOINT}/{public_id}/update",
+        f"{USER_ENDPOINT}/{id}/update",
         headers=auth_headers,
         json=user_data
     )
@@ -39,7 +39,7 @@ def test_add_profile_picture_to_user(client, auth_headers, public_id):
     assert response_data['image']['location'] == '/public/images/user/1/profile_pictures'
 
 
-def test_update_user_profile_picture(client, auth_headers, public_id):
+def test_update_user_profile_picture(client, auth_headers, id):
     """Test updating a user's profile picture through user endpoint."""
     # First add a profile picture
     user_data = {
@@ -49,7 +49,7 @@ def test_update_user_profile_picture(client, auth_headers, public_id):
             "location": "/public/images/user/1/profile_pictures"
         }
     }
-    client.post(f"{USER_ENDPOINT}/{public_id}/update", headers=auth_headers, json=user_data)
+    client.post(f"{USER_ENDPOINT}/{id}/update", headers=auth_headers, json=user_data)
     
     # Now update it
     updated_data = {
@@ -61,7 +61,7 @@ def test_update_user_profile_picture(client, auth_headers, public_id):
     }
     
     response = client.post(
-        f"{USER_ENDPOINT}/{public_id}/update",
+        f"{USER_ENDPOINT}/{id}/update",
         headers=auth_headers,
         json=updated_data
     )
@@ -72,7 +72,7 @@ def test_update_user_profile_picture(client, auth_headers, public_id):
     assert response_data['image']['size'] == 4.5
 
 
-def test_get_user_with_profile_picture(client, auth_headers, public_id):
+def test_get_user_with_profile_picture(client, auth_headers, id):
     """Test retrieving a user's profile picture through user endpoint."""
     # First add a profile picture
     user_data = {
@@ -82,10 +82,10 @@ def test_get_user_with_profile_picture(client, auth_headers, public_id):
             "location": "/public/images/user/1/profile_pictures"
         }
     }
-    client.post(f"{USER_ENDPOINT}/{public_id}/update", headers=auth_headers, json=user_data)
+    client.post(f"{USER_ENDPOINT}/{id}/update", headers=auth_headers, json=user_data)
     
     # Retrieve the user
-    response = client.get(f"{USER_ENDPOINT}/{public_id}", headers=auth_headers)
+    response = client.get(f"{USER_ENDPOINT}/{id}", headers=auth_headers)
     
     assert response.status_code == 200
     response_data = json.loads(response.data)
@@ -94,7 +94,7 @@ def test_get_user_with_profile_picture(client, auth_headers, public_id):
     assert response_data['image']['size'] == 1.8
 
 
-def test_remove_user_profile_picture(client, auth_headers, public_id):
+def test_remove_user_profile_picture(client, auth_headers, id):
     """Test removing a user's profile picture through user endpoint."""
     # First add a profile picture
     user_data = {
@@ -104,13 +104,13 @@ def test_remove_user_profile_picture(client, auth_headers, public_id):
             "location": "/public/images/user/1/profile_pictures"
         }
     }
-    client.post(f"{USER_ENDPOINT}/{public_id}/update", headers=auth_headers, json=user_data)
+    client.post(f"{USER_ENDPOINT}/{id}/update", headers=auth_headers, json=user_data)
     
     # Remove it by setting to None
     updated_data = {"image": None}
     
     response = client.post(
-        f"{USER_ENDPOINT}/{public_id}/update",
+        f"{USER_ENDPOINT}/{id}/update",
         headers=auth_headers,
         json=updated_data
     )

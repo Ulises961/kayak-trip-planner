@@ -2,6 +2,7 @@ from http import HTTPStatus
 from http.client import HTTPException
 import logging
 from sqlite3 import IntegrityError
+from uuid import UUID
 from sqlalchemy.exc import NoResultFound
 from flask import Blueprint, abort, g, jsonify, request
 from Schemas.trip_schema import TripSchema
@@ -22,14 +23,14 @@ trip_api = Blueprint("trip", __name__, url_prefix=TRIP_ENDPOINT)
 @require_owner("trip")
 def get_trip(id: str):
     """
-    TripResource GET method. Retrieves trip by public_id.
+    TripResource GET method. Retrieves trip by id.
 
     Returns:
         JSON response with trip data and 200 status code
     """
     try:
-        logger.info(f"Retrieving trip with public_id {id}")
-        trip = TripService.get_trip_by_public_id(id)
+        logger.info(f"Retrieving trip with id {id}")
+        trip = TripService.get_trip_by_id(id)
         return jsonify(TripSchema().dump(trip)), HTTPStatus.OK
 
     except HTTPException:
@@ -130,7 +131,7 @@ def put(id: str):
 @JWTService.authenticate_restful
 def delete(id: str):
     """
-    TripResource DELETE method. Deletes a trip by public_id.
+    TripResource DELETE method. Deletes a trip by id.
 
     Returns:
         Success message and 200 status code

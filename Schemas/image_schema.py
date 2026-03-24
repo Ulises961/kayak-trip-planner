@@ -2,14 +2,14 @@ from marshmallow import Schema, fields, post_load, pre_dump, pre_load, validates
 from Models.image import Image
 import re
 
+from Schemas.base_schema import BaseSchema
 
-class ImageSchema(Schema):
+
+class ImageSchema(BaseSchema):
     """ 
     Image Schema
     used for loading/dumping Image entities
     """
-
-    public_id = fields.String(data_key='id', dump_only=True)
     size = fields.Float(allow_none=False, required=True, validate=lambda x: 0 < x <= 100)  # Max 100MB
     name = fields.String(allow_none=False, required=True, validate=lambda x: 1 <= len(x.strip()) <= 255)
     location = fields.String(allow_none=False, required=True, validate=lambda x: 1 <= len(x.strip()) <= 500)
@@ -65,8 +65,3 @@ class ImageSchema(Schema):
     def make_image(self, data, **kwargs):
         return Image(**data)
     
-    @pre_load
-    def extract_id(self, data, **kwargs):
-        if "id" in data:
-            data["public_id"] = data.pop("id")
-        return data

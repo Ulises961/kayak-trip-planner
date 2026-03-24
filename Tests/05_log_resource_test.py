@@ -4,9 +4,9 @@ import json
 
 
 @pytest.fixture
-def test_log(client, auth_headers, public_id):
+def test_log(client, auth_headers, id):
     """Create a test log for testing"""
-    log = {"hours": 7, "avg_sea": 5, "user_id": public_id}
+    log = {"hours": 7, "avg_sea": 5, "user_id": id}
     response = client.post(f"{LOG_ENDPOINT}/create", headers=auth_headers, json=log)
     assert response.status_code == 201
     log_data = json.loads(response.data)

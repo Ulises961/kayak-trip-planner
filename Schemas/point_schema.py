@@ -1,24 +1,24 @@
 from marshmallow import Schema, fields, post_load, validates, ValidationError, EXCLUDE
 from Models.point import Point, PointType
 from Api.database import db
+from Schemas.base_schema import BaseSchema
 from Schemas.image_schema import ImageSchema
 import bleach
 import re
 
 
-class PointSchema(Schema):
+class PointSchema(BaseSchema):
     class Meta:
         unknown = EXCLUDE
     """ 
     Point Schema
     used for loading/dumping Point entities
     """
-    id = fields.Integer(allow_none=True)
     latitude = fields.Float(allow_none=True, validate=lambda x: x is None or (-90 <= x <= 90))
     longitude = fields.Float(allow_none=True, validate=lambda x: x is None or (-180 <= x <= 180))
     notes = fields.String(allow_none=True, validate=lambda x: x is None or len(x.strip()) <= 5000)
     type = fields.Enum(PointType, by_value=True, required=True)
-    day_id = fields.Integer(allow_none=True)
+    day_id = fields.String(allow_none=True)
     next = fields.Nested(lambda: PointSchema(), allow_none=True,
                          exclude=("next", "nearby"))
     nearby = fields.List(fields.Nested(lambda: PointSchema(

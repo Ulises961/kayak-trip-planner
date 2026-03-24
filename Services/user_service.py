@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional, cast
+from uuid import UUID
 from Models.image import Image
 from Models.user import User
 from Api.database import db
@@ -14,7 +15,7 @@ class UserService:
 
     @staticmethod
     def get_user_by_id(id: str) -> User:
-        user: Optional[User] = db.session.query(User).filter_by(public_id=id).first()
+        user: Optional[User] = db.session.query(User).filter_by(id=UUID(id)).first()
         if not user:
             raise NoResultFound(f"User with id {id} not found in db")
         return user
@@ -36,7 +37,7 @@ class UserService:
             IntegrityError: If database constraints are violated
         """
         # Verify user exists
-        saved_user = db.session.query(User).filter_by(public_id=id).first()
+        saved_user = db.session.query(User).filter_by(id=UUID(id)).first()
         if not saved_user:
             raise NoResultFound(f"User with id {id} not found in db")
         
@@ -84,7 +85,7 @@ class UserService:
             NoResultFound: If user doesn't exist
             IntegrityError: If user has foreign key references that prevent deletion
         """
-        saved_user = db.session.query(User).filter_by(public_id=id).first()
+        saved_user = db.session.query(User).filter_by(id=UUID(id)).first()
         if not saved_user:
             raise NoResultFound(f"User with id {id} not found")
         

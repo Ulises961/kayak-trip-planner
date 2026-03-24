@@ -78,22 +78,22 @@ def client(app):
     return app.test_client()
 
 @pytest.fixture(scope='session')
-def public_id(user_1):
+def id(user_1):
     """Create first test user and return their public_id."""   
-    return user_1.public_id
+    return str(user_1.id)
 
 @pytest.fixture(scope='session')
-def public_id_1(user_2):
-    """Create second test user and return their public_id."""    
+def id_2(user_2):
+    """Create second test user and return their id."""    
   
-    return user_2.public_id
+    return str(user_2.id)
 
 
 @pytest.fixture(scope='session')
 def auth_token(app, user_1):
     """Get JWT token for the test user."""
 
-    token = JWTService.generate_access_token(user_1.public_id, user_1.mail, user_1.admin)
+    token = JWTService.generate_access_token(user_1.id, user_1.mail, user_1.admin)
     return token
 
 @pytest.fixture(scope='session')
@@ -102,7 +102,7 @@ def auth_headers(auth_token):
     return {'Authorization': f'Bearer {auth_token}'}
 
 @pytest.fixture(scope="function")
-def inventory_with_items(client, auth_headers, public_id):
+def inventory_with_items(client, auth_headers, id):
     """Create an inventory with items for testing"""
     inventory_items = [
         {"category": 'travel', "name": 'compass'}, 
@@ -123,7 +123,7 @@ def inventory_with_items(client, auth_headers, public_id):
 
 
 @pytest.fixture(scope='function')
-def empty_inventory(client, auth_headers, public_id):
+def empty_inventory(client, auth_headers, id):
     """Create an empty inventory for testing"""
     inventory = {"items": []}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)

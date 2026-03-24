@@ -4,7 +4,7 @@ import json
 
 
 @pytest.fixture
-def inventory_with_items(client, auth_headers, public_id):
+def inventory_with_items(client, auth_headers, id):
     """Create an inventory with items for testing"""
     inventory_items = [
         {"category": 'travel', "name": 'compass'}, 
@@ -25,7 +25,7 @@ def inventory_with_items(client, auth_headers, public_id):
 
 
 @pytest.fixture
-def empty_inventory(client, auth_headers, public_id):
+def empty_inventory(client, auth_headers, id):
     """Create an empty inventory for testing"""
     inventory = {"items": []}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
@@ -41,7 +41,7 @@ def empty_inventory(client, auth_headers, public_id):
         pass
 
 
-def test_create_inventory_with_items(client, auth_headers, public_id):
+def test_create_inventory_with_items(client, auth_headers, id):
     """Test creating an inventory with items"""
     inventory_items = [
         {"category": 'travel', "name": 'compass'}, 
@@ -53,7 +53,7 @@ def test_create_inventory_with_items(client, auth_headers, public_id):
     assert response.status_code == 201
     
     data = json.loads(response.data)
-    assert data['user_id'] == public_id
+    assert data['user_id'] == id
     assert len(data['items']) == 2
     assert data['items'][0]['name'] == 'compass'
     assert data['items'][1]['name'] == 'scissors'
@@ -62,7 +62,7 @@ def test_create_inventory_with_items(client, auth_headers, public_id):
     client.delete(f"{INVENTORY_ENDPOINT}/{data['id']}", headers=auth_headers)
 
     
-def test_create_inventory_empty(client, auth_headers, public_id):
+def test_create_inventory_empty(client, auth_headers, id):
     """Test creating an empty inventory"""
     inventory = {"items": []}
 
@@ -70,7 +70,7 @@ def test_create_inventory_empty(client, auth_headers, public_id):
     assert response.status_code == 201
     
     data = json.loads(response.data)
-    assert data['user_id'] == public_id
+    assert data['user_id'] == id
     assert len(data['items']) == 0
     
     # Cleanup
@@ -118,7 +118,7 @@ def test_update_inventory(client, auth_headers, inventory_with_items):
     assert data['items'][1]['name'] == "Oki"
 
 
-def test_delete_inventory(client, auth_headers, public_id):
+def test_delete_inventory(client, auth_headers, id):
     """Test deleting an inventory"""
     # Create an inventory to delete
     inventory = {"items": []}

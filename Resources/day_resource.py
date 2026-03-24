@@ -22,9 +22,9 @@ def read_by_itinerary(itinerary_id: str):
     return jsonify([DaySchema().dump(day) for day in days]), HTTPStatus.OK
 
 
-@day_api.route("/<int:id>", methods=['GET'])
+@day_api.route("/<string:id>", methods=['GET'])
 @JWTService.authenticate_restful
-def read_by_id(id: int):
+def read_by_id(id: str):
     try:
         day = DayService.get_day_by_id(id)
         return jsonify(DaySchema().dump(day)), HTTPStatus.OK
@@ -80,10 +80,10 @@ def create_day():
         logger.error(f"Error creating day: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@day_api.route("/<int:id>/update", methods=['POST'])
+@day_api.route("/<string:id>/update", methods=['POST'])
 @JWTService.authenticate_restful
 @require_owner('day')
-def update_day(id: int):
+def update_day(id: str):
     """POST /api/day/update - Update existing day"""
     try:
         day_data = request.get_json()
@@ -100,7 +100,7 @@ def update_day(id: int):
         logger.error(f"Error updating day: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@day_api.route("/<int:id>", methods=["DELETE"])
+@day_api.route("/<string:id>", methods=["DELETE"])
 @JWTService.authenticate_restful
 @require_owner('day')
 def delete_day_by_id(id: int):

@@ -1,4 +1,5 @@
 from typing import Optional, Dict, Any, List
+from uuid import UUID
 from Models.day import Day
 from Models.itinerary import Itinerary
 from Models.sea import Sea
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class DayService:
     @staticmethod
-    def get_day_by_id(day_id: int) -> Day:
+    def get_day_by_id(day_id: str) -> Day:
         """
         Retrieve a day description with the different sea and weather states during that day.
 
@@ -34,7 +35,7 @@ class DayService:
                 selectinload(Day.weather),
                 selectinload(Weather.weather_states),
             )
-            .filter_by(id=day_id)
+            .filter_by(id=UUID(day_id))
             .first()
         )
 
@@ -56,13 +57,13 @@ class DayService:
         days = (
             db.session.query(Day)
             .join(Itinerary, Day.itinerary_id == Itinerary.id)
-            .filter(Itinerary.public_id == itinerary_id)
+            .filter(Itinerary.id == UUID(itinerary_id))
             .all()
         )
         return days
 
     @staticmethod
-    def get_by_ids(day_ids: List[int]) -> List[Day]:
+    def get_by_ids(day_ids: List[str]) -> List[Day]:
         """
         Retrieve days by their IDs.
 
@@ -71,7 +72,7 @@ class DayService:
         Returns:
             List of days
         """
-        days = db.session.query(Day).filter(Day.id.in_(day_ids)).all()
+        days = db.session.query(Day).filter(Day.id.in_([UUID(day_id) for day_id in day_ids])).all()
         return days
 
     @staticmethod
@@ -109,7 +110,7 @@ class DayService:
         return day
 
     @staticmethod
-    def update_day(day_id: int, day_data: Dict[str, Any]) -> Day:
+    def update_day(day_id: str, day_data: Dict[str, Any]) -> Day:
         """
         Update an existing day with new data, including weather and sea information.
 
@@ -123,7 +124,7 @@ class DayService:
             IntegrityError: If database constraints are violated
         """
         # Get the existing day
-        existing_day = db.session.get(Day, day_id)
+        existing_day = db.session.get(Day, UUID(day_id))
 
         if not existing_day:
             raise NoResultFound(f"Day with id {day_id} not found")

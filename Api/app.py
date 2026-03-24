@@ -22,6 +22,7 @@ from Resources.item_resource import item_api
 from Resources.log_resource import log_api
 
 from Resources.authentication_resource import api as authApi
+from Services.Utils.json_encoder import CustomJSONProvider
 
 
 def createApp(config_mode:str):
@@ -59,6 +60,7 @@ def createApp(config_mode:str):
     # Register error handlers
     register_error_handlers(app)
 
+    app.json_provider_class = CustomJSONProvider
     return app
 
 

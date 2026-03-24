@@ -31,14 +31,14 @@ def login_user():
     password = post_data.get("pwd")
     
     try:
-        user = User.query.filter_by(mail=mail, username= username).first()
+        user = db.session.query(User).filter_by(mail=mail, username= username).first()
         if not user:
             raise NoResultFound
         
         if user and check_password_hash(user.pwd, password):
-            access_token = JWTService.generate_access_token(user.public_id, user.mail, user.admin)
+            access_token = JWTService.generate_access_token(str(user.id), user.mail, user.admin)
 
-            refresh_token = JWTService.generate_refresh_token(user.public_id)
+            refresh_token = JWTService.generate_refresh_token(str(user.id))
             
             if access_token and refresh_token:
                 response_object = {
@@ -71,7 +71,7 @@ def register_user():
     username = user_json.get("username")
     mail = user_json.get("mail")
 
-    user = User.query.filter(
+    user = db.session.query(User).filter(
         (User.username == username) | (User.mail == mail)
     ).first()
     
@@ -85,7 +85,7 @@ def register_user():
         db.session.commit()
         
         #Check if user was correctly generated
-        user = User.query.filter_by(mail=mail).first()
+        user = db.session.query(User).filter_by(mail=mail).first()
         if not user:
             raise ValueError("User generated incorrectly")
       
@@ -93,9 +93,9 @@ def register_user():
         logger.info(f"New user registered: {user.username}")
 
         # generate auth token
-        auth_token = JWTService.generate_access_token(user.public_id, user.mail, user.admin)
+        auth_token = JWTService.generate_access_token(str(user.id), user.mail, user.admin)
         # generate refresh token
-        refresh_token = JWTService.generate_refresh_token(user.public_id)
+        refresh_token = JWTService.generate_refresh_token(str(user.id))
         response_object = {}
         response_object["status"] = "success"
         response_object["message"] = "Successfully registered."
@@ -116,12 +116,12 @@ def refresh_token():
     if not data:
         abort(HTTPStatus.UNAUTHORIZED, description="Invalid token")
 
-    user = User.query.filter_by(public_id=data["user_id"]).first()
+    user = User.query.filter_by(id=data["user_id"]).first()
 
     if not user:
         abort(HTTPStatus.UNAUTHORIZED, description="Login attempt with non-existent user")
 
-    access_token = JWTService.generate_access_token(user.public_id, user.mail, user.admin)
+    access_token = JWTService.generate_access_token(user.id, user.mail, user.admin)
 
     response_object = {
             "status": "success",

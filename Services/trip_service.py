@@ -7,7 +7,7 @@ from datetime import date
 from typing import List, Optional, cast
 from flask import g
 from sqlalchemy.exc import NoResultFound
-import uuid
+from uuid import UUID
 
 from Models.user_has_trip import user_has_trip
 from Models.trip import Trip
@@ -16,7 +16,7 @@ from Models.user_has_invitation import user_has_invitation
 from Schemas.trip_schema import TripSchema
 from Api.database import db
 from sqlalchemy.orm import selectinload, contains_eager
-
+from Services.user_service import UserService
 logger = logging.getLogger(__name__)
 
 
@@ -24,12 +24,12 @@ class TripService:
     """Service class for Trip-related business logic."""
 
     @staticmethod
-    def get_trip_by_id(trip_id: int) -> Optional[Trip]:
+    def get_trip_by_id(id: str) -> Optional[Trip]:
         """
-        Retrieve a trip by its ID.
+        Retrieve a trip by its id (UUID).
 
         Args:
-            trip_id: The ID of the trip to retrieve
+            id: The id of the trip to retrieve
 
         Returns:
             Trip object if found
@@ -37,30 +37,10 @@ class TripService:
         Raises:
             NoResultFound: If trip doesn't exist
         """
-        trip = db.session.query(Trip).filter_by(id=trip_id).first()
+        trip = db.session.query(Trip).filter_by(id=UUID(id)).first()
         if not trip:
-            logger.warning(f"Trip with id {trip_id} not found")
-            raise NoResultFound(f"Trip {trip_id} not found in database")
-        return trip
-
-    @staticmethod
-    def get_trip_by_public_id(public_id: str) -> Optional[Trip]:
-        """
-        Retrieve a trip by its public_id (UUID).
-
-        Args:
-            public_id: The public_id of the trip to retrieve
-
-        Returns:
-            Trip object if found
-
-        Raises:
-            NoResultFound: If trip doesn't exist
-        """
-        trip = db.session.query(Trip).filter_by(public_id=public_id).first()
-        if not trip:
-            logger.warning(f"Trip with public_id {public_id} not found")
-            raise NoResultFound(f"Trip {public_id} not found in database")
+            logger.warning(f"Trip with id {id} not found")
+            raise NoResultFound(f"Trip {id} not found in database")
         return trip
 
     @staticmethod
@@ -77,7 +57,7 @@ class TripService:
         user = (
             db.session.query(User)
             .options(selectinload(User.trips))
-            .filter_by(public_id=user_id)
+            .filter_by(id=UUID(user_id))
             .first()
         )
 
@@ -106,8 +86,8 @@ class TripService:
         """        
         logger.info(f"Creating new trip")
         
-        # Get the integer user ID from the public_id in g.current_user_public_id
-        current_user = User.query.filter_by(id=g.current_user_id).first()
+        # Get the integer user ID from the id in g.current_user_id
+        current_user = UserService.get_user_by_id(str(g.current_user_id))
         if current_user:
             current_user_id = current_user.id
             
@@ -160,7 +140,7 @@ class TripService:
         trip: Trip = TripSchema().load(trip_data)  # type: ignore
 
         # Verify trip exists
-        existing_trip = TripService.get_trip_by_id(trip.id)
+        existing_trip = TripService.get_trip_by_id(str(trip.id))
         if not existing_trip:
             raise NoResultFound(f"Trip {trip.id} not found")
 
@@ -168,7 +148,7 @@ class TripService:
         db.session.merge(trip)
         db.session.commit()
 
-        updated_trip = TripService.get_trip_by_id(trip.id)
+        updated_trip = TripService.get_trip_by_id(str(trip.id))
         if not updated_trip:
             raise NoResultFound(f"Trip {trip.id} not found after update")
         logger.info(f"Trip {trip.id} updated successfully")
@@ -186,7 +166,7 @@ class TripService:
         Raises:
             NoResultFound: If trip doesn't exist
         """
-        trip = db.session.query(Trip).filter_by(public_id=trip_id).first()
+        trip = db.session.query(Trip).filter_by(id=UUID(trip_id)).first()
 
         if not trip:
             raise NoResultFound(f"Trip with id {trip_id} not found")
@@ -199,14 +179,14 @@ class TripService:
             logger.info(f"Trip {trip_id} deleted successfully")
         else:
             # Only remove the current user's association with the trip
-            user_id = g.current_user_public_id
+            user_id = g.current_user_id
 
             user = (
                 db.session.query(User)
                 .join(user_has_trip, User.id == user_has_trip.c.user_id)
                 .join(Trip, user_has_trip.c.trip_id == Trip.id)
                 .options(contains_eager(User.trips))
-                .filter(User.public_id == user_id, Trip.id == trip_id)
+                .filter(User.id == UUID(user_id), Trip.id == UUID(trip_id))
                 .first()
             )
 
@@ -231,7 +211,7 @@ class TripService:
 
     @staticmethod
     def get_invitations_by_user(
-        user_id: int, include_expired: bool = False
+        user_id: str, include_expired: bool = False
     ) -> List[Trip]:
         """
         Retrieve all invitations to trips received by the user
@@ -249,7 +229,7 @@ class TripService:
             .join(user_has_invitation, User.id == user_has_invitation.c.user_id)
             .join(Trip, user_has_invitation.c.trip_id == Trip.id)
             .options(contains_eager(User.invitations))
-            .filter(User.id == user_id)
+            .filter(User.id == UUID(user_id))
         )
 
         # Filter by expiration date if requested
@@ -266,7 +246,7 @@ class TripService:
         return invitations
 
     @staticmethod
-    def handle_invitation(trip_id: int, accepted: bool) -> None:
+    def handle_invitation(trip_id: str, accepted: bool) -> None:
         """
         Accept or reject a trip invitation.
         
@@ -277,7 +257,7 @@ class TripService:
         Raises:
             NoResultFound: If invitation doesn't exist or has expired
         """
-        user_id = g.current_user_public_id
+        user_id = g.current_user_id
         
         # Query user with the specific invitation (filters by expiration in the join)
         user = (
@@ -286,8 +266,8 @@ class TripService:
             .join(Trip, user_has_invitation.c.trip_id == Trip.id)
             .options(contains_eager(User.invitations))
             .filter(
-                User.public_id == user_id,
-                Trip.id == trip_id
+                User.id == UUID(user_id),
+                Trip.id == UUID(trip_id)
             )
             .first()
         )

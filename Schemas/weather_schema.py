@@ -10,7 +10,7 @@ class WeatherSchema(Schema):
     used for loading/dumping Weather entities
     """
 
-    day_id = fields.Integer(allow_none=False, required=True)
+    day_id = fields.UUID(allow_none=False, required=True)
     model = fields.String(allow_none=False, required=True, validate=lambda x: 1 <= len(x.strip()) <= 100)
     weather_states = fields.List(fields.Nested(WeatherStateSchema), allow_none=True, validate=lambda x: x is None or len(x) <= 24)
 

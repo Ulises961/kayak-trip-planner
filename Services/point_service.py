@@ -4,6 +4,7 @@ Point Service - Business logic for point operations.
 import logging
 from sqlite3 import IntegrityError
 from typing import List, Optional, cast
+from uuid import UUID
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 
@@ -20,7 +21,7 @@ class PointService:
     """Service class for Point-related business logic."""
     
     @staticmethod
-    def get_point_by_id(point_id: int) -> Optional[Point]:
+    def get_point_by_id(point_id: str) -> Optional[Point]:
         """
         Retrieve a point by its ID.
         
@@ -34,7 +35,7 @@ class PointService:
             NoResultFound: If point doesn't exist
         """
 
-        point = db.session.query(Point).filter_by(id=point_id).first()
+        point = db.session.query(Point).filter_by(id=UUID(point_id)).first()
         if not point:
             logger.warning(f"Point with id {point_id} not found")
             raise NoResultFound(f"Point {point_id} not found in database")
@@ -95,7 +96,7 @@ class PointService:
         return point
     
     @staticmethod
-    def update_point(point_id: int, point_data: dict) -> Point:
+    def update_point(point_id: str, point_data: dict) -> Point:
         """
         Update an existing point.
         
@@ -132,17 +133,17 @@ class PointService:
         if 'notes' in point_data:
             existing_point.notes = point_data['notes']
         if 'day_id' in point_data:
-            existing_point.day_id = point_data['day_id']
+            existing_point.day_id = UUID(point_data['day_id'])
         if 'next_id' in point_data:
-            existing_point.next_id = point_data['next_id']
+            existing_point.next_id = UUID(point_data['next_id'])
         if 'next' in point_data:
             # Handle nested next point object
             if point_data['next'] is None:
                 existing_point.next_id = None
             elif isinstance(point_data['next'], dict):
-                existing_point.next_id = point_data['next'].get('id')
+                existing_point.next_id = UUID(point_data['next'].get('id'))
             else:
-                existing_point.next_id = point_data['next']
+                existing_point.next_id = UUID(point_data['next'])
             
         # Handle images relationship
         if 'images' in point_data:
@@ -164,7 +165,7 @@ class PointService:
         return existing_point
     
     @staticmethod
-    def delete_point(point_id: int) -> None:
+    def delete_point(point_id: str) -> None:
         """
         Delete a point by its ID.
         
@@ -181,7 +182,7 @@ class PointService:
         logger.info(f"Point {point_id} deleted successfully")
     
     @staticmethod
-    def get_points_by_day(day_id: int) -> List[Point]:
+    def get_points_by_day(day_id: str) -> List[Point]:
         """
         Retrieve all points for a specific day.
         
@@ -191,7 +192,7 @@ class PointService:
         Returns:
             List of Point objects for that day
         """
-        points = db.session.query(Point).filter_by(day_id=day_id).all()
+        points = db.session.query(Point).filter_by(day_id=UUID(day_id)).all()
         logger.info(f"Found {len(points)} points for day {day_id}")
         return points
 

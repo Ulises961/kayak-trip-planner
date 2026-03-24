@@ -7,17 +7,17 @@ from sqlalchemy.exc import NoResultFound
 import bleach
 import re
 
-class ItemSchema(Schema):
+from Schemas.base_schema import BaseSchema
+
+class ItemSchema(BaseSchema):
     """ 
     Item Schema
     used for loading/dumping Item entities
     """
-
-    id = fields.Integer(allow_none=True)
     category = fields.Enum(ItemCategoryType, by_value=True, required=True)
     checked = fields.Boolean(allow_none=True)
     name = fields.String(allow_none=False, required=True, validate=lambda x: 1 <= len(x.strip()) <= 255)
-    user_id = fields.Integer(allow_none=False, required=True)
+    user_id = fields.UUID(allow_none=False, required=True)
 
     @validates('name')
     def validate_name(self, value, **kwargs):
@@ -42,8 +42,3 @@ class ItemSchema(Schema):
     def make_item(self, data, **kwargs):
         return Item(**data)
     
-
-    @post_dump
-    def mask_user_id(self, data, **kwargs):
-        data['user_id'] = g.current_user_public_id
-        return data

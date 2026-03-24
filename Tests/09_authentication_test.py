@@ -1,6 +1,7 @@
 import pytest
 import jwt
 import uuid
+import uuid_extension
 import random
 from datetime import datetime, timedelta, timezone
 from flask import current_app
@@ -139,7 +140,7 @@ class TestAuthenticationEndpoints:
         user = User.query.filter_by(mail=new_user_data['mail']).first()
         assert user is not None
         assert user.username == new_user_data['username']
-        assert user.public_id is not None
+        assert user.id is not None
     
     def test_register_duplicate_username(self, client):
         """Test registering with existing username fails"""

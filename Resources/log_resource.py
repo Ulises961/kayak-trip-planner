@@ -23,7 +23,7 @@ def get_logs():
     LogResource GET method. Retrieves all the logs associated to a user
     """
     try:        
-        logs = LogService.get_logs_by_user(g.current_user_public_id)
+        logs = LogService.get_logs_by_user(g.current_user_id)
         return jsonify([LogSchema().dump(log) for log in logs]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"Error retrieving logs: {e}")
@@ -39,7 +39,7 @@ def get_endorsed_logs():
     """
     try:        
         
-        logs = LogService.get_endorsed_logs(g.current_user_public_id) 
+        logs = LogService.get_endorsed_logs(g.current_user_id) 
         return jsonify([LogSchema().dump(log) for log in logs]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"Error retrieving logs: {e}")
@@ -72,12 +72,12 @@ def post():
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@log_api.route("/<string:public_id>/update", methods=["POST"])
+@log_api.route("/<string:id>/update", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner('log', id_param='public_id')
-def update_log(public_id: str):
+@require_owner('log', id_param='id')
+def update_log(id: str):
     try:
-        updated_log = LogService.update_log(public_id, request.get_json())
+        updated_log = LogService.update_log(id, request.get_json())
 
         return jsonify(LogSchema().dump(updated_log)), HTTPStatus.OK
     
@@ -95,14 +95,14 @@ def update_log(public_id: str):
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@log_api.route("/<string:public_id>", methods=["DELETE"])
+@log_api.route("/<string:id>", methods=["DELETE"])
 @JWTService.authenticate_restful
-@require_owner('log', id_param='public_id')
-def delete_log(public_id: str):
+@require_owner('log', id_param='id')
+def delete_log(id: str):
     try:
-        logger.info(f"Deleting log with id {public_id} ")
+        logger.info(f"Deleting log with id {id} ")
 
-        LogService.delete_log(public_id)
+        LogService.delete_log(id)
         return jsonify({"message": "Deletion successful"}), HTTPStatus.OK
     
     except HTTPException:

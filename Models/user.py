@@ -1,6 +1,9 @@
 import uuid
+
+import uuid_extension
 from Api.database import db
 from flask_bcrypt import generate_password_hash
+from Models.base_model import BaseModel
 from Models.inventory import Inventory
 from Models.item import Item
 from Models.itinerary import Itinerary
@@ -21,10 +24,10 @@ if TYPE_CHECKING:
     from Models.trip import Trip
 
 
-class User(db.Model):
+class User(BaseModel):
     __tablename__ = "users"
 
-    def __init__(self, pwd=None, endorsed_logs=[], logs=[], public_id=None, **kwargs):
+    def __init__(self, pwd=None, endorsed_logs=[], logs=[], id=None, **kwargs):
         if pwd:
             self.pwd = generate_password_hash(pwd).decode("UTF-8")
 
@@ -33,10 +36,6 @@ class User(db.Model):
 
         self.__dict__.update(kwargs)
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    public_id: Mapped[Optional[str]] = mapped_column(
-        String(255), unique=True, index=True, nullable=True, default=lambda: str(uuid.uuid4())
-    )
     mail: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     pwd: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
@@ -44,6 +43,7 @@ class User(db.Model):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     surname: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    active: Mapped[bool] = mapped_column(Boolean, default=False)
 
     trips: Mapped[List["Trip"]] = relationship(
         secondary=user_has_trip, back_populates="travellers"

@@ -3,6 +3,7 @@ Item Service - Business logic for item operations.
 """
 import logging
 from typing import cast
+from uuid import UUID
 from flask import g
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
@@ -17,7 +18,7 @@ class ItemService:
     """Service class for Item-related business logic."""
 
     @staticmethod
-    def get_item_by_id(item_id: int) -> Item:
+    def get_item_by_id(item_id: str) -> Item:
         """
         Retrieve an item by its ID.
 
@@ -30,7 +31,7 @@ class ItemService:
         Raises:
             NoResultFound: If item doesn't exist
         """
-        item = db.session.get(Item, item_id)
+        item = db.session.get(Item, UUID(item_id))
         if not item:
             logger.warning(f"Item with id {item_id} not found")
             raise NoResultFound(f"Item {item_id} not found in database")
@@ -61,7 +62,7 @@ class ItemService:
         return item
 
     @staticmethod
-    def update_item(item_id: int, item_data: dict) -> Item:
+    def update_item(item_id: str, item_data: dict) -> Item:
         """
         Update an existing item.
 
@@ -101,7 +102,7 @@ class ItemService:
             raise
 
     @staticmethod
-    def delete_item(item_id: int) -> None:
+    def delete_item(item_id: str) -> None:
         """
         Delete an item by its ID.
 

@@ -23,7 +23,7 @@ def get_all_itineraries():
     """GET /api/itinerary - Retrieve all itineraries"""
     try:
         logger.info("Retrieve all itineraries from db")
-        itineraries = ItineraryService.get_itineraries_by_user(g.current_user_public_id)
+        itineraries = ItineraryService.get_itineraries_by_user(g.current_user_id)
 
         return jsonify([ItinerarySchema().dump(itinerary) for itinerary in itineraries]), HTTPStatus.OK
         

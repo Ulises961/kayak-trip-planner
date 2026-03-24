@@ -8,7 +8,7 @@ class SeaStateSchema(Schema):
     used for loading/dumping Sea State entities
     """
 
-    day_id = fields.Integer(allow_none=True)
+    day_id = fields.UUID(allow_none=True)
     time = fields.Time('%H:%M:%S', allow_none=True)
     wave_height = fields.Float(allow_none=False, required=True, validate=lambda x: 0 <= x <= 30)
     wave_direction = fields.Float(allow_none=False, required=True, validate=lambda x: 0 <= x <= 360)

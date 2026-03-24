@@ -25,8 +25,8 @@ def test_insert_trip_w_o_itinerary(client, auth_headers):
     response = client.post(f"{TRIP_ENDPOINT}/create", json=trip, headers=auth_headers)
     assert response.status_code == 201
 
-def test_get_all_trips(client, auth_headers, public_id):
-    response = client.get(f"{TRIP_ENDPOINT}/{public_id}/all", headers=auth_headers)
+def test_get_all_trips(client, auth_headers, id):
+    response = client.get(f"{TRIP_ENDPOINT}/{id}/all", headers=auth_headers)
     assert response.status_code == 200
     # Number of trips depends on what was created in previous tests
     assert isinstance(json.loads(response.data), list)

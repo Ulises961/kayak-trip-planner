@@ -1,11 +1,11 @@
 from Api.database import db
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import UUID, Table, Column, ForeignKey
 
 user_has_inventory = Table(
     'user_has_inventory',
     db.Model.metadata,
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('inventory_id', Integer, ForeignKey('inventory.id')),
+    Column('user_id', UUID, ForeignKey('users.id')),
+    Column('inventory_id', UUID, ForeignKey('inventory.id')),
     extend_existing=True
 )
    

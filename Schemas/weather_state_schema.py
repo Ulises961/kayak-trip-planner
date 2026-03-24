@@ -10,7 +10,7 @@ class WeatherStateSchema(Schema):
     used for loading/dumping Weather State entities
     """
 
-    day_id = fields.Integer(allow_none=False, required=True)
+    day_id = fields.UUID(allow_none=False, required=True)
     time = fields.Time('%H:%M:%S', allow_none=False, required=True)
     temperature = fields.Float(allow_none=True, validate=lambda x: x is None or (-90 <= x <= 60))
     precipitation = fields.Float(allow_none=True, validate=lambda x: x is None or (0 <= x <= 500))

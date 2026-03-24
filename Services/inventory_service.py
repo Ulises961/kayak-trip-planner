@@ -4,6 +4,7 @@ Inventory Service - Business logic for inventory operations.
 
 import logging
 from typing import List, Optional, cast
+from uuid import UUID
 from flask import g
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
@@ -21,7 +22,7 @@ class InventoryService:
     """Service class for Inventory-related business logic."""
 
     @staticmethod
-    def get_inventory_by_id(inventory_id: int) -> Inventory:
+    def get_inventory_by_id(inventory_id: str) -> Inventory:
         """
         Retrieve an inventory by its ID.
 
@@ -34,7 +35,7 @@ class InventoryService:
         Raises:
             NoResultFound: If inventory doesn't exist
         """
-        inventory = db.session.get(Inventory, inventory_id)
+        inventory = db.session.get(Inventory, UUID(inventory_id))
         if not inventory:
             logger.warning(f"Inventory with id {inventory_id} not found")
             raise NoResultFound(f"Inventory {inventory_id} not found in database")
@@ -57,7 +58,7 @@ class InventoryService:
         inventories = (
             db.session.query(Inventory)
             .join(User)
-            .filter(Inventory.user_id == User.id, User.public_id == user_id)
+            .filter(Inventory.user_id == User.id, User.id == UUID(user_id))
             .all()
         )
         logger.info(f"Found {len(inventories)} inventories for user {user_id}")
@@ -94,7 +95,7 @@ class InventoryService:
         return inventory
 
     @staticmethod
-    def update_inventory(inventory_id: int, inventory_data: dict) -> Inventory:
+    def update_inventory(inventory_id: str, inventory_data: dict) -> Inventory:
         """
         Update an existing inventory.
 
@@ -140,7 +141,7 @@ class InventoryService:
             raise
 
     @staticmethod
-    def delete_inventory(inventory_id: int) -> None:
+    def delete_inventory(inventory_id: str) -> None:
         """
         Delete an inventory by its ID.
 

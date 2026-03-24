@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields, post_load, validates, ValidationError
 from Models.sea import Sea
+from Schemas.base_schema import BaseSchema
 from Schemas.sea_state_schema import SeaStateSchema
 import bleach
 import re
@@ -10,7 +11,7 @@ class SeaSchema(Schema):
     used for loading/dumping Sea entities
     """
 
-    day_id = fields.Integer(allow_none=False, required=True)
+    day_id = fields.UUID(allow_none=False, required=True)
     moon_phase = fields.String(allow_none=True, validate=lambda x: x is None or len(x.strip()) <= 50)
     high_tide = fields.Time('%H:%M', allow_none=True)
     low_tide = fields.Time('%H:%M', allow_none=True)

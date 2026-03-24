@@ -3,6 +3,7 @@ Itinerary Service - Business logic for itinerary operations.
 """
 import logging
 from typing import List, Optional, cast
+from uuid import UUID
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.orm import selectinload
 from Models.user_has_itinerary import user_has_itinerary
@@ -31,7 +32,7 @@ class ItineraryService:
         Raises:
             NoResultFound: If itinerary doesn't exist
         """
-        itinerary = db.session.query(Itinerary).options(selectinload(Itinerary.days)).filter_by(public_id=itinerary_id).first()
+        itinerary = db.session.query(Itinerary).options(selectinload(Itinerary.days)).filter_by(id=UUID(itinerary_id)).first()
         if not itinerary:
             logger.warning(f"Itinerary with id {itinerary_id} not found")
             raise NoResultFound(f"Itinerary {itinerary_id} not found in database")
@@ -48,7 +49,7 @@ class ItineraryService:
         Returns:
             List of Itinerary objects
         """
-        user = db.session.query(User).options(selectinload(User.itineraries)).filter_by(public_id=user_id).first()
+        user = db.session.query(User).options(selectinload(User.itineraries)).filter_by(id=UUID(user_id)).first()
         if not user:
             raise NoResultFound(f"User with id {user_id} not found in db")
         
@@ -81,7 +82,7 @@ class ItineraryService:
         return itinerary
 
     @staticmethod
-    def update_itinerary(public_id: str, itinerary_data: dict) -> Itinerary:
+    def update_itinerary(id: str, itinerary_data: dict) -> Itinerary:
         """
         Update an existing itinerary.
 
@@ -98,15 +99,15 @@ class ItineraryService:
             IntegrityError: If database constraints are violated
         """
         # Verify itinerary exists
-        existing_itinerary = ItineraryService.get_itinerary_by_id(public_id)
+        existing_itinerary = ItineraryService.get_itinerary_by_id(id)
         
         if not existing_itinerary:
-            raise NoResultFound(f"Itinerary with id {public_id} not found")
+            raise NoResultFound(f"Itinerary with id {id} not found")
         
-        logger.info(f"Updating itinerary {public_id}")
+        logger.info(f"Updating itinerary {id}")
 
         try:
-            # Load and validate the new data (schema will resolve public_id to db id)
+            # Load and validate the new data (schema will resolve id to db id)
             updated_itinerary = cast(Itinerary, ItinerarySchema().load(itinerary_data))
 
             # Update scalar fields
@@ -129,16 +130,16 @@ class ItineraryService:
             db.session.commit()
             db.session.refresh(existing_itinerary)
 
-            logger.info(f"Itinerary {public_id} updated successfully")
+            logger.info(f"Itinerary {id} updated successfully")
             return existing_itinerary
 
         except IntegrityError as e:
             db.session.rollback()
-            logger.error(f"Integrity error updating itinerary {public_id}: {e}")
+            logger.error(f"Integrity error updating itinerary {id}: {e}")
             raise
 
     @staticmethod
-    def delete_itinerary(public_id: str) -> None:
+    def delete_itinerary(id: str) -> None:
         """
         Delete an itinerary by its ID.
 
@@ -149,19 +150,19 @@ class ItineraryService:
             NoResultFound: If itinerary doesn't exist
             IntegrityError: If itinerary has references that prevent deletion
         """
-        itinerary = ItineraryService.get_itinerary_by_id(public_id)
+        itinerary = ItineraryService.get_itinerary_by_id(id)
 
         try:
-            logger.info(f"Deleting itinerary {public_id}")
+            logger.info(f"Deleting itinerary {id}")
             db.session.delete(itinerary)
             db.session.commit()
-            logger.info(f"Itinerary {public_id} deleted successfully")
+            logger.info(f"Itinerary {id} deleted successfully")
 
         except IntegrityError as e:
             db.session.rollback()
-            logger.error(f"Integrity error deleting itinerary {public_id}: {e}")
+            logger.error(f"Integrity error deleting itinerary {id}: {e}")
             raise IntegrityError(
-                f"Cannot delete itinerary {public_id} due to existing references",
+                f"Cannot delete itinerary {id} due to existing references",
                 params=None,
                 orig=e
             )
