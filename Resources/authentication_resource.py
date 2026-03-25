@@ -1,45 +1,36 @@
 import logging
-from uuid import UUID
 
-from Models.user import User
-from flask import abort, request, jsonify
-from flask_bcrypt import check_password_hash
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from http import HTTPStatus
-from sqlalchemy.exc import IntegrityError, NoResultFound
-from Schemas.user_schema import UserSchema
-from Api.database import db
+from sqlalchemy.exc import NoResultFound
 
+from Services.auth_service import AuthService
+from Services.user_service import UserService
 from Services.Middleware.auth_middleware import JWTService
-
-# It will print the name of this module when the main app is running
 
 logger = logging.getLogger(__name__)
 api = Blueprint("auth", __name__)
 
+
 @api.route("/api/auth/login", methods=["POST"])
 def login_user():
-    
     post_data = request.get_json()
     logger.info(f"Post data {post_data}")
-    
+
     if not post_data:
         raise ValueError("Missing request body")
 
     mail = post_data.get("mail", None)
     username = post_data.get("username")
     password = post_data.get("pwd")
-    
-    try:
-        user = db.session.query(User).filter_by(mail=mail, username= username).first()
-        if not user:
-            raise NoResultFound
-        
-        if user and check_password_hash(user.pwd, password):
-            access_token = JWTService.generate_access_token(str(user.id), user.mail, user.admin)
 
+    try:
+        user = AuthService.authenticate_user(mail, username, password)
+
+        if user:
+            access_token = JWTService.generate_access_token(str(user.id), user.mail, user.admin)
             refresh_token = JWTService.generate_refresh_token(str(user.id))
-            
+
             if access_token and refresh_token:
                 response_object = {
                     "status": "success",
@@ -47,62 +38,39 @@ def login_user():
                     "access_token": access_token,
                     "refresh_token": refresh_token
                 }
-                
                 return jsonify(response_object), HTTPStatus.OK
-        
+
         response_object = {
             "status": "fail",
             "message": "Invalid credentials",
         }
-
         return jsonify(response_object), HTTPStatus.UNAUTHORIZED
 
     except Exception as e:
         logger.error(e)
         raise e
-    
+
+
 @api.route("/api/auth/register", methods=["POST"])
 def register_user():
     user_json = request.get_json()
 
     if not user_json:
         raise ValueError("Missing request body")
-    
-    username = user_json.get("username")
-    mail = user_json.get("mail")
 
-    user = db.session.query(User).filter(
-        (User.username == username) | (User.mail == mail)
-    ).first()
-    
-    if user:
-        raise IntegrityError(statement="User already present", params= None, orig=Exception())
-    
-    else:
-        user = UserSchema().load(user_json)
-        
-        db.session.add(user)
-        db.session.commit()
-        
-        #Check if user was correctly generated
-        user = db.session.query(User).filter_by(mail=mail).first()
-        if not user:
-            raise ValueError("User generated incorrectly")
-      
+    user = AuthService.register_user(user_json)
 
-        logger.info(f"New user registered: {user.username}")
+    auth_token = JWTService.generate_access_token(str(user.id), user.mail, user.admin)
+    refresh_token = JWTService.generate_refresh_token(str(user.id))
 
-        # generate auth token
-        auth_token = JWTService.generate_access_token(str(user.id), user.mail, user.admin)
-        # generate refresh token
-        refresh_token = JWTService.generate_refresh_token(str(user.id))
-        response_object = {}
-        response_object["status"] = "success"
-        response_object["message"] = "Successfully registered."
-        response_object["access_token"] = auth_token
-        response_object["refresh_token"] = refresh_token
+    response_object = {
+        "status": "success",
+        "message": "Successfully registered.",
+        "access_token": auth_token,
+        "refresh_token": refresh_token
+    }
+    return jsonify(response_object), HTTPStatus.CREATED
 
-        return jsonify(response_object), 201
 
 @api.route("/api/auth/refresh", methods=["POST"])
 def refresh_token():
@@ -116,15 +84,15 @@ def refresh_token():
     if not data:
         abort(HTTPStatus.UNAUTHORIZED, description="Invalid token")
 
-    user = User.query.filter_by(id=UUID(data["user_id"])).first()
-
-    if not user:
+    try:
+        user = UserService.get_user_by_id(data["user_id"])
+    except NoResultFound:
         abort(HTTPStatus.UNAUTHORIZED, description="Login attempt with non-existent user")
 
-    access_token = JWTService.generate_access_token(user.id, user.mail, user.admin)
+    access_token = JWTService.generate_access_token(str(user.id), user.mail, user.admin)
 
     response_object = {
-            "status": "success",
-            "access_token": access_token
-        }
+        "status": "success",
+        "access_token": access_token
+    }
     return jsonify(response_object), HTTPStatus.OK

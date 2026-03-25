@@ -97,6 +97,27 @@ class DayService:
         return day
 
     @staticmethod
+    def get_by_key_from_dict(body: dict) -> Optional[Day]:
+        """
+        Retrieve a day by its composite key from a raw request body dict.
+        Handles camelCase conversion and date string parsing internally.
+
+        Params:
+            body: Raw request dict (camelCase keys, date as string or date object)
+        Returns:
+            The day if found, None otherwise
+        """
+        body = dict_to_snake(body)
+        day_date = body['date']
+        if isinstance(day_date, str):
+            day_date = date.fromisoformat(day_date)
+        return DayService.get_by_key(
+            day_number=body['day_number'],
+            day_date=day_date,
+            itinerary_id=body['itinerary_id']
+        )
+
+    @staticmethod
     def create_day(day: Day) -> Day:
         """
         Create a new day.

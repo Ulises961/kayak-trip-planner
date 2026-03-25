@@ -1,7 +1,5 @@
 from http import HTTPStatus
 import logging
-from datetime import date
-from camel_converter import dict_to_snake
 from flask import Blueprint, jsonify, request, abort
 from werkzeug.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -41,21 +39,12 @@ def read_by_id(id: str):
 @require_owner('day', parent_resource=('itinerary', 'itineraryId'), from_body=True)
 def read_by_key():
     try:
-        body = dict_to_snake(request.get_json())
+        body = request.get_json()
 
-        if not body or not body.get("day_number") or not body.get("date") or not body.get("itinerary_id"):
+        if not body or not body.get("itineraryId") or not body.get("dayNumber") or not body.get("date"):
             abort(HTTPStatus.BAD_REQUEST, description="Missing or incomplete day key")
 
-        # Convert date string if needed
-        day_date = body['date']
-        if isinstance(day_date, str):
-            day_date = date.fromisoformat(day_date)
-
-        day = DayService.get_by_key(
-            day_number=body['day_number'],
-            day_date=day_date,
-            itinerary_id=body['itinerary_id']
-        )
+        day = DayService.get_by_key_from_dict(body)
         return jsonify(DaySchema().dump(day)), HTTPStatus.OK
     except HTTPException:
         raise
