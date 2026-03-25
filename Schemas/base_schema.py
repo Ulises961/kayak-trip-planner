@@ -11,6 +11,7 @@ class BaseSchema(Schema):
     and snake-case for its internal representation.
     """
     id = fields.UUID(allow_none=True)
+    
     def on_bind_field(self, field_name, field_obj):
         field_obj.data_key = camelcase(field_obj.data_key or field_name)
 

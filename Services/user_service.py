@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional, cast
 from uuid import UUID
+
+from camel_converter import dict_to_snake
 from Models.image import Image
 from Models.user import User
 from Api.database import db
@@ -21,7 +23,7 @@ class UserService:
         return user
     
     @staticmethod
-    def update_user(id: str, user_json: Dict[str, Any]) -> User:
+    def update_user(id: str, user_data: Dict[str, Any]) -> User:
         """
         Update an existing user.
         
@@ -38,30 +40,33 @@ class UserService:
         """
         # Verify user exists
         saved_user = db.session.query(User).filter_by(id=UUID(id)).first()
+        
         if not saved_user:
             raise NoResultFound(f"User with id {id} not found in db")
         
+        user_data = dict_to_snake(user_data)
+        
         try:
             # Update fields directly on the existing user object
-            if 'mail' in user_json:
-                saved_user.mail = user_json['mail']
-            if 'name' in user_json:
-                saved_user.name = user_json['name']
-            if 'surname' in user_json:
-                saved_user.surname = user_json['surname']
-            if 'phone' in user_json:
-                saved_user.phone = user_json['phone']
-            if 'username' in user_json:
-                saved_user.username = user_json['username']
-            if 'pwd' in user_json:
-                saved_user.pwd = generate_password_hash(user_json['pwd']).decode("UTF-8")
-            if 'admin' in user_json:
-                saved_user.admin = user_json['admin']
-            if 'image' in user_json:
-                if image:= user_json.get("image", None) is None:
+            if 'mail' in user_data:
+                saved_user.mail = user_data['mail']
+            if 'name' in user_data:
+                saved_user.name = user_data['name']
+            if 'surname' in user_data:
+                saved_user.surname = user_data['surname']
+            if 'phone' in user_data:
+                saved_user.phone = user_data['phone']
+            if 'username' in user_data:
+                saved_user.username = user_data['username']
+            if 'pwd' in user_data:
+                saved_user.pwd = generate_password_hash(user_data['pwd']).decode("UTF-8")
+            if 'admin' in user_data:
+                saved_user.admin = user_data['admin']
+            if 'image' in user_data:
+                if image:= user_data.get("image", None) is None:
                     saved_user.image = None
                 else:
-                    image = cast(Image, ImageSchema().load(user_json['image']))
+                    image = cast(Image, ImageSchema().load(user_data['image']))
                     saved_user.image = image
             db.session.commit()
             

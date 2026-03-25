@@ -24,6 +24,7 @@ setup(
         'requests-cache', 
         'retry-requests', 
         'bleach',
+        'camel-converter'
     ],
     author="Ulises E. Sosa",
     description="Kayak planner backend",

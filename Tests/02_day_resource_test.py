@@ -11,7 +11,7 @@ import pytest
 def test_trip(client, auth_headers):
     """Create a test trip and return its ID."""
     trip_data = {
-        "itinerary": {"is_public": True, "total_miles": 25, "days": []},
+        "itinerary": {"isPublic": True, "totalMiles": 25, "days": []},
         "inventory": {}
     }
     response = client.post(f"{TRIP_ENDPOINT}/create", json=trip_data, headers=auth_headers)
@@ -23,14 +23,14 @@ def test_itinerary_with_day(client, auth_headers, test_trip):
     """Create a test itinerary with one day and return itinerary_id and day_id."""
     daysList = [
         {
-            "day_number": 1,
+            "dayNumber": 1,
             "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
             "points": [],
         }
     ]
     itinerary = {
         "days": daysList,
-        "trip_id": test_trip
+        "tripId": test_trip
     }
 
     response = client.post(f"{ITINERARY_ENDPOINT}/create", json=itinerary, headers=auth_headers)
@@ -52,14 +52,14 @@ def test_itinerary_with_day(client, auth_headers, test_trip):
 def test_insert_itinerary_with_day(client, auth_headers, test_trip):
     daysList = [
         {
-            "day_number": 1,
+            "dayNumber": 1,
             "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
             "points": [],
         }
     ]
     itinerary = {
         "days": daysList,
-        "trip_id": test_trip
+        "tripId": test_trip
     }
     response = client.post(f"{ITINERARY_ENDPOINT}/create", json=itinerary, headers=auth_headers)
     assert response.status_code == 201
@@ -68,8 +68,8 @@ def test_insert_itinerary_with_day(client, auth_headers, test_trip):
 def test_insert_weather_to_day(client, auth_headers, test_itinerary_with_day):
     day_id = test_itinerary_with_day["days"][0]['id']
     weather = {
-        "weather_states": [],
-        "day_id": day_id,
+        "weatherStates": [],
+        "dayId": day_id,
         "model": "ICON"
     }
 
@@ -86,14 +86,14 @@ def test_insert_sea_to_day(client, auth_headers, test_itinerary_with_day):
     itinerary_id = test_itinerary_with_day['id']
     sea = {
         "sea_states": [],
-        "day_id": day_id,
-        "low_tide": datetime.now().time().strftime('%H:%M'),
-        "high_tide": datetime.now().time().strftime('%H:%M'),
+        "dayId": day_id,
+        "lowTide": datetime.now().time().strftime('%H:%M'),
+        "highTide": datetime.now().time().strftime('%H:%M'),
     }
 
     day = {
         "id": day_id,
-        "itinerary_id": itinerary_id,
+        "itineraryId": itinerary_id,
         "sea": sea
     }
     response = client.post(f"{DAY_ENDPOINT}/{day_id}/update", json=day, headers=auth_headers)
@@ -104,8 +104,8 @@ def test_get_day_by_key(client, auth_headers, test_itinerary_with_day):
     itinerary_id = test_itinerary_with_day['id']
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     json_data = {
-        "itinerary_id": itinerary_id,
-        'day_number': 1,
+        "itineraryId": itinerary_id,
+        'dayNumber': 1,
         'date': day_date
     }
 
@@ -126,7 +126,7 @@ def test_update_day(client, auth_headers, test_itinerary_with_day):
     itinerary_id = test_itinerary_with_day['id']
     day_date = date.fromisoformat('2020-12-31').strftime("%Y-%m-%d")
     sea = None
-    updated_day = {'id': day_id, 'date': day_date, 'itinerary_id': itinerary_id, 'day_number': 1, 'sea': sea} 
+    updated_day = {'id': day_id, 'date': day_date, 'itinerary_id': itinerary_id, 'dayNumber': 1, 'sea': sea} 
     response = client.post(f"{DAY_ENDPOINT}/{day_id}/update", json=updated_day, headers=auth_headers)
     json_data = json.loads(response.data)
     print("json data ",json_data)

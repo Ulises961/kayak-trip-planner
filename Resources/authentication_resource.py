@@ -1,5 +1,5 @@
 import logging
-import uuid
+from uuid import UUID
 
 from Models.user import User
 from flask import abort, request, jsonify
@@ -116,7 +116,7 @@ def refresh_token():
     if not data:
         abort(HTTPStatus.UNAUTHORIZED, description="Invalid token")
 
-    user = User.query.filter_by(id=data["user_id"]).first()
+    user = User.query.filter_by(id=UUID(data["user_id"])).first()
 
     if not user:
         abort(HTTPStatus.UNAUTHORIZED, description="Login attempt with non-existent user")

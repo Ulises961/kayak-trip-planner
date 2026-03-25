@@ -22,13 +22,13 @@ def test_log(client, auth_headers, id):
 
 def test_create_log(client, auth_headers):
     """Test creating a new log"""
-    log = {"hours": 10, "avg_sea": 3}
+    log = {"hours": 10, "avgSea": 3}
     response = client.post(f"{LOG_ENDPOINT}/create", headers=auth_headers, json=log)
     assert response.status_code == 201
     
     data = json.loads(response.data)
     assert data['hours'] == 10
-    assert data['avg_sea'] == 3
+    assert data['avgSea'] == 3
     assert 'id' in data
     
     # Cleanup
@@ -57,20 +57,20 @@ def test_get_endorsed_logs(client, auth_headers):
 def test_update_log(client, auth_headers, test_log):
     """Test updating an existing log"""
     log_id = test_log['id']
-    updated_data = {"hours": 15, "avg_sea": 8}
+    updated_data = {"hours": 15, "avgSea": 8}
     
     response = client.post(f"{LOG_ENDPOINT}/{log_id}/update", headers=auth_headers, json=updated_data)
     assert response.status_code == 200
     
     data = json.loads(response.data)
     assert data['hours'] == 15
-    assert data['avg_sea'] == 8
+    assert data['avgSea'] == 8
 
 
 def test_delete_log(client, auth_headers, ):
     """Test deleting a log"""
     # Create a log to delete
-    log = {"hours": 5, "avg_sea": 2}
+    log = {"hours": 5, "avgSea": 2}
     create_response = client.post(f"{LOG_ENDPOINT}/create", headers=auth_headers, json=log)
     log_id = json.loads(create_response.data)['id']
     

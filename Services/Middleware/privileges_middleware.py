@@ -202,7 +202,7 @@ def _check_trip_ownership(user_id: str, trip_id: str) -> Optional[bool]:
     result = (
         db.session.query(Trip)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Trip.id == trip.id, user_has_trip.c.user_id == user_id)
+        .filter(Trip.id == trip.id, user_has_trip.c.user_id == UUID(user_id))
         .first()
     )
 
@@ -224,7 +224,7 @@ def _check_itinerary_ownership(user_id: str, itinerary_id: str) -> Optional[bool
         db.session.query(Itinerary)
         .join(Trip, Itinerary.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Itinerary.id == itinerary.id, user_has_trip.c.user_id == user_id)
+        .filter(Itinerary.id == itinerary.id, user_has_trip.c.user_id == UUID(user_id))
         .first()
     )
 
@@ -242,7 +242,7 @@ def _check_day_ownership(user_id: str, day_id: str) -> Optional[bool]:
     result = (
         db.session.query(Day)
         .join(Itinerary, Day.itinerary_id == Itinerary.id)
-        .filter(Day.id == UUID(day_id), Itinerary.user_id == user_id)
+        .filter(Day.id == UUID(day_id), Itinerary.user_id == UUID(user_id))
         .first()
     )
     if result is not None:
@@ -254,7 +254,7 @@ def _check_day_ownership(user_id: str, day_id: str) -> Optional[bool]:
         .join(Itinerary, Day.itinerary_id == Itinerary.id)
         .join(Trip, Itinerary.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Day.id == UUID(day_id), user_has_trip.c.user_id == user_id)
+        .filter(Day.id == UUID(day_id), user_has_trip.c.user_id == UUID(user_id))
         .first()
     )
 
@@ -274,7 +274,7 @@ def _check_sea_ownership(user_id: str, sea_id: str) -> Optional[bool]:
         .join(Itinerary, Day.itinerary_id == Itinerary.id)
         .join(Trip, Itinerary.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Sea.day_id == sea_id, user_has_trip.c.user_id == user_id)
+        .filter(Sea.day_id == sea_id, user_has_trip.c.user_id == UUID(user_id))
         .first()
     )
 
@@ -294,7 +294,7 @@ def _check_weather_ownership(user_id: str, weather_id: str) -> Optional[bool]:
         .join(Itinerary, Day.itinerary_id == Itinerary.id)
         .join(Trip, Itinerary.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Weather.day_id == weather_id, user_has_trip.c.user_id == user_id)
+        .filter(Weather.day_id == weather_id, user_has_trip.c.user_id == UUID(user_id))
         .first()
     )
 
@@ -305,19 +305,19 @@ def _check_inventory_ownership(user_id: str, inventory_id: str) -> Optional[bool
     """Check if user owns the inventory directly, through user_has_inventory, or through trip ownership."""
 
     # First check if inventory exists
-    inventory = db.session.query(Inventory).filter_by(id=inventory_id).first()
+    inventory = db.session.query(Inventory).filter_by(id=UUID(inventory_id)).first()
     if not inventory:
         return None  # Inventory doesn't exist
 
     # Check direct ownership via inventory.user_id FK
-    if inventory.user_id == user_id:
+    if inventory.user_id == UUID(user_id):
         return True
 
     result = (
         db.session.query(Inventory)
         .join(Trip, Inventory.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Inventory.id == inventory_id, user_has_trip.c.user_id == user_id)
+        .filter(Inventory.id == inventory_id, user_has_trip.c.user_id == UUID(user_id))
         .first()
     )
 
@@ -327,12 +327,12 @@ def _check_inventory_ownership(user_id: str, inventory_id: str) -> Optional[bool
 def _check_item_ownership(user_id: str, item_id: str) -> Optional[bool]:
     """Check if user owns the item through inventory/trip ownership."""
     # First check if item exists
-    item = db.session.query(Item).filter_by(id=item_id).first()
+    item = db.session.query(Item).filter_by(id=UUID(item_id)).first()
     if not item:
         return None  # Item doesn't exist
 
     # Second check user owns item
-    if item.user_id and item.user_id == user_id:
+    if item.user_id and item.user_id == UUID(user_id):
         return True
 
     # Third check trip inventory has item
@@ -343,8 +343,8 @@ def _check_item_ownership(user_id: str, item_id: str) -> Optional[bool]:
         .join(Trip, Inventory.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
         .filter(
-            Item.id == item_id,
-            or_(user_has_trip.c.user_id == user_id),
+            Item.id == UUID(item_id),
+            or_(user_has_trip.c.user_id == UUID(user_id)),
         )
         .first()
     )
@@ -355,7 +355,7 @@ def _check_item_ownership(user_id: str, item_id: str) -> Optional[bool]:
 def _check_point_ownership(user_id: str, point_id: str) -> Optional[bool]:
     """Check if user owns the point through day/itinerary/trip ownership."""
     # First check if point exists
-    point = db.session.query(Point).filter_by(id=point_id).first()
+    point = db.session.query(Point).filter_by(id=UUID(point_id)).first()
     if not point:
         return None  # Point doesn't exist
 
@@ -364,7 +364,7 @@ def _check_point_ownership(user_id: str, point_id: str) -> Optional[bool]:
             db.session.query(Point)
             .join(Day, Point.day_id == Day.id)
             .join(Itinerary, Day.itinerary_id == Itinerary.id)
-            .filter(Point.id == UUID(point_id), Itinerary.user_id == user_id)
+            .filter(Point.id == UUID(point_id), Itinerary.user_id == UUID(user_id))
             .first()
         )
     
@@ -378,7 +378,7 @@ def _check_point_ownership(user_id: str, point_id: str) -> Optional[bool]:
         .join(Itinerary, Day.itinerary_id == Itinerary.id)
         .join(Trip, Itinerary.trip_id == Trip.id)
         .join(user_has_trip, Trip.id == user_has_trip.c.trip_id)
-        .filter(Point.id == point_id, user_has_trip.c.user_id == user_id)
+        .filter(Point.id == UUID(point_id), user_has_trip.c.user_id == UUID(user_id))
         .first()
     )
 
@@ -388,7 +388,7 @@ def _check_point_ownership(user_id: str, point_id: str) -> Optional[bool]:
 def _check_log_ownership(user_id: str, log_id: str) -> Optional[bool]:
     """Check if user owns or has access to the log."""
     # log_id is actually a id (string)
-    log = db.session.query(Log).filter_by(id=log_id).first()
+    log = db.session.query(Log).filter_by(id=UUID(log_id)).first()
     if not log:
         return None  # Log doesn't exist
 
@@ -396,7 +396,7 @@ def _check_log_ownership(user_id: str, log_id: str) -> Optional[bool]:
     return (
         db.session.query(User)
         .join(User.logs)
-        .filter(User.id == user_id, Log.id == log_id)
+        .filter(User.id == UUID(user_id), Log.id == UUID(log_id))
         .first()
         is not None
     )
@@ -404,7 +404,7 @@ def _check_log_ownership(user_id: str, log_id: str) -> Optional[bool]:
 
 def _check_image_ownership(user_id: str, image_id: str) -> Optional[bool]:
     """Check if user owns the image through point or user ownership."""
-    image = db.session.query(Image).filter_by(id=image_id).first()
+    image = db.session.query(Image).filter_by(id=UUID(image_id)).first()
     if not image:
         return None  # Image doesn't exist
 
@@ -412,7 +412,7 @@ def _check_image_ownership(user_id: str, image_id: str) -> Optional[bool]:
     # This depends on your specific image relationships
     # For now, check if user owns related points
     points_with_image = (
-        db.session.query(Point).join(Point.images).filter(Image.id == image_id).all()
+        db.session.query(Point).join(Point.images).filter(Image.id == UUID(image_id)).all()
     )
 
     for point in points_with_image:

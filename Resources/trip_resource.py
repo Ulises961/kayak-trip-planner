@@ -63,9 +63,9 @@ def get_all_user_trips(user_id: str):
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
 
-@trip_api.route("/<int:user_id>/invitations", methods=["GET"])
+@trip_api.route("/<string:user_id>/invitations", methods=["GET"])
 @JWTService.authenticate_restful
-def get_all_user_invitations(user_id):
+def get_all_user_invitations(user_id: str):
     """
     TripResource GET method. Retrieves trip(s) by ID or all trips.
 
@@ -118,7 +118,7 @@ def put(id: str):
     try:
         logger.info(f"Update trip {request.get_json()} in db")
         trip_data = request.get_json()
-        trip = TripService.update_trip(trip_data)
+        trip = TripService.update_trip(id, trip_data)
         return jsonify(TripSchema().dump(trip)), HTTPStatus.OK
     except HTTPException:
         raise

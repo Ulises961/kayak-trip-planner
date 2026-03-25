@@ -6,10 +6,10 @@ from datetime import date, datetime
 
 @pytest.fixture(scope="function")
 def points(client, auth_headers, itinerary):
-    point_1 = {"day_id": itinerary["days"][0]["id"], "type": "interest"}
-    point_2 = {"day_id": itinerary["days"][0]["id"], "type": "position"}
-    point_3 = {"day_id": itinerary["days"][0]["id"], "type": "interest"}
-    point_4 = {"day_id": itinerary["days"][0]["id"], "type": "interest"}
+    point_1 = {"dayId": itinerary["days"][0]["id"], "type": "interest"}
+    point_2 = {"dayId": itinerary["days"][0]["id"], "type": "position"}
+    point_3 = {"dayId": itinerary["days"][0]["id"], "type": "interest"}
+    point_4 = {"dayId": itinerary["days"][0]["id"], "type": "interest"}
 
     response_1 = client.post(
         f"{POINT_ENDPOINT}/create", headers=auth_headers, json=point_1
@@ -73,13 +73,13 @@ def test_link_points(client, points, auth_headers):
     )
 
     assert json.loads(response.data) == {
-        "day_id": point["day_id"],
+        "dayId": point["dayId"],
         "latitude": None,
         "longitude": None,
         "id": point["id"],
         "images": [],
         "next": {
-            "day_id": point_2["day_id"],
+            "dayId": point_2["dayId"],
             "latitude": None,
             "longitude": None,
             "id": point_2["id"],

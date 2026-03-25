@@ -43,7 +43,7 @@ def get_poi():
 
 @point_api.route("/create", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner("point", parent_resource=("day", "day_id"), from_body=True)
+@require_owner("point", parent_resource=("day", "dayId"), from_body=True)
 def create_point():
     """
     PointResource POST method. Adds a new point to the database.
@@ -64,12 +64,15 @@ def create_point():
         )
         db.session.rollback()
         abort(HTTPStatus.CONFLICT, message="Database integrity violated")
+    except Exception as e:
+            logger.error(f"Error creating point: {e}")
+            db.session.rollback()
+            abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-
-@point_api.route("/<int:id>/update", methods=["POST"])
+@point_api.route("/<string:id>/update", methods=["POST"])
 @JWTService.authenticate_restful
 @require_owner("point")
-def update_point(id: int):
+def update_point(id: str):
     """
     PointResource PUT method. Updates an existing point.
     
@@ -91,10 +94,10 @@ def update_point(id: int):
         db.session.rollback()
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@point_api.route("/<int:id>", methods=["GET"])
+@point_api.route("/<string:id>", methods=["GET"])
 @JWTService.authenticate_restful
 @require_owner("point")
-def get_point(id: int):
+def get_point(id: str):
     """
     PointResource GET method. Retrieves a single point by ID.
     
@@ -115,10 +118,10 @@ def get_point(id: int):
         logger.error(f"Error retrieving point: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@point_api.route("/<int:id>", methods=["DELETE"])
+@point_api.route("/<string:id>", methods=["DELETE"])
 @JWTService.authenticate_restful     
 @require_owner("point") 
-def delete(id:int):
+def delete(id: str):
     """
     PointResource DELETE method. Deletes a point by ID.
     

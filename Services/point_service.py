@@ -5,6 +5,7 @@ import logging
 from sqlite3 import IntegrityError
 from typing import List, Optional, cast
 from uuid import UUID
+from camel_converter import dict_to_snake
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 
@@ -118,6 +119,7 @@ class PointService:
         
         logger.info(f"Updating point {point_id}")
         
+        point_data = dict_to_snake(point_data)
         # Update scalar fields if provided
         if 'type' in point_data:
             from Models.point import PointType

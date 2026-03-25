@@ -8,7 +8,7 @@ from uuid import UUID as _UUID
 
 
 class ItemCategoryType(enum.Enum):
-    FIRST_AID = "first_aid"
+    FIRST_AID = "firstAid"
     CAMPING = "camping"
     REPAIR = "repair"
     TRAVEL = "travel"

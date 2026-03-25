@@ -4,6 +4,7 @@ Log Service - Business logic for log operations.
 import logging
 from typing import List, cast
 from uuid import UUID
+from camel_converter import dict_to_snake
 from flask import g
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.orm import selectinload
@@ -103,7 +104,9 @@ class LogService:
         if not existing_log:
             raise NoResultFound(f"Log with id {id} not found")
         logger.info(f"Updating log {id}")
-
+        log_data = dict_to_snake(log_data)
+        log_data.setdefault("user_id", existing_log.user_id)
+        
         updated_log = LogSchema().load(log_data)
 
         try:

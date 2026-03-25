@@ -106,7 +106,7 @@ def inventory_with_items(client, auth_headers, id):
     """Create an inventory with items for testing"""
     inventory_items = [
         {"category": 'travel', "name": 'compass'}, 
-        {"category": "first_aid", "name": 'scissors'}
+        {"category": "firstAid", "name": 'scissors'}
     ]
     inventory = {"items": inventory_items}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
@@ -141,7 +141,7 @@ def empty_inventory(client, auth_headers, id):
 @pytest.fixture(scope="function")
 def trip_w_o_itinerary(client, auth_headers):
     inventory = {"items":
-                 [{"category": 'travel', "name": 'compass'}, {"category": "first_aid", "name": 'scissors'}]}
+                 [{"category": 'travel', "name": 'compass'}, {"category": "firstAid", "name": 'scissors'}]}
     trip = {"inventory":inventory}
     response = client.post(f"{TRIP_ENDPOINT}/create", json=trip, headers=auth_headers)
     assert response.status_code == 201
@@ -159,19 +159,18 @@ def trip_w_o_itinerary(client, auth_headers):
 def itinerary(client, auth_headers, trip_w_o_itinerary):
     days = [
         {
-            "day_number": 1,
+            "dayNumber": 1,
             "date": date.fromisoformat('2020-12-31').strftime("%Y-%m-%d"),
             "points": [],
         },
         {
-            "day_number": 2,
+            "dayNumber": 2,
             "date": date.fromisoformat('2020-01-01').strftime("%Y-%m-%d"),
-            "points": [],
-            "itinerary_id":1,
+            "points": []
         }
     ]
 
-    itinerary = {"days": days, "trip_id": trip_w_o_itinerary["id"]}
+    itinerary = {"days": days, "tripId": trip_w_o_itinerary["id"]}
     response = client.post(f"{ITINERARY_ENDPOINT}/create", json=itinerary, headers=auth_headers)
     assert response.status_code == 201
 

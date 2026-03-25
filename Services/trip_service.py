@@ -123,7 +123,7 @@ class TripService:
         return trip
 
     @staticmethod
-    def update_trip(trip_data: dict) -> Trip:
+    def update_trip(trip_id: str, trip_data: dict) -> Trip:
         """
         Update an existing trip.
 
@@ -137,13 +137,12 @@ class TripService:
             ValidationError: If data is invalid
             NoResultFound: If trip doesn't exist
         """
-        trip: Trip = TripSchema().load(trip_data)  # type: ignore
-
-        # Verify trip exists
-        existing_trip = TripService.get_trip_by_id(str(trip.id))
+                # Verify trip exists
+        existing_trip = TripService.get_trip_by_id(trip_id)
         if not existing_trip:
-            raise NoResultFound(f"Trip {trip.id} not found")
-
+            raise NoResultFound(f"Trip {id} not found")
+        
+        trip: Trip = TripSchema().load(trip_data)  # type: ignore
         logger.info(f"Updating trip {trip.id}")
         db.session.merge(trip)
         db.session.commit()

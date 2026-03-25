@@ -128,7 +128,7 @@ def test_remove_user_profile_picture(client, auth_headers, id):
 def point_with_day(client, auth_headers, itinerary):
     """Create a point for testing image associations."""
     point_data = {
-        "day_id": itinerary['days'][0]['id'],
+        "dayId": itinerary['days'][0]['id'],
         "type": "interest",
         "latitude": 45.4642,
         "longitude": 9.1900,

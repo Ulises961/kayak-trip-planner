@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 ITEM_ENDPOINT = "/api/item"
 item_api = Blueprint('item', __name__, url_prefix=ITEM_ENDPOINT)
 
-@item_api.route("/<int:id>", methods=["GET"])
+@item_api.route("/<string:id>", methods=["GET"])
 @JWTService.authenticate_restful
 @require_owner('item')
-def get_item(id: int):
+def get_item(id: str):
     """GET /api/item/<id> - Retrieve item by ID"""
     try:
         item = ItemService.get_item_by_id(id)
@@ -33,7 +33,7 @@ def get_item(id: int):
 
 @item_api.route("/create", methods=["POST"])
 @JWTService.authenticate_restful
-@require_owner('item', parent_resource=('inventory', 'inventory_id'), from_body=True)
+@require_owner('item', parent_resource=('inventory', 'inventoryId'), from_body=True)
 def create_item():
     """POST /api/item/create - Create new item"""
     try:
@@ -49,10 +49,10 @@ def create_item():
         logger.error(f"Error creating item: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@item_api.route("/<int:id>/update", methods=["POST"])
+@item_api.route("/<string:id>/update", methods=["POST"])
 @JWTService.authenticate_restful
 @require_owner('item')
-def update_item(id: int):
+def update_item(id: str):
     """POST /api/item/<id>/update - Update existing item"""
     try:
         logger.info(f"Update item {id} in db")
@@ -70,10 +70,10 @@ def update_item(id: int):
         logger.error(f"Error updating item: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@item_api.route("/<int:id>", methods=["DELETE"])
+@item_api.route("/<string:id>", methods=["DELETE"])
 @JWTService.authenticate_restful
 @require_owner('item')
-def delete_item(id: int):
+def delete_item(id: str):
     """DELETE /api/item/<id> - Delete item by ID"""
     try:
         logger.info(f"Deleting item {id}")

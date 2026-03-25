@@ -1,5 +1,7 @@
 from typing import Optional, Dict, Any, List
 from uuid import UUID
+
+from camel_converter import dict_to_snake
 from Models.day import Day
 from Models.itinerary import Itinerary
 from Models.sea import Sea
@@ -76,7 +78,7 @@ class DayService:
         return days
 
     @staticmethod
-    def get_by_key(day_number: int, day_date: date, itinerary_id: int) -> Optional[Day]:
+    def get_by_key(day_number: int, day_date: date, itinerary_id: str) -> Optional[Day]:
         """
         Retrieve a day by its composite key.
 
@@ -89,7 +91,7 @@ class DayService:
         """
         day = (
             db.session.query(Day)
-            .filter_by(day_number=day_number, date=day_date, itinerary_id=itinerary_id)
+            .filter_by(day_number=day_number, date=day_date, itinerary_id=UUID(itinerary_id))
             .first()
         )
         return day
@@ -128,6 +130,9 @@ class DayService:
 
         if not existing_day:
             raise NoResultFound(f"Day with id {day_id} not found")
+        
+        # Convert manually to snake
+        day_data = dict_to_snake(day_data)
 
         # Check if nested objects are present in the request (even if None)
         has_weather_key = "weather" in day_data
@@ -221,7 +226,7 @@ class DayService:
                 day.sea = None
 
     @staticmethod
-    def delete_day(day_id: int) -> None:
+    def delete_day(day_id: str) -> None:
         """
         Delete a day by its ID.
 
@@ -231,7 +236,7 @@ class DayService:
             NoResultFound: If day doesn't exist
             IntegrityError: If deletion violates database constraints
         """
-        day_to_delete = db.session.get(Day, day_id)
+        day_to_delete = db.session.get(Day, UUID(day_id))
 
         if not day_to_delete:
             raise NoResultFound(f"Day with id {day_id} not found")

@@ -24,7 +24,7 @@ class ItinerarySchema(BaseSchema):
         metadata={"exclude": ["itinerary_id"]},
         validate=lambda x: x is None or len(x) <= 365,
     )
-    trip_id = fields.UUID(allow_none=True, required=False)
+    trip_id = fields.UUID(allow_none=True)
     user_id = fields.UUID(allow_none=True)
 
     @validates("total_miles")

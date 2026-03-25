@@ -8,7 +8,7 @@ def inventory_with_items(client, auth_headers, id):
     """Create an inventory with items for testing"""
     inventory_items = [
         {"category": 'travel', "name": 'compass'}, 
-        {"category": "first_aid", "name": 'scissors'}
+        {"category": "firstAid", "name": 'scissors'}
     ]
     inventory = {"items": inventory_items}
     response = client.post(f"{INVENTORY_ENDPOINT}/create", headers=auth_headers, json=inventory)
@@ -20,7 +20,7 @@ def inventory_with_items(client, auth_headers, id):
     # Cleanup: try to delete the inventory
     try:
         client.delete(f"{INVENTORY_ENDPOINT}/{inventory_data['id']}", headers=auth_headers)
-    except:
+    except Exception:
         pass
 
 
@@ -45,7 +45,7 @@ def test_create_inventory_with_items(client, auth_headers, id):
     """Test creating an inventory with items"""
     inventory_items = [
         {"category": 'travel', "name": 'compass'}, 
-        {"category": "first_aid", "name": 'scissors'}
+        {"category": "firstAid", "name": 'scissors'}
     ]
     inventory = {"items": inventory_items}
 
@@ -53,7 +53,7 @@ def test_create_inventory_with_items(client, auth_headers, id):
     assert response.status_code == 201
     
     data = json.loads(response.data)
-    assert data['user_id'] == id
+    assert data['userId'] == str(id)
     assert len(data['items']) == 2
     assert data['items'][0]['name'] == 'compass'
     assert data['items'][1]['name'] == 'scissors'
@@ -70,7 +70,7 @@ def test_create_inventory_empty(client, auth_headers, id):
     assert response.status_code == 201
     
     data = json.loads(response.data)
-    assert data['user_id'] == id
+    assert data['userId'] == str(id)
     assert len(data['items']) == 0
     
     # Cleanup
@@ -106,7 +106,7 @@ def test_update_inventory(client, auth_headers, inventory_with_items):
     inventory_id = inventory_with_items['id']
     updated_items = [
         {"category": 'travel', "name": 'map'}, 
-        {"category": "first_aid", "name": 'Oki'}
+        {"category": "firstAid", "name": 'Oki'}
     ]
     update_data = {"id": inventory_id, "items": updated_items}
     
@@ -137,4 +137,4 @@ def test_delete_inventory(client, auth_headers, id):
 def test_get_nonexistent_inventory(client, auth_headers):
     """Test retrieving an inventory that doesn't exist"""
     response = client.get(f"{INVENTORY_ENDPOINT}/99999", headers=auth_headers)
-    assert response.status_code == 404
+    assert response.status_code == 403

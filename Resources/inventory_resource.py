@@ -30,10 +30,10 @@ def get_all_inventories():
         logger.error(f"Error retrieving inventories: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@inventory_api.route("/<int:id>", methods=["GET"])
+@inventory_api.route("/<string:id>", methods=["GET"])
 @JWTService.authenticate_restful
 @require_owner('inventory')
-def get_inventory(id: int):
+def get_inventory(id: str):
     """GET /api/inventory/<id> - Retrieve inventory by ID"""
     try:
         logger.info(f"Retrieve inventory with id {id}")
@@ -65,10 +65,10 @@ def create_inventory():
         logger.error(f"Error creating inventory: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@inventory_api.route("/<int:id>/update", methods=["POST"])
+@inventory_api.route("/<string:id>/update", methods=["POST"])
 @JWTService.authenticate_restful
 @require_owner('inventory')
-def update_inventory(id: int):
+def update_inventory(id: str):
     """POST /api/inventory/<id>/update - Update existing inventory"""
     try:
         logger.info(f"Update inventory {id} in db")
@@ -86,10 +86,10 @@ def update_inventory(id: int):
         logger.exception(f"Error updating inventory: {e}")
         abort(HTTPStatus.INTERNAL_SERVER_ERROR, description=str(e))
 
-@inventory_api.route("/<int:id>", methods=["DELETE"])
+@inventory_api.route("/<string:id>", methods=["DELETE"])
 @JWTService.authenticate_restful
 @require_owner('inventory')
-def delete_inventory(id: int):
+def delete_inventory(id: str):
     """DELETE /api/inventory/<id> - Delete inventory by ID"""
     try:
         logger.info(f"Deleting inventory {id}")
